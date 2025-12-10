@@ -1,0 +1,13 @@
+name = "teralink-worker"
+main = "worker.js"
+compatibility_date = "2025-12-10"
+
+# Worker 환경변수
+[vars]
+LOG_API_KEY = "110526taeyoon!"
+
+# D1 Database 연결
+[[d1_databases]]
+binding = "LOG_DB"
+database_name = "teralink_logs"
+database_id = "94662c07-c04c-45ab-8e9e-f12582bd73b8"
