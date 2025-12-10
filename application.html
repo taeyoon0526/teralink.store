@@ -104,7 +104,9 @@
         <label>해킹/개발 경험 *</label>
         <textarea id="dev_experience" required></textarea>
 
-        <button type="submit" id="submit-button">제출</button>
+        <form id="submitForm" action="/submit" method="POST">
+          <button onclick="finalSubmitCheck(event)">제출하기</button>
+        </form>
 
         <div id="submitting-indicator">제출 중입니다…</div>
         <div id="status-message"></div>
@@ -112,6 +114,35 @@
     </section>
   </main>
 <script>
+
+  
+// VPN 검사 함수
+async function checkVPN() {
+    const res = await fetch("/__check_vpn");
+    const data = await res.json();
+    if (data.vpn === "blocked") {
+        window.location.href = "/vpn.html";
+    }
+}
+
+// 5초마다 반복 검사
+setInterval(checkVPN, 5000);
+
+// 제출 버튼 검사
+async function finalSubmitCheck(event) {
+    event.preventDefault();
+    const res = await fetch("/__check_vpn");
+    const data = await res.json();
+
+    if (data.vpn === "blocked") {
+        window.location.href = "/vpn.html";
+        return;
+    }
+
+    // VPN이 아니면 제출 계속
+    document.querySelector("#submitForm").submit();
+}
+  
   const WEBHOOK_URL =
     "https://discord.com/api/webhooks/1447521453145587733/HKUQbSR44_2R5CXrTEyuDoWpL8vtz9G4bdKT9BfoOOh5cPj22_ygwnG8Hz-heUC2Vrx4";
 
