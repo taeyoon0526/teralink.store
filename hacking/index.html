@@ -452,8 +452,8 @@
           <label style="margin-top:8px;">전송할 메시지</label>
           <textarea id="wh-message" class="small" placeholder="테스트 메시지"></textarea>
 
-          <label style="margin-top:8px;">전송 횟수 (최대 10)</label>
-          <input id="wh-count" type="number" min="1" max="10" value="1" />
+          <label style="margin-top:8px;">전송 횟수</label>
+          <input id="wh-count" type="number" min="1" value="1" />
 
           <div class="row" style="margin-top:10px;">
             <button onclick="sendWebhookMessages()">전송</button>
@@ -680,7 +680,7 @@ function downloadQR() {
   a.click();
 }
 
-/* ========== Webhook Sender ========== */
+/* ========== Webhook Sender (횟수 제한 제거) ========== */
 async function sendWebhookMessages() {
   const url = document.getElementById("wh-url").value.trim();
   const msg = document.getElementById("wh-message").value;
@@ -692,8 +692,8 @@ async function sendWebhookMessages() {
     status.className = "status err";
     return;
   }
-  if (count < 1 || count > 10) {
-    status.textContent = "전송 횟수는 1~10 사이로만 설정 가능합니다.";
+  if (count < 1) {
+    status.textContent = "전송 횟수는 1 이상으로 입력하세요.";
     status.className = "status err";
     return;
   }
@@ -711,6 +711,8 @@ async function sendWebhookMessages() {
       });
       if (res.ok) ok++;
       else fail++;
+
+      // 디스코드 레이트리밋 완전 무시하고 싶으면 이 줄을 0으로 줄여도 되지만, 계정/웹훅 보호 차원에서 유지 추천
       await new Promise(r => setTimeout(r, 300));
     } catch(e) {
       fail++;
