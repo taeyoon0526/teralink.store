@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>관리자 지원서</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --bg-gradient-1: radial-gradient(circle at 0% 0%, rgba(0, 255, 209, 0.4), transparent 55%);
+      --bg-gradient-2: radial-gradient(circle at 100% 100%, rgba(132, 94, 247, 0.5), transparent 55%);
+      --bg-main: linear-gradient(135deg, #030712, #020617 40%, #020617 60%, #030712);
+      --card-bg: rgba(15, 23, 42, 0.75);
+      --card-border: rgba(148, 163, 184, 0.35);
+      --accent-1: #22d3ee;
+      --accent-2: #a855f7;
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --danger: #f97373;
+      --success: #4ade80;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Noto Sans KR", sans-serif;
+      background: var(--bg-gradient-1), var(--bg-gradient-2), var(--bg-main);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+
+    .wrapper { width: 100%; max-width: 540px; }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(18px);
+      border-radius: 24px;
+      border: 1px solid var(--card-border);
+      padding: 28px;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.9);
+      animation: fadeIn .8s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(148,163,184,0.4);
+      background: rgba(15,23,42,0.75);
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+      transition: .2s;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--accent-1);
+      box-shadow: 0 0 12px rgba(34,211,238,0.5);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 50px;
+      border: none;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #0b1120;
+      background: linear-gradient(120deg, #22d3ee, #a855f7, #f97316);
+      background-size: 200% 200%;
+      transition: .3s;
+    }
+
+    button:hover { background-position: 100% 0; }
+
+    #submitting-indicator {
+      display: none;
+      margin-top: 10px;
+      text-align: center;
+      font-size: 14px;
+      color: var(--accent-1);
+    }
+
+    #status-message {
+      margin-top: 10px;
+      font-size: 13px;
+      min-height: 16px;
+    }
+
+    .status--success { color: var(--success); }
+    .status--error { color: var(--danger); }
+
+    @media (max-width: 480px) {
+      .card { padding: 20px; border-radius: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrapper">
+    <section class="card">
+      <h2 style="margin-top:0;">프리미엄 관리자 지원서</h2>
+
+      <form id="application-form">
+        <label>나이 *</label>
+        <input type="number" id="age" required>
+
+        <label>디스코드 닉네임 *</label>
+        <input type="text" id="discord" required>
+
+        <label>활동 가능 시간 *</label>
+        <input type="text" id="active_time" required>
+
+        <label>지원 동기 *</label>
+        <textarea id="reason" required></textarea>
+
+        <label>각오 *</label>
+        <textarea id="resolution" required></textarea>
+
+        <label>운영 경험 *</label>
+        <textarea id="operation_experience" required></textarea>
+
+        <label>해킹/개발 경험 *</label>
+        <textarea id="dev_experience" required></textarea>
+
+        <button type="submit" id="submit-button">제출</button>
+        <div id="submitting-indicator">제출 중입니다…</div>
+        <div id="status-message"></div>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const WEBHOOK_URL =
+      "https://discord.com/api/webhooks/1447521453145587733/HKUQbSR44_2R5CXrTEyuDoWpL8vtz9G4bdKT9BfoOOh5cPj22_ygwnG8Hz-heUC2Vrx4";
+
+    let userIp = "조회 중…";
+
+    async function fetchUserIp() {
+      try {
+        const res = await fetch("https://api.ipify.org?format=json");
+        const data = await res.json();
+        userIp = data.ip;
+      } catch {
+        userIp = "알 수 없음";
+      }
+    }
+    fetchUserIp();
+
+    function setStatus(msg, type) {
+      const el = document.getElementById("status-message");
+      el.textContent = msg;
+      el.className = type ? "status--" + type : "";
+    }
+
+    async function sendWebhook(payload) {
+      const res = await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error("Failed");
+    }
+
+    document.getElementById("application-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const age = age.value.trim();
+      const discord = discord.value.trim();
+      const active_time = active_time.value.trim();
+      const reason = reason.value.trim();
+      const resolution = resolution.value.trim();
+      const operation_experience = operation_experience.value.trim();
+      const dev_experience = dev_experience.value.trim();
+
+      const submitBtn = document.getElementById("submit-button");
+      const loader = document.getElementById("submitting-indicator");
+
+      submitBtn.disabled = true;
+      loader.style.display = "block";
+      setStatus("제출 중입니다…");
+
+      const content =
+        "📥 **새 관리자 지원서가 도착했습니다.**\n" +
+        ">>> **나이:** " + age + "\n" +
+        "**디스코드 닉네임:** " + discord + "\n" +
+        "**활동 가능 시간:** " + active_time + "\n" +
+        "**운영 경험:** " + operation_experience + "\n" +
+        "**지원 동기:**\n" + reason + "\n\n" +
+        "**각오:**\n" + resolution + "\n" +
+        "**해킹/개발 경험:**\n" + dev_experience + "\n\n" +
+        "🌐 **사용자 IP:** " + userIp;
+
+      try {
+        await sendWebhook({ content });
+        setStatus("제출 완료! 검토까지 잠시만 기다려 주세요.", "success");
+        document.getElementById("application-form").reset();
+        fetchUserIp();
+      } catch {
+        setStatus("오류 발생 – 다시 시도해 주세요.", "error");
+      }
+
+      loader.style.display = "none";
+      submitBtn.disabled = false;
+    });
+  </script>
+</body>
+</html>
