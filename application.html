@@ -111,90 +111,94 @@
       </form>
     </section>
   </main>
+<script>
+  const WEBHOOK_URL =
+    "https://discord.com/api/webhooks/1447521453145587733/HKUQbSR44_2R5CXrTEyuDoWpL8vtz9G4bdKT9BfoOOh5cPj22_ygwnG8Hz-heUC2Vrx4";
 
-  <script>
-    const WEBHOOK_URL =
-      "https://discord.com/api/webhooks/1447521453145587733/HKUQbSR44_2R5CXrTEyuDoWpL8vtz9G4bdKT9BfoOOh5cPj22_ygwnG8Hz-heUC2Vrx4";
+  let userIp = "조회 중…";
 
-    let userIp = "조회 중…";
-
-    async function fetchUserIp() {
-      try {
-        const res = await fetch("https://api.ipify.org?format=json");
-        const data = await res.json();
-        userIp = data.ip;
-      } catch {
-        userIp = "알 수 없음";
-      }
+  async function fetchUserIp() {
+    try {
+      const res = await fetch("https://api.ipify.org?format=json");
+      const data = await res.json();
+      userIp = data.ip;
+    } catch {
+      userIp = "알 수 없음";
     }
-    fetchUserIp();
+  }
+  fetchUserIp();
 
-    function setStatus(msg, type=null) {
-      const el = document.getElementById("status-message");
-      el.textContent = msg;
-      el.className = type ? "status--" + type : "";
-    }
+  function setStatus(msg, type = null) {
+    const el = document.getElementById("status-message");
+    el.textContent = msg;
+    el.className = type ? "status--" + type : "";
+  }
 
-    async function sendWebhook(payload) {
-      const res = await fetch(WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) throw new Error("Webhook error");
-    }
-
-    document.getElementById("application-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      // ==== FIXED 오류: 모든 요소 명시적으로 가져오기 ====
-      const ageEl = document.getElementById("age");
-      const discordEl = document.getElementById("discord");
-      const activeEl = document.getElementById("active_time");
-      const reasonEl = document.getElementById("reason");
-      const resolutionEl = document.getElementById("resolution");
-      const opexpEl = document.getElementById("operation_experience");
-      const devxpEl = document.getElementById("dev_experience");
-
-      const age = ageEl.value.trim();
-      const discord = discordEl.value.trim();
-      const active_time = activeEl.value.trim();
-      const reason = reasonEl.value.trim();
-      const resolution = resolutionEl.value.trim();
-      const operation_experience = opexpEl.value.trim();
-      const dev_experience = devxpEl.value.trim();
-
-      const btn = document.getElementById("submit-button");
-      const loader = document.getElementById("submitting-indicator");
-
-      btn.disabled = true;
-      loader.style.display = "block";
-      setStatus("제출 중입니다…");
-
-      const content =
-        "📥 **새 관리자 지원서가 도착했습니다.**\n" +
-        ">>> **나이:** " + age + "\n" +
-        "**디스코드 닉네임:** " + discord + "\n" +
-        "**활동 가능 시간:** " + active_time + "\n" +
-        "**운영 경험:** " + operation_experience + "\n\n" +
-        "**지원 동기:**\n" + reason + "\n\n" +
-        "**각오:**\n" + resolution + "\n\n" +
-        "**해킹/개발 경험:**\n" + dev_experience + "\n\n" +
-        "🌐 **사용자 IP:** " + userIp;
-
-      try {
-        await sendWebhook({ content });
-        setStatus("제출 완료! 검토까지 잠시만 기다려 주세요.", "success");
-        document.getElementById("application-form").reset();
-        fetchUserIp();
-      } catch {
-        setStatus("오류 발생 – 다시 시도해 주세요.", "error");
-      }
-
-      loader.style.display = "none";
-      btn.disabled = false;
+  async function sendWebhook(payload) {
+    const res = await fetch(WEBHOOK_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
     });
-  </script>
+
+    if (!res.ok) throw new Error("Webhook error");
+  }
+
+  document.getElementById("application-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const age = document.getElementById("age").value.trim();
+    const discord = document.getElementById("discord").value.trim();
+    const active_time = document.getElementById("active_time").value.trim();
+    const reason = document.getElementById("reason").value.trim();
+    const resolution = document.getElementById("resolution").value.trim();
+    const operation_experience = document.getElementById("operation_experience").value.trim();
+    const dev_experience = document.getElementById("dev_experience").value.trim();
+
+    const btn = document.getElementById("submit-button");
+    const loader = document.getElementById("submitting-indicator");
+
+    btn.disabled = true;
+    loader.style.display = "block";
+    setStatus("제출 중입니다…");
+
+    // ====== Embed Payload ======
+    const payload = {
+      embeds: [
+        {
+          title: "📥 새 관리자 지원서가 도착했습니다",
+          color: ff0000, // Discord Embed 색상 (레드 톤)
+          fields: [
+            { name: "나이", value: age, inline: true },
+            { name: "디스코드 닉네임", value: discord, inline: true },
+            { name: "활동 가능 시간", value: active_time },
+            { name: "운영 경험", value: operation_experience || "없음" },
+            { name: "지원 동기", value: reason },
+            { name: "각오", value: resolution },
+            { name: "해킹/개발 경험", value: dev_experience }
+          ],
+          footer: {
+            text: "사용자 IP: " + userIp
+          },
+          timestamp: new Date().toISOString()
+        }
+      ]
+    };
+
+    try {
+      await sendWebhook(payload);
+      setStatus("제출 완료! 검토까지 잠시만 기다려 주세요.", "success");
+      document.getElementById("application-form").reset();
+      fetchUserIp(); // 다음 제출 대비
+    } catch {
+      setStatus("오류 발생 – 다시 시도해 주세요.", "error");
+    }
+
+    loader.style.display = "none";
+    btn.disabled = false;
+  });
+</script>
 </body>
 </html>
