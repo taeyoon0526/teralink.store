@@ -1,4 +1,4 @@
-name = "teralink-worker"
+name = "teralink"
 main = "worker.js"
 compatibility_date = "2025-12-10"
 
