@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>TERALINK Hacking Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #020617;
+      --card: #020617;
+      --accent: #22c55e;
+      --accent-soft: rgba(34,197,94,0.14);
+      --border: #1f2937;
+      --text-main: #e5e7eb;
+      --text-sub: #9ca3af;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0;
+      min-height:100vh;
+      font-family:"JetBrains Mono",system-ui,monospace;
+      background: radial-gradient(circle at top, #0b1120 0, #020617 55%, #000 100%);
+      color:var(--text-main);
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      padding:18px;
+    }
+    .shell {
+      width:100%;
+      max-width:1100px;
+      border-radius:18px;
+      border:1px solid var(--border);
+      background:linear-gradient(135deg,rgba(15,23,42,0.96),rgba(2,6,23,0.98));
+      box-shadow:0 30px 80px rgba(0,0,0,0.75);
+      overflow:hidden;
+    }
+    .topbar {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px 18px;
+      background:radial-gradient(circle at left top,#0f172a,#020617);
+      border-bottom:1px solid #111827;
+    }
+    .dots {
+      display:flex;
+      gap:6px;
+    }
+    .dot {
+      width:10px;
+      height:10px;
+      border-radius:999px;
+    }
+    .dot.red { background:#f97373; }
+    .dot.yellow { background:#facc15; }
+    .dot.green { background:#22c55e; }
+    .top-title {
+      font-size:13px;
+      color:var(--text-sub);
+    }
+    .pill {
+      padding:4px 10px;
+      border-radius:999px;
+      background:rgba(34,197,94,0.1);
+      border:1px solid rgba(34,197,94,0.4);
+      font-size:11px;
+      color:#bbf7d0;
+    }
+
+    .layout {
+      display:flex;
+      flex-wrap:wrap;
+    }
+
+    .sidebar {
+      width:240px;
+      min-height:420px;
+      border-right:1px solid var(--border);
+      padding:14px 12px;
+    }
+    .main {
+      flex:1;
+      min-width:0;
+      padding:16px 16px 18px;
+    }
+
+    .nav-title {
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:0.1em;
+      color:var(--text-sub);
+      margin-bottom:8px;
+    }
+    .tool-list {
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-bottom:14px;
+    }
+    .tool-item {
+      border-radius:10px;
+      padding:7px 9px;
+      font-size:12px;
+      color:var(--text-sub);
+      cursor:pointer;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border:1px solid transparent;
+      transition:.15s;
+    }
+    .tool-item:hover {
+      background:rgba(15,23,42,0.9);
+      border-color:#1f2937;
+      color:var(--text-main);
+    }
+    .tool-item.active {
+      background:var(--accent-soft);
+      border-color:var(--accent);
+      color:#bbf7d0;
+    }
+    .badge {
+      font-size:10px;
+      padding:1px 6px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.4);
+      color:#9ca3af;
+    }
+
+    .section {
+      display:none;
+    }
+    .section.active {
+      display:block;
+      animation:fadeIn .2s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity:0; transform:translateY(4px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+
+    h2 {
+      margin:0 0 6px;
+      font-size:18px;
+    }
+    .subtitle {
+      margin-bottom:14px;
+      font-size:12px;
+      color:var(--text-sub);
+    }
+    .grid-2 {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
+    }
+    @media (max-width:900px) {
+      .layout { flex-direction:column; }
+      .sidebar { width:100%; border-right:none; border-bottom:1px solid var(--border); }
+    }
+    @media (max-width:640px) {
+      .grid-2 { grid-template-columns:1fr; }
+      .sidebar { min-height:0; }
+    }
+
+    .card {
+      background:var(--card);
+      border-radius:14px;
+      border:1px solid var(--border);
+      padding:12px;
+    }
+    .card h3 {
+      margin-top:0;
+      margin-bottom:6px;
+      font-size:14px;
+    }
+    label {
+      font-size:11px;
+      color:var(--text-sub);
+      display:block;
+      margin-bottom:4px;
+    }
+    textarea, input, select {
+      width:100%;
+      border-radius:10px;
+      border:1px solid #1f2937;
+      background:#020617;
+      color:var(--text-main);
+      padding:8px 9px;
+      font-family:"JetBrains Mono",monospace;
+      font-size:12px;
+      resize:vertical;
+      min-height:40px;
+      outline:none;
+      transition:border-color .15s, box-shadow .15s;
+    }
+    textarea:focus, input:focus, select:focus {
+      border-color:var(--accent);
+      box-shadow:0 0 0 1px rgba(34,197,94,0.5);
+    }
+    textarea.small { min-height:70px; }
+    textarea.large { min-height:120px; }
+
+    .row {
+      display:flex;
+      gap:8px;
+      margin-top:6px;
+      flex-wrap:wrap;
+    }
+    button {
+      border:none;
+      border-radius:999px;
+      padding:7px 14px;
+      font-size:11px;
+      font-family:inherit;
+      cursor:pointer;
+      background:var(--accent-soft);
+      color:#bbf7d0;
+      border:1px solid rgba(34,197,94,0.6);
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      transition:.15s;
+    }
+    button:hover {
+      background:rgba(34,197,94,0.22);
+    }
+    button.secondary {
+      background:rgba(15,23,42,0.9);
+      border-color:#374151;
+      color:#e5e7eb;
+    }
+
+    .output {
+      background:#020617;
+      border-radius:10px;
+      border:1px dashed #374151;
+      padding:8px;
+      font-size:12px;
+      min-height:40px;
+      white-space:pre-wrap;
+      word-break:break-all;
+    }
+    .mini-label {
+      font-size:10px;
+      color:var(--text-sub);
+      margin-top:4px;
+    }
+    .status {
+      margin-top:6px;
+      font-size:11px;
+      color:var(--text-sub);
+    }
+    .status.ok { color:#4ade80; }
+    .status.err { color:#f97373; }
+    .status.warn { color:#facc15; }
+
+    #qr-canvas {
+      width:180px;
+      height:180px;
+      border-radius:10px;
+      background:#020617;
+      display:block;
+      margin-top:6px;
+      border:1px solid #1f2937;
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="dots">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
+      </div>
+      <div class="top-title">teralink.store / hacking · toolkit</div>
+    </div>
+    <div class="pill">KR-only · VPN-aware · readonly tools</div>
+  </div>
+
+  <div class="layout">
+    <!-- 사이드바 -->
+    <aside class="sidebar">
+      <div class="nav-title">TOOLS</div>
+      <div class="tool-list">
+        <div class="tool-item active" data-target="hash">
+          <span>① Hash / Base64</span>
+          <span class="badge">crypto</span>
+        </div>
+        <div class="tool-item" data-target="ip">
+          <span>② IP · DNS</span>
+          <span class="badge">network</span>
+        </div>
+        <div class="tool-item" data-target="json">
+          <span>③ JSON / URL</span>
+          <span class="badge">dev</span>
+        </div>
+        <div class="tool-item" data-target="qr">
+          <span>④ QR 생성기</span>
+          <span class="badge">utility</span>
+        </div>
+        <div class="tool-item" data-target="webhook">
+          <span>⑤ Webhook Sender</span>
+          <span class="badge">discord</span>
+        </div>
+      </div>
+      <div class="nav-title">INFO</div>
+      <p style="font-size:11px;color:var(--text-sub);line-height:1.5;">
+        이 페이지는 <strong>클라이언트 사이드</strong>에서만 동작합니다.<br/>
+        (IP/DNS 조회는 공개 API 사용)
+      </p>
+    </aside>
+
+    <!-- 메인 -->
+    <main class="main">
+      <!-- ① 해시 / Base64 -->
+      <section id="sec-hash" class="section active">
+        <h2>① Hash &amp; Base64</h2>
+        <p class="subtitle">텍스트를 MD5 / SHA-256 해시로 변환하거나 Base64 인코딩·디코딩합니다.</p>
+
+        <div class="card">
+          <h3>입력 텍스트</h3>
+          <textarea id="hash-input" class="large" placeholder="여기에 텍스트를 입력하세요."></textarea>
+          <div class="row">
+            <button onclick="makeHash('md5')">MD5 생성</button>
+            <button onclick="makeHash('sha256')">SHA-256 생성</button>
+            <button class="secondary" onclick="copyOutput('hash-output')">해시 결과 복사</button>
+          </div>
+          <div class="mini-label">※ SHA-256은 Web Crypto API 사용, MD5는 JS 라이브러리 사용.</div>
+          <div id="hash-output" class="output" style="margin-top:8px;"></div>
+        </div>
+
+        <div class="grid-2" style="margin-top:12px;">
+          <div class="card">
+            <h3>Base64 인코딩</h3>
+            <textarea id="b64-plain" class="small" placeholder="일반 텍스트"></textarea>
+            <div class="row">
+              <button onclick="encodeB64()">Base64로 인코딩</button>
+              <button class="secondary" onclick="copyOutput('b64-encoded')">복사</button>
+            </div>
+            <div id="b64-encoded" class="output" style="margin-top:6px;"></div>
+          </div>
+          <div class="card">
+            <h3>Base64 디코딩</h3>
+            <textarea id="b64-input" class="small" placeholder="Base64 문자열"></textarea>
+            <div class="row">
+              <button onclick="decodeB64()">일반 텍스트로 디코딩</button>
+              <button class="secondary" onclick="copyOutput('b64-decoded')">복사</button>
+            </div>
+            <div id="b64-decoded" class="output" style="margin-top:6px;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ② IP / DNS -->
+      <section id="sec-ip" class="section">
+        <h2>② IP &amp; DNS</h2>
+        <p class="subtitle">현재 접속 IP 정보와 간단한 DNS 조회 도구입니다.</p>
+
+        <div class="grid-2">
+          <div class="card">
+            <h3>내 IP 정보</h3>
+            <div class="row">
+              <button onclick="fetchIpInfo()">IP 정보 조회</button>
+            </div>
+            <div id="ip-output" class="output" style="margin-top:6px;"></div>
+            <div class="mini-label">※ ipify + ipapi 등을 사용합니다. 응답 속도는 API 상황에 따라 달라질 수 있습니다.</div>
+          </div>
+
+          <div class="card">
+            <h3>DNS Lookup</h3>
+            <label for="dns-domain">도메인</label>
+            <input id="dns-domain" placeholder="예: example.com" />
+            <label for="dns-type">레코드 타입</label>
+            <select id="dns-type">
+              <option value="A">A</option>
+              <option value="AAAA">AAAA</option>
+              <option value="MX">MX</option>
+              <option value="TXT">TXT</option>
+              <option value="CNAME">CNAME</option>
+            </select>
+            <div class="row" style="margin-top:8px;">
+              <button onclick="lookupDNS()">조회</button>
+              <button class="secondary" onclick="copyOutput('dns-output')">결과 복사</button>
+            </div>
+            <div id="dns-output" class="output" style="margin-top:6px;"></div>
+            <div class="mini-label">※ Google DNS(DoH) API 사용: dns.google/resolve</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ③ JSON / URL -->
+      <section id="sec-json" class="section">
+        <h2>③ JSON Formatter &amp; URL 인코딩</h2>
+        <p class="subtitle">JSON을 포매팅하고, URL 인코딩/디코딩을 수행합니다.</p>
+
+        <div class="grid-2">
+          <div class="card">
+            <h3>JSON Formatter</h3>
+            <textarea id="json-input" class="large" placeholder='{"example": true, "value": 123}'></textarea>
+            <div class="row">
+              <button onclick="formatJSON()">포매팅</button>
+              <button class="secondary" onclick="minifyJSON()">압축(Minify)</button>
+              <button class="secondary" onclick="copyOutput('json-output')">결과 복사</button>
+            </div>
+            <div id="json-status" class="status"></div>
+            <div id="json-output" class="output" style="margin-top:6px;"></div>
+          </div>
+
+          <div class="card">
+            <h3>URL Encode / Decode</h3>
+            <label>원본 문자열</label>
+            <textarea id="url-input" class="small"></textarea>
+            <div class="row">
+              <button onclick="encodeURL()">Encode</button>
+              <button onclick="decodeURL()">Decode</button>
+              <button class="secondary" onclick="copyOutput('url-output')">결과 복사</button>
+            </div>
+            <div id="url-output" class="output" style="margin-top:6px;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ④ QR 코드 -->
+      <section id="sec-qr" class="section">
+        <h2>④ QR 코드 생성기</h2>
+        <p class="subtitle">텍스트나 URL을 QR 코드로 변환합니다.</p>
+
+        <div class="card">
+          <h3>QR 내용</h3>
+          <textarea id="qr-input" class="small" placeholder="https://teralink.store/"></textarea>
+          <div class="row">
+            <button onclick="generateQR()">QR 생성</button>
+            <button class="secondary" onclick="downloadQR()">PNG로 저장</button>
+          </div>
+          <canvas id="qr-canvas"></canvas>
+        </div>
+      </section>
+
+      <!-- ⑤ Webhook Sender -->
+      <section id="sec-webhook" class="section">
+        <h2>⑤ Discord Webhook Sender</h2>
+        <p class="subtitle">테스트용으로 간단한 웹훅 메시지를 전송합니다. (악용 금지)</p>
+
+        <div class="card">
+          <label>Webhook URL</label>
+          <input id="wh-url" placeholder="https://discord.com/api/webhooks/..." />
+
+          <label style="margin-top:8px;">전송할 메시지</label>
+          <textarea id="wh-message" class="small" placeholder="테스트 메시지"></textarea>
+
+          <label style="margin-top:8px;">전송 횟수 (최대 10)</label>
+          <input id="wh-count" type="number" min="1" max="10" value="1" />
+
+          <div class="row" style="margin-top:10px;">
+            <button onclick="sendWebhookMessages()">전송</button>
+          </div>
+          <div id="wh-status" class="status"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- MD5 라이브러리 -->
+<script src="https://cdn.jsdelivr.net/npm/blueimp-md5@2.19.0/js/md5.min.js"></script>
+<!-- QR 라이브러리 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+
+<script>
+/* ========== 탭 전환 ========== */
+const toolItems = document.querySelectorAll(".tool-item");
+const sections = {
+  hash: document.getElementById("sec-hash"),
+  ip: document.getElementById("sec-ip"),
+  json: document.getElementById("sec-json"),
+  qr: document.getElementById("sec-qr"),
+  webhook: document.getElementById("sec-webhook"),
+};
+toolItems.forEach(item => {
+  item.addEventListener("click", () => {
+    toolItems.forEach(i => i.classList.remove("active"));
+    item.classList.add("active");
+    const target = item.dataset.target;
+    Object.keys(sections).forEach(key => {
+      sections[key].classList.toggle("active", key === target);
+    });
+  });
+});
+
+/* ========== 공통 출력 복사 ========== */
+function copyOutput(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const text = el.innerText || el.textContent;
+  if (!text) return;
+  navigator.clipboard.writeText(text).catch(() => {});
+}
+
+/* ========== Hash ========== */
+async function makeHash(type) {
+  const input = document.getElementById("hash-input").value;
+  const out = document.getElementById("hash-output");
+  if (!input) {
+    out.textContent = "입력값이 없습니다.";
+    return;
+  }
+  try {
+    if (type === "md5") {
+      out.textContent = md5(input);
+    } else if (type === "sha256") {
+      const enc = new TextEncoder().encode(input);
+      const buf = await crypto.subtle.digest("SHA-256", enc);
+      const arr = Array.from(new Uint8Array(buf));
+      out.textContent = arr.map(b => b.toString(16).padStart(2,"0")).join("");
+    }
+  } catch(e) {
+    out.textContent = "해시 생성 중 오류: " + e;
+  }
+}
+
+/* ========== Base64 ========== */
+// UTF-8 대응 인코딩/디코딩
+function utf8ToB64(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+function b64ToUtf8(str) {
+  return decodeURIComponent(escape(atob(str)));
+}
+function encodeB64() {
+  const plain = document.getElementById("b64-plain").value;
+  const out = document.getElementById("b64-encoded");
+  if (!plain) { out.textContent = ""; return; }
+  try {
+    out.textContent = utf8ToB64(plain);
+  } catch(e) {
+    out.textContent = "인코딩 오류: " + e;
+  }
+}
+function decodeB64() {
+  const b64 = document.getElementById("b64-input").value;
+  const out = document.getElementById("b64-decoded");
+  if (!b64) { out.textContent = ""; return; }
+  try {
+    out.textContent = b64ToUtf8(b64);
+  } catch(e) {
+    out.textContent = "디코딩 오류: " + e;
+  }
+}
+
+/* ========== IP Info ========== */
+async function fetchIpInfo() {
+  const out = document.getElementById("ip-output");
+  out.textContent = "조회 중...";
+  try {
+    const r1 = await fetch("https://api.ipify.org?format=json");
+    const ipData = await r1.json();
+    const r2 = await fetch("https://ipapi.co/json/");
+    const geoData = await r2.json();
+    out.textContent = JSON.stringify({
+      ip: ipData.ip,
+      country: geoData.country,
+      country_name: geoData.country_name,
+      region: geoData.region,
+      city: geoData.city,
+      org: geoData.org,
+      asn: geoData.asn
+    }, null, 2);
+  } catch(e) {
+    out.textContent = "IP 정보 조회 실패: " + e;
+  }
+}
+
+/* ========== DNS Lookup ========== */
+async function lookupDNS() {
+  const domain = document.getElementById("dns-domain").value.trim();
+  const type = document.getElementById("dns-type").value;
+  const out = document.getElementById("dns-output");
+  if (!domain) {
+    out.textContent = "도메인을 입력하세요.";
+    return;
+  }
+  out.textContent = "조회 중...";
+  try {
+    const url = `https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=${encodeURIComponent(type)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    out.textContent = JSON.stringify(data, null, 2);
+  } catch(e) {
+    out.textContent = "DNS 조회 실패: " + e;
+  }
+}
+
+/* ========== JSON Formatter ========== */
+function formatJSON() {
+  const input = document.getElementById("json-input").value;
+  const out = document.getElementById("json-output");
+  const status = document.getElementById("json-status");
+  if (!input) {
+    out.textContent = "";
+    status.textContent = "";
+    return;
+  }
+  try {
+    const obj = JSON.parse(input);
+    out.textContent = JSON.stringify(obj, null, 2);
+    status.textContent = "유효한 JSON입니다.";
+    status.className = "status ok";
+  } catch(e) {
+    out.textContent = "";
+    status.textContent = "JSON 파싱 오류: " + e.message;
+    status.className = "status err";
+  }
+}
+function minifyJSON() {
+  const input = document.getElementById("json-input").value;
+  const out = document.getElementById("json-output");
+  const status = document.getElementById("json-status");
+  if (!input) {
+    out.textContent = "";
+    status.textContent = "";
+    return;
+  }
+  try {
+    const obj = JSON.parse(input);
+    out.textContent = JSON.stringify(obj);
+    status.textContent = "Minify 완료.";
+    status.className = "status ok";
+  } catch(e) {
+    out.textContent = "";
+    status.textContent = "JSON 파싱 오류: " + e.message;
+    status.className = "status err";
+  }
+}
+
+/* ========== URL Encode/Decode ========== */
+function encodeURL() {
+  const src = document.getElementById("url-input").value;
+  const out = document.getElementById("url-output");
+  try {
+    out.textContent = encodeURIComponent(src);
+  } catch(e) {
+    out.textContent = "Encode 오류: " + e;
+  }
+}
+function decodeURL() {
+  const src = document.getElementById("url-input").value;
+  const out = document.getElementById("url-output");
+  try {
+    out.textContent = decodeURIComponent(src);
+  } catch(e) {
+    out.textContent = "Decode 오류: " + e;
+  }
+}
+
+/* ========== QR Code ========== */
+let qr;
+function generateQR() {
+  const val = document.getElementById("qr-input").value || "";
+  const canvas = document.getElementById("qr-canvas");
+  if (!qr) {
+    qr = new QRious({
+      element: canvas,
+      size: 180,
+      value: val || "https://teralink.store/"
+    });
+  } else {
+    qr.value = val || "https://teralink.store/";
+  }
+}
+function downloadQR() {
+  const canvas = document.getElementById("qr-canvas");
+  if (!canvas) return;
+  const a = document.createElement("a");
+  a.href = canvas.toDataURL("image/png");
+  a.download = "qr.png";
+  a.click();
+}
+
+/* ========== Webhook Sender ========== */
+async function sendWebhookMessages() {
+  const url = document.getElementById("wh-url").value.trim();
+  const msg = document.getElementById("wh-message").value;
+  const count = parseInt(document.getElementById("wh-count").value, 10) || 1;
+  const status = document.getElementById("wh-status");
+
+  if (!url || !msg) {
+    status.textContent = "Webhook URL과 메시지를 모두 입력하세요.";
+    status.className = "status err";
+    return;
+  }
+  if (count < 1 || count > 10) {
+    status.textContent = "전송 횟수는 1~10 사이로만 설정 가능합니다.";
+    status.className = "status err";
+    return;
+  }
+
+  status.textContent = "전송 중...";
+  status.className = "status";
+
+  let ok = 0, fail = 0;
+  for (let i = 0; i < count; i++) {
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: msg })
+      });
+      if (res.ok) ok++;
+      else fail++;
+      await new Promise(r => setTimeout(r, 300));
+    } catch(e) {
+      fail++;
+    }
+  }
+  status.textContent = `전송 완료: 성공 ${ok} / 실패 ${fail}`;
+  status.className = fail === 0 ? "status ok" : "status warn";
+}
+</script>
+</body>
+</html>
