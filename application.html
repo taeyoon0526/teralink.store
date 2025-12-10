@@ -5,7 +5,6 @@
   <title>프리미엄 관리자 지원서</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
-
   <style>
     body {
       margin: 0;
@@ -31,6 +30,7 @@
       from { opacity:0; transform:translateY(15px); }
       to { opacity:1; transform:translateY(0); }
     }
+
     input, textarea {
       width: 100%;
       padding: 12px;
@@ -47,6 +47,7 @@
       border-color: #22d3ee;
       box-shadow: 0 0 12px rgba(34,211,238,0.45);
     }
+
     button {
       width: 100%;
       padding: 12px;
@@ -62,16 +63,8 @@
     }
     button:hover { background-position: 100% 0; }
 
-    #submitting-indicator { 
-      display:none; 
-      text-align:center;
-      margin-top:10px;
-    }
-    #status-message {
-      margin-top: 10px;
-      font-size: 13px;
-      min-height: 16px;
-    }
+    #submitting-indicator { display:none; text-align:center; margin-top:10px; }
+    #status-message { margin-top: 10px; font-size: 13px; min-height: 16px; }
     .status--success { color:#4ade80; }
     .status--error { color:#f87171; }
   </style>
@@ -104,33 +97,36 @@
         <label>해킹/개발 경험 *</label>
         <textarea id="dev_experience" required></textarea>
 
-        <form id="submitForm" action="/submit" method="POST">
-          <button onclick="finalSubmitCheck(event)">제출하기</button>
-        </form>
+        <button id="submit-button" onclick="finalSubmitCheck(event)">제출하기</button>
 
         <div id="submitting-indicator">제출 중입니다…</div>
         <div id="status-message"></div>
       </form>
+
     </section>
   </main>
+
 <script>
-
-  
-// VPN 검사 함수
+// =============================
+// VPN 실시간 검사
+// =============================
 async function checkVPN() {
-    const res = await fetch("/__check_vpn");
-    const data = await res.json();
-    if (data.vpn === "blocked") {
-        window.location.href = "/vpn.html";
-    }
+    try {
+        const res = await fetch("/__check_vpn");
+        const data = await res.json();
+        if (data.vpn === "blocked") {
+            window.location.href = "/vpn.html";
+        }
+    } catch (e) {}
 }
-
-// 5초마다 반복 검사
 setInterval(checkVPN, 5000);
 
-// 제출 버튼 검사
+// =============================
+// 제출하기 눌렀을 때 최종 검사
+// =============================
 async function finalSubmitCheck(event) {
     event.preventDefault();
+
     const res = await fetch("/__check_vpn");
     const data = await res.json();
 
@@ -139,97 +135,83 @@ async function finalSubmitCheck(event) {
         return;
     }
 
-    // VPN이 아니면 제출 계속
-    document.querySelector("#submitForm").submit();
+    // VPN이 아니면 폼 제출 실행
+    document.getElementById("application-form").dispatchEvent(new Event("submit-real"));
 }
-  
-  const WEBHOOK_URL =
-    "https://discord.com/api/webhooks/1447521453145587733/HKUQbSR44_2R5CXrTEyuDoWpL8vtz9G4bdKT9BfoOOh5cPj22_ygwnG8Hz-heUC2Vrx4";
 
-  let userIp = "조회 중…";
+// =============================
+// Webhook 제출 처리
+// =============================
+const WEBHOOK_URL =
+  "https://discord.com/api/webhooks/1447521453145587733/HKUQbSR44_2R5CXrTEyuDoWpL8vtz9G4bdKT9BfoOOh5cPj22_ygwnG8Hz-heUC2Vrx4";
 
-  async function fetchUserIp() {
-    try {
-      const res = await fetch("https://api.ipify.org?format=json");
-      const data = await res.json();
-      userIp = data.ip;
-    } catch {
-      userIp = "알 수 없음";
-    }
+let userIp = "조회 중…";
+async function fetchUserIp() {
+  try {
+    const res = await fetch("https://api.ipify.org?format=json");
+    const data = await res.json();
+    userIp = data.ip;
+  } catch {
+    userIp = "알 수 없음";
   }
-  fetchUserIp();
+}
+fetchUserIp();
 
-  function setStatus(msg, type = null) {
-    const el = document.getElementById("status-message");
-    el.textContent = msg;
-    el.className = type ? "status--" + type : "";
-  }
+function setStatus(msg, type = null) {
+  const el = document.getElementById("status-message");
+  el.textContent = msg;
+  el.className = type ? "status--" + type : "";
+}
 
-  async function sendWebhook(payload) {
-    const res = await fetch(WEBHOOK_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!res.ok) throw new Error("Webhook error");
-  }
-
-  document.getElementById("application-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const age = document.getElementById("age").value.trim();
-    const discord = document.getElementById("discord").value.trim();
-    const active_time = document.getElementById("active_time").value.trim();
-    const reason = document.getElementById("reason").value.trim();
-    const resolution = document.getElementById("resolution").value.trim();
-    const operation_experience = document.getElementById("operation_experience").value.trim();
-    const dev_experience = document.getElementById("dev_experience").value.trim();
-
-    const btn = document.getElementById("submit-button");
-    const loader = document.getElementById("submitting-indicator");
-
-    btn.disabled = true;
-    loader.style.display = "block";
-    setStatus("제출 중입니다…");
-
-    // ====== Embed Payload ======
-    const payload = {
-      embeds: [
-        {
-          title: "📥 새 관리자 지원서가 도착했습니다",
-          color: ff0000, // Discord Embed 색상 (레드 톤)
-          fields: [
-            { name: "나이", value: age, inline: true },
-            { name: "디스코드 닉네임", value: discord, inline: true },
-            { name: "활동 가능 시간", value: active_time },
-            { name: "운영 경험", value: operation_experience || "없음" },
-            { name: "지원 동기", value: reason },
-            { name: "각오", value: resolution },
-            { name: "해킹/개발 경험", value: dev_experience }
-          ],
-          footer: {
-            text: "사용자 IP: " + userIp
-          },
-          timestamp: new Date().toISOString()
-        }
-      ]
-    };
-
-    try {
-      await sendWebhook(payload);
-      setStatus("제출 완료! 검토까지 잠시만 기다려 주세요.", "success");
-      document.getElementById("application-form").reset();
-      fetchUserIp(); // 다음 제출 대비
-    } catch {
-      setStatus("오류 발생 – 다시 시도해 주세요.", "error");
-    }
-
-    loader.style.display = "none";
-    btn.disabled = false;
+async function sendWebhook(payload) {
+  const res = await fetch(WEBHOOK_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
   });
+
+  if (!res.ok) throw new Error("Webhook error");
+}
+
+document.getElementById("application-form").addEventListener("submit-real", async () => {
+  const btn = document.getElementById("submit-button");
+  const loader = document.getElementById("submitting-indicator");
+
+  btn.disabled = true;
+  loader.style.display = "block";
+  setStatus("제출 중입니다…");
+
+  const payload = {
+    embeds: [
+      {
+        title: "📥 새 관리자 지원서가 도착했습니다",
+        color: 0xff0000, 
+        fields: [
+          { name: "나이", value: age.value.trim(), inline: true },
+          { name: "디스코드 닉네임", value: discord.value.trim(), inline: true },
+          { name: "활동 가능 시간", value: active_time.value.trim() },
+          { name: "운영 경험", value: operation_experience.value.trim() },
+          { name: "지원 동기", value: reason.value.trim() },
+          { name: "각오", value: resolution.value.trim() },
+          { name: "해킹/개발 경험", value: dev_experience.value.trim() }
+        ],
+        footer: { text: "사용자 IP: " + userIp },
+        timestamp: new Date().toISOString()
+      }
+    ]
+  };
+
+  try {
+    await sendWebhook(payload);
+    setStatus("제출 완료!", "success");
+    document.getElementById("application-form").reset();
+  } catch (e) {
+    setStatus("오류 발생 – 다시 시도해 주세요.", "error");
+  }
+
+  loader.style.display = "none";
+  btn.disabled = false;
+});
 </script>
 </body>
 </html>
