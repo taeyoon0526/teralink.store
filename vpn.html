@@ -68,7 +68,19 @@
         다시 접속해주세요.
     </p>
 
-    <a href="/" class="retry-btn">다시 접속하기</a>
+        <!-- 이전 페이지로 이동 -->
+    <a href="javascript:void(0)" class="retry-btn" onclick="goBack()">다시 접속하기</a>
+</div>
+
+<script>
+function goBack() {
+    if (document.referrer) {
+        window.location.href = document.referrer;
+    } else {
+        window.location.href = "/";
+    }
+}
+</script>
 
     <p style="margin-top:18px; font-size:12px; color:#777;">
         해외에서도 VPN을 사용하지 않은 정상 IP는 접속 가능합니다.
