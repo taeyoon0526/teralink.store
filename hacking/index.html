@@ -5,7 +5,7 @@
   <title>TERALINK Hacking Lab</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./hacking.css" />
+  <link rel="stylesheet" href="hacking.css" />
 </head>
 <body>
 <div class="shell">
@@ -46,7 +46,12 @@
           <span>⑤ Webhook Sender</span>
           <span class="badge">discord</span>
         </div>
+        <div class="tool-item" data-target="hardurl">
+          <span>⑥ Hard URL Encode</span>
+          <span class="badge">encode</span>
+        </div>
       </div>
+
       <div class="nav-title">INFO</div>
       <p class="info-text">
         이 페이지는 <strong>클라이언트 사이드</strong>에서만 동작합니다.<br/>
@@ -65,32 +70,32 @@
           <h3>입력 텍스트</h3>
           <textarea id="hash-input" class="large" placeholder="여기에 텍스트를 입력하세요."></textarea>
           <div class="row">
-            <button type="button" onclick="makeHash('md5')">MD5 생성</button>
-            <button type="button" onclick="makeHash('sha256')">SHA-256 생성</button>
-            <button type="button" class="secondary" onclick="copyOutput('hash-output')">해시 결과 복사</button>
+            <button onclick="makeHash('md5')">MD5 생성</button>
+            <button onclick="makeHash('sha256')">SHA-256 생성</button>
+            <button class="secondary" onclick="copyOutput('hash-output')">해시 결과 복사</button>
           </div>
           <div class="mini-label">※ SHA-256은 Web Crypto API 사용, MD5는 JS 라이브러리 사용.</div>
-          <div id="hash-output" class="output mt-8"></div>
+          <div id="hash-output" class="output" style="margin-top:8px;"></div>
         </div>
 
-        <div class="grid-2 mt-12">
+        <div class="grid-2" style="margin-top:12px;">
           <div class="card">
             <h3>Base64 인코딩</h3>
             <textarea id="b64-plain" class="small" placeholder="일반 텍스트"></textarea>
             <div class="row">
-              <button type="button" onclick="encodeB64()">Base64로 인코딩</button>
-              <button type="button" class="secondary" onclick="copyOutput('b64-encoded')">복사</button>
+              <button onclick="encodeB64()">Base64로 인코딩</button>
+              <button class="secondary" onclick="copyOutput('b64-encoded')">복사</button>
             </div>
-            <div id="b64-encoded" class="output mt-6"></div>
+            <div id="b64-encoded" class="output" style="margin-top:6px;"></div>
           </div>
           <div class="card">
             <h3>Base64 디코딩</h3>
             <textarea id="b64-input" class="small" placeholder="Base64 문자열"></textarea>
             <div class="row">
-              <button type="button" onclick="decodeB64()">일반 텍스트로 디코딩</button>
-              <button type="button" class="secondary" onclick="copyOutput('b64-decoded')">복사</button>
+              <button onclick="decodeB64()">일반 텍스트로 디코딩</button>
+              <button class="secondary" onclick="copyOutput('b64-decoded')">복사</button>
             </div>
-            <div id="b64-decoded" class="output mt-6"></div>
+            <div id="b64-decoded" class="output" style="margin-top:6px;"></div>
           </div>
         </div>
       </section>
@@ -104,9 +109,9 @@
           <div class="card">
             <h3>내 IP 정보</h3>
             <div class="row">
-              <button type="button" onclick="fetchIpInfo()">IP 정보 조회</button>
+              <button onclick="fetchIpInfo()">IP 정보 조회</button>
             </div>
-            <div id="ip-output" class="output mt-6"></div>
+            <div id="ip-output" class="output" style="margin-top:6px;"></div>
             <div class="mini-label">※ ipify + ipapi 등을 사용합니다. 응답 속도는 API 상황에 따라 달라질 수 있습니다.</div>
           </div>
 
@@ -122,11 +127,11 @@
               <option value="TXT">TXT</option>
               <option value="CNAME">CNAME</option>
             </select>
-            <div class="row mt-8">
-              <button type="button" onclick="lookupDNS()">조회</button>
-              <button type="button" class="secondary" onclick="copyOutput('dns-output')">결과 복사</button>
+            <div class="row" style="margin-top:8px;">
+              <button onclick="lookupDNS()">조회</button>
+              <button class="secondary" onclick="copyOutput('dns-output')">결과 복사</button>
             </div>
-            <div id="dns-output" class="output mt-6"></div>
+            <div id="dns-output" class="output" style="margin-top:6px;"></div>
             <div class="mini-label">※ Google DNS(DoH) API 사용: dns.google/resolve</div>
           </div>
         </div>
@@ -135,40 +140,33 @@
       <!-- ③ JSON / URL -->
       <section id="sec-json" class="section">
         <h2>③ JSON Formatter &amp; URL 인코딩</h2>
-        <p class="subtitle">JSON을 포매팅하고, URL 인코딩/디코딩·난독화를 수행합니다.</p>
+        <p class="subtitle">JSON을 포매팅하고, URL 인코딩/디코딩을 수행합니다.</p>
 
         <div class="grid-2">
           <div class="card">
             <h3>JSON Formatter</h3>
             <textarea id="json-input" class="large" placeholder='{"example": true, "value": 123}'></textarea>
             <div class="row">
-              <button type="button" onclick="formatJSON()">포매팅</button>
-              <button type="button" class="secondary" onclick="minifyJSON()">압축(Minify)</button>
-              <button type="button" class="secondary" onclick="copyOutput('json-output')">결과 복사</button>
+              <button onclick="formatJSON()">포매팅</button>
+              <button class="secondary" onclick="minifyJSON()">압축(Minify)</button>
+              <button class="secondary" onclick="copyOutput('json-output')">결과 복사</button>
             </div>
             <div id="json-status" class="status"></div>
-            <div id="json-output" class="output mt-6"></div>
+            <div id="json-output" class="output" style="margin-top:6px;"></div>
           </div>
 
           <div class="card">
-            <h3>URL Encode / Decode · Obfuscation</h3>
+            <h3>URL Encode / Decode</h3>
             <label>원본 문자열</label>
-            <textarea id="url-input" class="small" placeholder="https://teralink.store/ 또는 임의 페이로드"></textarea>
+            <textarea id="url-input" class="small"></textarea>
             <div class="row">
-              <button type="button" onclick="encodeURL_Normal()">Normal Encode</button>
-              <button type="button" onclick="encodeURL_Hard()">Hard Encode</button>
-              <button type="button" onclick="encodeURL_Ultra()">Ultra Encode</button>
+              <button onclick="encodeURL()">Encode</button>
+              <button onclick="decodeURL()">Decode</button>
+              <button class="secondary" onclick="copyOutput('url-output')">결과 복사</button>
             </div>
-            <div class="row mt-6">
-              <button type="button" class="secondary" onclick="decodeURL_Smart()">Smart Decode</button>
-              <button type="button" class="secondary" onclick="copyOutput('url-output')">결과 복사</button>
-            </div>
-            <div id="url-output" class="output mt-6"></div>
+            <div id="url-output" class="output" style="margin-top:6px;"></div>
             <div class="mini-label">
-              Normal: 표준 URL 인코딩<br/>
-              Hard: Base64 + 다중 URL 인코딩 + HEX<br/>
-              Ultra: Hard + 전체 Unicode escape 난독화<br/>
-              Smart Decode: 위 단계들을 최대한 자동 복구
+              ※ 표준 URL 인코딩(encodeURIComponent / decodeURIComponent)을 사용합니다.
             </div>
           </div>
         </div>
@@ -183,8 +181,8 @@
           <h3>QR 내용</h3>
           <textarea id="qr-input" class="small" placeholder="https://teralink.store/"></textarea>
           <div class="row">
-            <button type="button" onclick="generateQR()">QR 생성</button>
-            <button type="button" class="secondary" onclick="downloadQR()">PNG로 저장</button>
+            <button onclick="generateQR()">QR 생성</button>
+            <button class="secondary" onclick="downloadQR()">PNG로 저장</button>
           </div>
           <canvas id="qr-canvas"></canvas>
         </div>
@@ -199,26 +197,53 @@
           <label>Webhook URL</label>
           <input id="wh-url" placeholder="https://discord.com/api/webhooks/..." />
 
-          <label class="mt-8">전송할 메시지</label>
+          <label style="margin-top:8px;">전송할 메시지</label>
           <textarea id="wh-message" class="small" placeholder="테스트 메시지"></textarea>
 
-          <label class="mt-8">전송 횟수</label>
+          <label style="margin-top:8px;">전송 횟수</label>
           <input id="wh-count" type="number" min="1" value="1" />
 
-          <div class="row mt-10">
-            <button type="button" onclick="sendWebhookMessages()">전송</button>
+          <div class="row" style="margin-top:10px;">
+            <button onclick="sendWebhookMessages()">전송</button>
           </div>
           <div id="wh-status" class="status"></div>
         </div>
       </section>
+
+      <!-- ⑥ Hard URL Encode -->
+      <section id="sec-hardurl" class="section">
+        <h2>⑥ Hard URL Encode / Decode</h2>
+        <p class="subtitle">브라우저 주소창에서도 열리는 강력한 URL 난독화 기능입니다. (PATH만 인코딩)</p>
+
+        <div class="card">
+          <h3>원본 URL 입력</h3>
+          <textarea id="hardurl-input" class="small" placeholder="https://teralink.store/hacking/index.html"></textarea>
+
+          <div class="row">
+            <button onclick="hardEncode()">Hard Encode</button>
+            <button onclick="hardEncodeDouble()">Hard Encode ×2</button>
+            <button class="secondary" onclick="hardDecode()">Decode</button>
+            <button class="secondary" onclick="copyOutput('hardurl-output')">복사</button>
+          </div>
+
+          <div id="hardurl-output" class="output" style="margin-top:8px;"></div>
+
+          <div class="mini-label">
+            ※ 도메인/스킴은 유지하며, PATH만 퍼센트 인코딩합니다.<br>
+            ※ 2중 인코딩(Hard Encode ×2)도 브라우저에서 정상 작동합니다.
+          </div>
+        </div>
+      </section>
+
     </main>
   </div>
 </div>
 
-<!-- MD5 라이브러리 -->
+<!-- 외부 라이브러리 -->
 <script src="https://cdn.jsdelivr.net/npm/blueimp-md5@2.19.0/js/md5.min.js"></script>
-<!-- QR 라이브러리 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-<script src="./hacking.js"></script>
+
+<!-- 메인 스크립트 -->
+<script src="hacking.js"></script>
 </body>
 </html>
