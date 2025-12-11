@@ -384,106 +384,116 @@ function generateRandomToken() {
   out.textContent = token;
 }
 
-// ========== URL Shortener ==========
-
-// 비밀번호 체크박스 상태에 따라 input enable/disable
-(function initShortPasswordToggle() {
-  const checkbox = document.getElementById("short-use-pass");
-  const pwInput = document.getElementById("short-password");
-  if (!checkbox || !pwInput) return;
-
-  const sync = () => {
-    if (checkbox.checked) {
-      pwInput.disabled = false;
-    } else {
-      pwInput.disabled = true;
-      pwInput.value = "";
-    }
-  };
-
-  checkbox.addEventListener("change", sync);
-  sync();
-})();
-
+// ==============================
+// ⑦ URL Shortener (백엔드 연동 버전)
+// ==============================
 async function createShortLink() {
-  const urlInput = document.getElementById("short-url-input");
-  const expirySel = document.getElementById("short-expiry");
-  const usePass = document.getElementById("short-use-pass");
-  const pwInput = document.getElementById("short-password");
+  const urlEl = document.getElementById("short-url-input");
+  const expEl = document.getElementById("short-expiry");
+  const usePassEl = document.getElementById("short-use-pass");
+  const passEl = document.getElementById("short-password");
   const status = document.getElementById("short-status");
-  const output = document.getElementById("short-output");
+  const out = document.getElementById("short-output");
 
-  if (!urlInput || !expirySel || !status || !output) return;
+  if (!urlEl || !expEl || !usePassEl || !passEl || !status || !out) return;
 
-  const rawUrl = urlInput.value.trim();
-  const days = parseInt(expirySel.value, 10) || 30;
-  const usePassword = usePass && usePass.checked;
-  const password = usePassword ? pwInput.value || "" : "";
+  let raw = urlEl.value.trim();
+  if (!raw) {
+    status.textContent = "원본 URL을 입력하세요.";
+    status.className = "status err";
+    out.textContent = "";
+    return;
+  }
 
-  status.textContent = "";
+  // 스킴 없으면 https:// 붙이기
+  if (!/^https?:\/\//i.test(raw)) {
+    raw = "https://" + raw;
+  }
+
+  // URL 유효성 체크
+  try {
+    new URL(raw);
+  } catch (e) {
+    status.textContent = "유효한 URL이 아닙니다.";
+    status.className = "status err";
+    out.textContent = "";
+    return;
+  }
+
+  const expiryDays = parseInt(expEl.value, 10) || 30;
+  const usePassword = usePassEl.checked;
+  const password = usePassword ? passEl.value : "";
+
+  status.textContent = "서버에 요청 중...";
   status.className = "status";
-  output.textContent = "";
 
-  if (!rawUrl) {
-    status.textContent = "URL을 입력하세요.";
-    status.className = "status err";
-    return;
-  }
-
-  if (usePassword && !password) {
-    status.textContent = "비밀번호 보호를 사용할 경우 비밀번호를 입력하세요.";
-    status.className = "status err";
-    return;
-  }
-
-  const payload = {
-    url: rawUrl,
-    days: days,
-    password: password,
-  };
-
-  status.textContent = "생성 중...";
   try {
     const res = await fetch("/api/shorten", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        url: raw,
+        days: expiryDays,
+        password: password
+      })
     });
 
     if (!res.ok) {
-      const txt = await res.text();
-      status.textContent = `오류 (${res.status}): ${txt}`;
+      const text = await res.text().catch(() => "");
+      status.textContent = `서버 오류 (HTTP ${res.status}) ${text ? " - " + text : ""}`;
       status.className = "status err";
+      out.textContent = "";
       return;
     }
 
     const data = await res.json();
-    status.textContent = "단축 URL이 생성되었습니다.";
-    status.className = "status ok";
 
+    if (!data.ok) {
+      status.textContent = "단축 URL 생성에 실패했습니다.";
+      status.className = "status err";
+      out.textContent = "";
+      return;
+    }
+
+    // worker.js에서 내려주는 값: code, short_url, url, expires_at, password_protected
     const lines = [];
-    lines.push(`Short: ${data.short_url}`);
-    lines.push(`Original: ${data.url}`);
-    if (data.expires_at) {
-      lines.push(`Expires: ${data.expires_at}`);
-    }
-    if (data.password_protected) {
-      lines.push(`Password: ✔ 보호됨`);
-    } else {
-      lines.push(`Password: ✖ 없음`);
-    }
+    lines.push(data.short_url);
+    lines.push("");
+    lines.push("// 원본 URL: " + data.url);
+    lines.push("// 만료 시각: " + (data.expires_at || "알 수 없음"));
+    lines.push("// 비밀번호 보호: " + (data.password_protected ? "O" : "X"));
 
-    output.textContent = lines.join("\n");
+    out.textContent = lines.join("\n");
+    status.textContent = "단축 URL 생성 완료.";
+    status.className = "status ok";
   } catch (e) {
-    status.textContent = "요청 중 오류: " + e;
+    status.textContent = "요청 중 오류가 발생했습니다: " + e;
     status.className = "status err";
+    out.textContent = "";
   }
 }
 
 function copyShortLink() {
   const out = document.getElementById("short-output");
-  if (!out) return;
-  const text = out.innerText || out.textContent;
-  if (!text) return;
-  navigator.clipboard.writeText(text).catch(() => {});
+  const status = document.getElementById("short-status");
+  if (!out || !status) return;
+
+  const text = out.innerText || out.textContent || "";
+  if (!text.trim()) {
+    status.textContent = "복사할 결과가 없습니다.";
+    status.className = "status err";
+    return;
+  }
+
+  const firstLine = text.split("\n")[0]; // 첫 줄: 단축 URL만
+  navigator.clipboard
+    .writeText(firstLine)
+    .then(() => {
+      status.textContent = "단축 URL을 클립보드에 복사했습니다.";
+      status.className = "status ok";
+    })
+    .catch(() => {
+      status.textContent = "복사 중 오류가 발생했습니다.";
+      status.className = "status err";
+    });
 }
