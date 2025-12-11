@@ -1,25 +1,30 @@
-/* ========== 탭 전환 ========== */
-const toolItems = document.querySelectorAll(".tool-item");
-const sections = {
-  hash: document.getElementById("sec-hash"),
-  ip: document.getElementById("sec-ip"),
-  json: document.getElementById("sec-json"),
-  qr: document.getElementById("sec-qr"),
-  webhook: document.getElementById("sec-webhook"),
-};
+// ========================
+// 탭 전환
+// ========================
+document.addEventListener("DOMContentLoaded", () => {
+  const toolItems = document.querySelectorAll(".tool-item");
+  const sections = {
+    hash: document.getElementById("sec-hash"),
+    ip: document.getElementById("sec-ip"),
+    json: document.getElementById("sec-json"),
+    qr: document.getElementById("sec-qr"),
+    webhook: document.getElementById("sec-webhook"),
+  };
 
-toolItems.forEach((item) => {
-  item.addEventListener("click", () => {
-    toolItems.forEach((i) => i.classList.remove("active"));
-    item.classList.add("active");
-    const target = item.dataset.target;
-    Object.keys(sections).forEach((key) => {
-      sections[key].classList.toggle("active", key === target);
+  toolItems.forEach((item) => {
+    item.addEventListener("click", () => {
+      toolItems.forEach((i) => i.classList.remove("active"));
+      item.classList.add("active");
+
+      const target = item.dataset.target;
+      Object.keys(sections).forEach((key) => {
+        sections[key].classList.toggle("active", key === target);
+      });
     });
   });
 });
 
-/* ========== 공통 출력 복사 ========== */
+// 공통 출력 복사
 function copyOutput(id) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -28,7 +33,9 @@ function copyOutput(id) {
   navigator.clipboard.writeText(text).catch(() => {});
 }
 
-/* ========== Hash ========== */
+// ========================
+// Hash
+// ========================
 async function makeHash(type) {
   const input = document.getElementById("hash-input").value;
   const out = document.getElementById("hash-output");
@@ -43,17 +50,16 @@ async function makeHash(type) {
       const enc = new TextEncoder().encode(input);
       const buf = await crypto.subtle.digest("SHA-256", enc);
       const arr = Array.from(new Uint8Array(buf));
-      out.textContent = arr
-        .map((b) => b.toString(16).padStart(2, "0"))
-        .join("");
+      out.textContent = arr.map((b) => b.toString(16).padStart(2, "0")).join("");
     }
   } catch (e) {
     out.textContent = "해시 생성 중 오류: " + e;
   }
 }
 
-/* ========== Base64 ========== */
-// UTF-8 대응 인코딩/디코딩
+// ========================
+// Base64 (UTF-8 대응)
+// ========================
 function utf8ToB64(str) {
   return btoa(unescape(encodeURIComponent(str)));
 }
@@ -87,7 +93,9 @@ function decodeB64() {
   }
 }
 
-/* ========== IP Info ========== */
+// ========================
+// IP Info
+// ========================
 async function fetchIpInfo() {
   const out = document.getElementById("ip-output");
   out.textContent = "조회 중...";
@@ -114,7 +122,9 @@ async function fetchIpInfo() {
   }
 }
 
-/* ========== DNS Lookup ========== */
+// ========================
+// DNS Lookup
+// ========================
 async function lookupDNS() {
   const domain = document.getElementById("dns-domain").value.trim();
   const type = document.getElementById("dns-type").value;
@@ -136,7 +146,9 @@ async function lookupDNS() {
   }
 }
 
-/* ========== JSON Formatter ========== */
+// ========================
+// JSON Formatter
+// ========================
 function formatJSON() {
   const input = document.getElementById("json-input").value;
   const out = document.getElementById("json-output");
@@ -144,6 +156,7 @@ function formatJSON() {
   if (!input) {
     out.textContent = "";
     status.textContent = "";
+    status.className = "status";
     return;
   }
   try {
@@ -165,6 +178,7 @@ function minifyJSON() {
   if (!input) {
     out.textContent = "";
     status.textContent = "";
+    status.className = "status";
     return;
   }
   try {
@@ -179,8 +193,95 @@ function minifyJSON() {
   }
 }
 
-/* ========== URL Encode/Decode ========== */
-function encodeURL() {
+// ========================
+// URL Encode / Decode 강화 (난독화)
+// ========================
+
+// HEX Encode: "ABC" → "%41%42%43"
+function toHex(str) {
+  return Array.from(str)
+    .map((ch) => "%" + ch.charCodeAt(0).toString(16).padStart(2, "0"))
+    .join("");
+}
+
+// Unicode Escape: "A" → "\u0041"
+function toUnicodeEscape(str) {
+  return Array.from(str)
+    .map((ch) => "\\u" + ch.charCodeAt(0).toString(16).padStart(4, "0"))
+    .join("");
+}
+
+// 반복 URL Encode
+function multiEncode(str, times = 5) {
+  let out = str;
+  for (let i = 0; i < times; i++) {
+    out = encodeURIComponent(out);
+  }
+  return out;
+}
+
+// Hard Encode: Base64 → multi URL encode → HEX → 다시 URL encode
+function hardEncode(input) {
+  const b64 = utf8ToB64(input);
+  const multi = multiEncode(b64, 4);
+  const hexed = toHex(multi);
+  return encodeURIComponent(hexed);
+}
+
+// Ultra Encode: Hard Encode 결과를 전체 Unicode escape로 전환
+function ultraEncode(input) {
+  const hard = hardEncode(input);
+  return toUnicodeEscape(hard);
+}
+
+// Smart Decode: 가능한 모든 단계 자동 해제 시도
+function smartDecode(input) {
+  let data = input;
+
+  // 1) Unicode escape → 실제 문자로
+  if (data.includes("\\u")) {
+    try {
+      data = data.replace(/\\u([0-9a-fA-F]{4})/g, (_, g1) =>
+        String.fromCharCode(parseInt(g1, 16))
+      );
+    } catch {
+      // 무시
+    }
+  }
+
+  // 2) 여러 번 URL 디코딩 시도
+  for (let i = 0; i < 10; i++) {
+    try {
+      data = decodeURIComponent(data);
+    } catch {
+      break;
+    }
+  }
+
+  // 3) HEX 패턴 (%41%42%43) → 실제 문자열
+  if (/%[0-9a-fA-F]{2}/.test(data)) {
+    try {
+      data = data.replace(/%([0-9a-fA-F]{2})/g, (_, g1) =>
+        String.fromCharCode(parseInt(g1, 16))
+      );
+    } catch {
+      // 무시
+    }
+  }
+
+  // 4) Base64 → 원문
+  try {
+    // utf8 복원
+    data = b64ToUtf8(data);
+  } catch {
+    // Base64가 아닐 수도 있으니 조용히 무시
+  }
+
+  return data;
+}
+
+// UI 연결 함수들
+function encodeURL_Normal() {
   const src = document.getElementById("url-input").value;
   const out = document.getElementById("url-output");
   try {
@@ -189,17 +290,52 @@ function encodeURL() {
     out.textContent = "Encode 오류: " + e;
   }
 }
-function decodeURL() {
+
+function encodeURL_Hard() {
   const src = document.getElementById("url-input").value;
   const out = document.getElementById("url-output");
+  if (!src) {
+    out.textContent = "";
+    return;
+  }
   try {
-    out.textContent = decodeURIComponent(src);
+    out.textContent = hardEncode(src);
   } catch (e) {
-    out.textContent = "Decode 오류: " + e;
+    out.textContent = "Hard Encode 오류: " + e;
   }
 }
 
-/* ========== QR Code ========== */
+function encodeURL_Ultra() {
+  const src = document.getElementById("url-input").value;
+  const out = document.getElementById("url-output");
+  if (!src) {
+    out.textContent = "";
+    return;
+  }
+  try {
+    out.textContent = ultraEncode(src);
+  } catch (e) {
+    out.textContent = "Ultra Encode 오류: " + e;
+  }
+}
+
+function decodeURL_Smart() {
+  const src = document.getElementById("url-input").value;
+  const out = document.getElementById("url-output");
+  if (!src) {
+    out.textContent = "";
+    return;
+  }
+  try {
+    out.textContent = smartDecode(src);
+  } catch (e) {
+    out.textContent = "Smart Decode 오류: " + e;
+  }
+}
+
+// ========================
+// QR Code
+// ========================
 let qr;
 function generateQR() {
   const val = document.getElementById("qr-input").value || "";
@@ -214,6 +350,7 @@ function generateQR() {
     qr.value = val || "https://teralink.store/";
   }
 }
+
 function downloadQR() {
   const canvas = document.getElementById("qr-canvas");
   if (!canvas) return;
@@ -223,7 +360,9 @@ function downloadQR() {
   a.click();
 }
 
-/* ========== Webhook Sender (횟수 제한 제거) ========== */
+// ========================
+// Webhook Sender (횟수 제한 없음, 단 레이트리밋 고려해서 딜레이 유지)
+// ========================
 async function sendWebhookMessages() {
   const url = document.getElementById("wh-url").value.trim();
   const msg = document.getElementById("wh-message").value;
@@ -256,7 +395,7 @@ async function sendWebhookMessages() {
       if (res.ok) ok++;
       else fail++;
 
-      // 디스코드 레이트리밋 보호 차원에서 300ms 딜레이 유지
+      // 디스코드 레이트리밋 보호용
       await new Promise((r) => setTimeout(r, 300));
     } catch (e) {
       fail++;
