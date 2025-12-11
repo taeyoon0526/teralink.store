@@ -1,6 +1,4 @@
-/* =============================
-   탭 전환
-============================= */
+// ========== 탭 전환 ==========
 const toolItems = document.querySelectorAll(".tool-item");
 const sections = {
   hash: document.getElementById("sec-hash"),
@@ -8,34 +6,31 @@ const sections = {
   json: document.getElementById("sec-json"),
   qr: document.getElementById("sec-qr"),
   webhook: document.getElementById("sec-webhook"),
-  hardurl: document.getElementById("sec-hardurl"),
+  client: document.getElementById("sec-client"),
+  short: document.getElementById("sec-short"),
 };
 
-toolItems.forEach(item => {
+toolItems.forEach((item) => {
   item.addEventListener("click", () => {
-    toolItems.forEach(i => i.classList.remove("active"));
+    toolItems.forEach((i) => i.classList.remove("active"));
     item.classList.add("active");
     const target = item.dataset.target;
-    Object.keys(sections).forEach(key => {
+    Object.keys(sections).forEach((key) => {
       sections[key].classList.toggle("active", key === target);
     });
   });
 });
 
-/* =============================
-   공통: 출력 복사
-============================= */
+// ========== 공통 출력 복사 ==========
 function copyOutput(id) {
   const el = document.getElementById(id);
   if (!el) return;
-  const text = el.innerText || el.textContent || "";
+  const text = el.innerText || el.textContent;
   if (!text) return;
   navigator.clipboard.writeText(text).catch(() => {});
 }
 
-/* =============================
-   ① Hash & Base64
-============================= */
+// ========== Hash ==========
 async function makeHash(type) {
   const input = document.getElementById("hash-input").value;
   const out = document.getElementById("hash-output");
@@ -43,7 +38,6 @@ async function makeHash(type) {
     out.textContent = "입력값이 없습니다.";
     return;
   }
-
   try {
     if (type === "md5") {
       out.textContent = md5(input);
@@ -51,17 +45,18 @@ async function makeHash(type) {
       const enc = new TextEncoder().encode(input);
       const buf = await crypto.subtle.digest("SHA-256", enc);
       const arr = Array.from(new Uint8Array(buf));
-      out.textContent = arr.map(b => b.toString(16).padStart(2, "0")).join("");
+      out.textContent = arr.map((b) => b.toString(16).padStart(2, "0")).join("");
     }
   } catch (e) {
     out.textContent = "해시 생성 중 오류: " + e;
   }
 }
 
-// UTF-8 Base64 처리
+// ========== Base64 ==========
 function utf8ToB64(str) {
   return btoa(unescape(encodeURIComponent(str)));
 }
+
 function b64ToUtf8(str) {
   return decodeURIComponent(escape(atob(str)));
 }
@@ -94,47 +89,47 @@ function decodeB64() {
   }
 }
 
-/* =============================
-   ② IP & DNS
-============================= */
+// ========== IP Info ==========
 async function fetchIpInfo() {
   const out = document.getElementById("ip-output");
   out.textContent = "조회 중...";
-
   try {
     const r1 = await fetch("https://api.ipify.org?format=json");
     const ipData = await r1.json();
-
     const r2 = await fetch("https://ipapi.co/json/");
     const geoData = await r2.json();
-
-    out.textContent = JSON.stringify({
-      ip: ipData.ip,
-      country: geoData.country,
-      country_name: geoData.country_name,
-      region: geoData.region,
-      city: geoData.city,
-      org: geoData.org,
-      asn: geoData.asn,
-    }, null, 2);
+    out.textContent = JSON.stringify(
+      {
+        ip: ipData.ip,
+        country: geoData.country,
+        country_name: geoData.country_name,
+        region: geoData.region,
+        city: geoData.city,
+        org: geoData.org,
+        asn: geoData.asn,
+      },
+      null,
+      2
+    );
   } catch (e) {
     out.textContent = "IP 정보 조회 실패: " + e;
   }
 }
 
+// ========== DNS Lookup ==========
 async function lookupDNS() {
   const domain = document.getElementById("dns-domain").value.trim();
   const type = document.getElementById("dns-type").value;
   const out = document.getElementById("dns-output");
-
   if (!domain) {
     out.textContent = "도메인을 입력하세요.";
     return;
   }
   out.textContent = "조회 중...";
-
   try {
-    const url = `https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=${encodeURIComponent(type)}`;
+    const url = `https://dns.google/resolve?name=${encodeURIComponent(
+      domain
+    )}&type=${encodeURIComponent(type)}`;
     const res = await fetch(url);
     const data = await res.json();
     out.textContent = JSON.stringify(data, null, 2);
@@ -143,21 +138,16 @@ async function lookupDNS() {
   }
 }
 
-/* =============================
-   ③ JSON & URL
-============================= */
+// ========== JSON Formatter ==========
 function formatJSON() {
   const input = document.getElementById("json-input").value;
   const out = document.getElementById("json-output");
   const status = document.getElementById("json-status");
-
   if (!input) {
     out.textContent = "";
     status.textContent = "";
-    status.className = "status";
     return;
   }
-
   try {
     const obj = JSON.parse(input);
     out.textContent = JSON.stringify(obj, null, 2);
@@ -174,14 +164,11 @@ function minifyJSON() {
   const input = document.getElementById("json-input").value;
   const out = document.getElementById("json-output");
   const status = document.getElementById("json-status");
-
   if (!input) {
     out.textContent = "";
     status.textContent = "";
-    status.className = "status";
     return;
   }
-
   try {
     const obj = JSON.parse(input);
     out.textContent = JSON.stringify(obj);
@@ -194,6 +181,7 @@ function minifyJSON() {
   }
 }
 
+// ========== URL Encode/Decode ==========
 function encodeURL() {
   const src = document.getElementById("url-input").value;
   const out = document.getElementById("url-output");
@@ -214,24 +202,97 @@ function decodeURL() {
   }
 }
 
-/* =============================
-   ④ QR 코드
-============================= */
-let qrInstance = null;
+// ========== PATH 난독화 인코딩 ==========
+function obfuscatePath(path) {
+  // 1) UTF-8 → Base64
+  const b64 = btoa(unescape(encodeURIComponent(path)));
+  // 2) 문자열 뒤집기
+  const rev = b64.split("").reverse().join("");
+  // 3) 각 문자 charCode를 16진수로 변환
+  let hex = "";
+  for (let i = 0; i < rev.length; i++) {
+    hex += rev.charCodeAt(i).toString(16).padStart(2, "0");
+  }
+  // hex 문자열 → URL-safe (0-9a-f) 이므로 주소창에 그대로 사용 가능
+  return hex;
+}
+
+function deobfuscatePath(hex) {
+  if (!hex || hex.length % 2 !== 0) {
+    throw new Error("16진수 길이가 잘못되었습니다.");
+  }
+  let rev = "";
+  for (let i = 0; i < hex.length; i += 2) {
+    const part = hex.slice(i, i + 2);
+    const code = parseInt(part, 16);
+    if (Number.isNaN(code)) {
+      throw new Error("16진수 파싱 오류");
+    }
+    rev += String.fromCharCode(code);
+  }
+  const b64 = rev.split("").reverse().join("");
+  const path = decodeURIComponent(escape(atob(b64)));
+  return path;
+}
+
+function encodePathObfuscated() {
+  const input = document.getElementById("path-input").value;
+  const out = document.getElementById("path-output");
+  const status = document.getElementById("path-status");
+  if (!input) {
+    out.textContent = "";
+    status.textContent = "";
+    return;
+  }
+  try {
+    const encoded = obfuscatePath(input);
+    out.textContent = encoded;
+    status.textContent =
+      "난독화 완료. 이 16진수 문자열을 PATH 일부로 사용해도 URL-safe 입니다.";
+    status.className = "status ok";
+  } catch (e) {
+    out.textContent = "";
+    status.textContent = "난독화 중 오류: " + e.message;
+    status.className = "status err";
+  }
+}
+
+function decodePathObfuscated() {
+  const src = document.getElementById("path-output").textContent.trim() ||
+              document.getElementById("path-input").value.trim();
+  const out = document.getElementById("path-output");
+  const status = document.getElementById("path-status");
+  if (!src) {
+    status.textContent = "디코딩할 값이 없습니다.";
+    status.className = "status err";
+    return;
+  }
+  try {
+    const decoded = deobfuscatePath(src);
+    out.textContent = decoded;
+    status.textContent = "복호화 완료.";
+    status.className = "status ok";
+  } catch (e) {
+    status.textContent = "복호화 중 오류: " + e.message;
+    status.className = "status err";
+  }
+}
+
+// ========== QR Code ==========
+let qr;
 
 function generateQR() {
   const val = document.getElementById("qr-input").value || "";
   const canvas = document.getElementById("qr-canvas");
-  const target = val || "https://teralink.store/";
-
-  if (!qrInstance) {
-    qrInstance = new QRious({
+  const text = val || "https://teralink.store/";
+  if (!qr) {
+    qr = new QRious({
       element: canvas,
       size: 180,
-      value: target,
+      value: text,
     });
   } else {
-    qrInstance.value = target;
+    qr.value = text;
   }
 }
 
@@ -244,9 +305,7 @@ function downloadQR() {
   a.click();
 }
 
-/* =============================
-   ⑤ Webhook Sender (횟수 제한 없음, 300ms 딜레이)
-============================= */
+// ========== Webhook Sender (횟수 제한 제거) ==========
 async function sendWebhookMessages() {
   const url = document.getElementById("wh-url").value.trim();
   const msg = document.getElementById("wh-message").value;
@@ -267,8 +326,8 @@ async function sendWebhookMessages() {
   status.textContent = "전송 중...";
   status.className = "status";
 
-  let ok = 0, fail = 0;
-
+  let ok = 0,
+    fail = 0;
   for (let i = 0; i < count; i++) {
     try {
       const res = await fetch(url, {
@@ -279,93 +338,152 @@ async function sendWebhookMessages() {
       if (res.ok) ok++;
       else fail++;
 
-      // 디스코드 레이트리밋을 조금이라도 배려
-      await new Promise(r => setTimeout(r, 300));
+      // 레이트리밋 보호용 딜레이
+      await new Promise((r) => setTimeout(r, 300));
     } catch (e) {
       fail++;
     }
   }
-
   status.textContent = `전송 완료: 성공 ${ok} / 실패 ${fail}`;
   status.className = fail === 0 ? "status ok" : "status warn";
 }
 
-/* =============================
-   ⑥ Hard URL Encode / Decode
-   - 브라우저 주소창에서 열리는 PATH-only 난독화
-============================= */
-function hardEncodePathOnly(path) {
-  let out = "";
-  for (let i = 0; i < path.length; i++) {
-    out += "%" + path.charCodeAt(i).toString(16).padStart(2, "0");
-  }
-  return out;
+// ========== Client Tools ==========
+
+function showClientInfo() {
+  const out = document.getElementById("client-output");
+  const ua = navigator.userAgent || "unknown";
+  const lang = navigator.language || "unknown";
+  const platform = navigator.platform || "unknown";
+
+  const info = {
+    userAgent: ua,
+    language: lang,
+    platform: platform,
+  };
+
+  out.textContent = JSON.stringify(info, null, 2);
 }
 
-function hardEncode() {
-  const input = document.getElementById("hardurl-input").value.trim();
-  const out = document.getElementById("hardurl-output");
+function generateRandomToken() {
+  const lenInput = document.getElementById("token-length");
+  const out = document.getElementById("token-output");
+  let length = parseInt(lenInput.value, 10);
+  if (Number.isNaN(length) || length < 8) length = 8;
+  if (length > 128) length = 128;
+  lenInput.value = String(length);
 
-  if (!input) {
-    out.textContent = "URL을 입력하세요.";
+  const chars =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let token = "";
+  const array = new Uint32Array(length);
+  crypto.getRandomValues(array);
+  for (let i = 0; i < length; i++) {
+    token += chars[array[i] % chars.length];
+  }
+  out.textContent = token;
+}
+
+// ========== URL Shortener ==========
+
+// 비밀번호 체크박스 상태에 따라 input enable/disable
+(function initShortPasswordToggle() {
+  const checkbox = document.getElementById("short-use-pass");
+  const pwInput = document.getElementById("short-password");
+  if (!checkbox || !pwInput) return;
+
+  const sync = () => {
+    if (checkbox.checked) {
+      pwInput.disabled = false;
+    } else {
+      pwInput.disabled = true;
+      pwInput.value = "";
+    }
+  };
+
+  checkbox.addEventListener("change", sync);
+  sync();
+})();
+
+async function createShortLink() {
+  const urlInput = document.getElementById("short-url-input");
+  const expirySel = document.getElementById("short-expiry");
+  const usePass = document.getElementById("short-use-pass");
+  const pwInput = document.getElementById("short-password");
+  const status = document.getElementById("short-status");
+  const output = document.getElementById("short-output");
+
+  if (!urlInput || !expirySel || !status || !output) return;
+
+  const rawUrl = urlInput.value.trim();
+  const days = parseInt(expirySel.value, 10) || 30;
+  const usePassword = usePass && usePass.checked;
+  const password = usePassword ? pwInput.value || "" : "";
+
+  status.textContent = "";
+  status.className = "status";
+  output.textContent = "";
+
+  if (!rawUrl) {
+    status.textContent = "URL을 입력하세요.";
+    status.className = "status err";
     return;
   }
 
-  try {
-    const u = new URL(input);
-    const encodedPath = hardEncodePathOnly(u.pathname);
-    out.textContent = `${u.protocol}//${u.host}${encodedPath}`;
-  } catch (e) {
-    out.textContent = "Invalid URL";
-  }
-}
-
-function hardEncodeDouble() {
-  const input = document.getElementById("hardurl-input").value.trim();
-  const out = document.getElementById("hardurl-output");
-
-  if (!input) {
-    out.textContent = "URL을 입력하세요.";
+  if (usePassword && !password) {
+    status.textContent = "비밀번호 보호를 사용할 경우 비밀번호를 입력하세요.";
+    status.className = "status err";
     return;
   }
 
-  try {
-    const u = new URL(input);
-    const once = hardEncodePathOnly(u.pathname);
+  const payload = {
+    url: rawUrl,
+    days: days,
+    password: password,
+  };
 
-    let twice = "";
-    for (let i = 0; i < once.length; i++) {
-      twice += "%" + once.charCodeAt(i).toString(16).padStart(2, "0");
+  status.textContent = "생성 중...";
+  try {
+    const res = await fetch("/api/shorten", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const txt = await res.text();
+      status.textContent = `오류 (${res.status}): ${txt}`;
+      status.className = "status err";
+      return;
     }
 
-    out.textContent = `${u.protocol}//${u.host}${twice}`;
+    const data = await res.json();
+    status.textContent = "단축 URL이 생성되었습니다.";
+    status.className = "status ok";
+
+    const lines = [];
+    lines.push(`Short: ${data.short_url}`);
+    lines.push(`Original: ${data.url}`);
+    if (data.expires_at) {
+      lines.push(`Expires: ${data.expires_at}`);
+    }
+    if (data.password_protected) {
+      lines.push(`Password: ✔ 보호됨`);
+    } else {
+      lines.push(`Password: ✖ 없음`);
+    }
+
+    output.textContent = lines.join("\n");
   } catch (e) {
-    out.textContent = "Invalid URL";
+    status.textContent = "요청 중 오류: " + e;
+    status.className = "status err";
   }
 }
 
-function hardDecode() {
-  const input = document.getElementById("hardurl-input").value.trim();
-  const out = document.getElementById("hardurl-output");
-
-  if (!input) {
-    out.textContent = "URL을 입력하세요.";
-    return;
-  }
-
-  try {
-    const u = new URL(input);
-    // 2중 인코딩까지 고려해서 decode 두 번 시도
-    let decodedOnce = decodeURIComponent(u.pathname);
-    let decodedTwice;
-    try {
-      decodedTwice = decodeURIComponent(decodedOnce);
-    } catch {
-      decodedTwice = decodedOnce;
-    }
-
-    out.textContent = `${u.protocol}//${u.host}${decodedTwice}`;
-  } catch (e) {
-    out.textContent = "Invalid URL";
-  }
+function copyShortLink() {
+  const out = document.getElementById("short-output");
+  if (!out) return;
+  const text = out.innerText || out.textContent;
+  if (!text) return;
+  navigator.clipboard.writeText(text).catch(() => {});
 }
