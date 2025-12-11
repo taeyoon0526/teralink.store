@@ -4,1772 +4,850 @@
   <meta charset="UTF-8" />
   <title>TERALINK Hacking Lab</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg: #020617;
-      --card: #020617;
-      --accent: #22c55e;
-      --accent-soft: rgba(34,197,94,0.14);
-      --border: #1f2937;
-      --text-main: #e5e7eb;
-      --text-sub: #9ca3af;
-    }
-    * { box-sizing:border-box; }
-    body {
-      margin:0;
-      min-height:100vh;
-      font-family:"JetBrains Mono",system-ui,monospace;
-      background: radial-gradient(circle at top, #0b1120 0, #020617 55%, #000 100%);
-      color:var(--text-main);
-      display:flex;
-      justify-content:center;
-      align-items:flex-start;
-      padding:18px;
-    }
-    .shell {
-      width:100%;
-      max-width:1200px;
-      border-radius:18px;
-      border:1px solid var(--border);
-      background:linear-gradient(135deg,rgba(15,23,42,0.96),rgba(2,6,23,0.98));
-      box-shadow:0 30px 80px rgba(0,0,0,0.75);
-      overflow:hidden;
-    }
-    .topbar {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:10px 18px;
-      background:radial-gradient(circle at left top,#0f172a,#020617);
-      border-bottom:1px solid #111827;
-    }
-    .dots {
-      display:flex;
-      gap:6px;
-    }
-    .dot {
-      width:10px;
-      height:10px;
-      border-radius:999px;
-    }
-    .dot.red { background:#f97373; }
-    .dot.yellow { background:#facc15; }
-    .dot.green { background:#22c55e; }
-    .top-title {
-      font-size:13px;
-      color:var(--text-sub);
-    }
-    .pill {
-      padding:4px 10px;
-      border-radius:999px;
-      background:rgba(34,197,94,0.1);
-      border:1px solid rgba(34,197,94,0.4);
-      font-size:11px;
-      color:#bbf7d0;
-    }
-
-    .layout {
-      display:flex;
-      flex-wrap:wrap;
-    }
-
-    .sidebar {
-      width:260px;
-      min-height:420px;
-      border-right:1px solid var(--border);
-      padding:14px 12px;
-    }
-    .main {
-      flex:1;
-      min-width:0;
-      padding:16px 16px 18px;
-    }
-
-    .nav-title {
-      font-size:11px;
-      text-transform:uppercase;
-      letter-spacing:0.1em;
-      color:var(--text-sub);
-      margin:10px 0 6px;
-    }
-    .tool-list {
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      margin-bottom:6px;
-    }
-    .tool-item {
-      border-radius:10px;
-      padding:7px 9px;
-      font-size:12px;
-      color:var(--text-sub);
-      cursor:pointer;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      border:1px solid transparent;
-      transition:.15s;
-    }
-    .tool-item:hover {
-      background:rgba(15,23,42,0.9);
-      border-color:#1f2937;
-      color:var(--text-main);
-    }
-    .tool-item.active {
-      background:var(--accent-soft);
-      border-color:var(--accent);
-      color:#bbf7d0;
-    }
-    .badge {
-      font-size:10px;
-      padding:1px 6px;
-      border-radius:999px;
-      border:1px solid rgba(148,163,184,0.4);
-      color:#9ca3af;
-    }
-
-    .section {
-      display:none;
-    }
-    .section.active {
-      display:block;
-      animation:fadeIn .2s ease-out;
-    }
-    @keyframes fadeIn {
-      from { opacity:0; transform:translateY(4px); }
-      to { opacity:1; transform:translateY(0); }
-    }
-
-    h2 {
-      margin:0 0 6px;
-      font-size:18px;
-    }
-    .subtitle {
-      margin-bottom:14px;
-      font-size:12px;
-      color:var(--text-sub);
-    }
-    .grid-2 {
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:12px;
-    }
-    .grid-3 {
-      display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
-      gap:12px;
-    }
-    @media (max-width:900px) {
-      .layout { flex-direction:column; }
-      .sidebar { width:100%; border-right:none; border-bottom:1px solid var(--border); }
-    }
-    @media (max-width:780px) {
-      .grid-2 { grid-template-columns:1fr; }
-      .grid-3 { grid-template-columns:1fr; }
-      .sidebar { min-height:0; }
-    }
-
-    .card {
-      background:var(--card);
-      border-radius:14px;
-      border:1px solid var(--border);
-      padding:12px;
-    }
-    .card h3 {
-      margin-top:0;
-      margin-bottom:6px;
-      font-size:14px;
-    }
-    label {
-      font-size:11px;
-      color:var(--text-sub);
-      display:block;
-      margin-bottom:4px;
-    }
-    textarea, input, select {
-      width:100%;
-      border-radius:10px;
-      border:1px solid #1f2937;
-      background:#020617;
-      color:var(--text-main);
-      padding:8px 9px;
-      font-family:"JetBrains Mono",monospace;
-      font-size:12px;
-      resize:vertical;
-      min-height:40px;
-      outline:none;
-      transition:border-color .15s, box-shadow .15s;
-    }
-    textarea:focus, input:focus, select:focus {
-      border-color:var(--accent);
-      box-shadow:0 0 0 1px rgba(34,197,94,0.5);
-    }
-    textarea.small { min-height:70px; }
-    textarea.large { min-height:120px; }
-
-    .row {
-      display:flex;
-      gap:8px;
-      margin-top:6px;
-      flex-wrap:wrap;
-    }
-    button {
-      border:none;
-      border-radius:999px;
-      padding:7px 14px;
-      font-size:11px;
-      font-family:inherit;
-      cursor:pointer;
-      background:var(--accent-soft);
-      color:#bbf7d0;
-      border:1px solid rgba(34,197,94,0.6);
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      transition:.15s;
-    }
-    button:hover {
-      background:rgba(34,197,94,0.22);
-    }
-    button.secondary {
-      background:rgba(15,23,42,0.9);
-      border-color:#374151;
-      color:#e5e7eb;
-    }
-    .output {
-      background:#020617;
-      border-radius:10px;
-      border:1px dashed #374151;
-      padding:8px;
-      font-size:12px;
-      min-height:40px;
-      white-space:pre-wrap;
-      word-break:break-all;
-    }
-    .mini-label {
-      font-size:10px;
-      color:var(--text-sub);
-      margin-top:4px;
-    }
-    .status {
-      margin-top:6px;
-      font-size:11px;
-      color:var(--text-sub);
-    }
-    .status.ok { color:#4ade80; }
-    .status.err { color:#f97373; }
-    .status.warn { color:#facc15; }
-
-    #qr-canvas {
-      width:180px;
-      height:180px;
-      border-radius:10px;
-      background:#020617;
-      display:block;
-      margin-top:6px;
-      border:1px solid #1f2937;
-    }
-
-    .tag {
-      display:inline-block;
-      font-size:10px;
-      padding:2px 6px;
-      border-radius:999px;
-      border:1px solid #4b5563;
-      color:#9ca3af;
-      margin-left:4px;
-    }
-    .flex-between { display:flex; justify-content:space-between; align-items:center; }
-  </style>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="hacking.css" />
 </head>
 <body>
-<div class="shell">
-  <div class="topbar">
-    <div style="display:flex;align-items:center;gap:10px;">
-      <div class="dots">
-        <span class="dot red"></span>
-        <span class="dot yellow"></span>
-        <span class="dot green"></span>
+  <div class="shell">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="dots">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+        <div class="top-title">teralink.store / hacking · toolkit</div>
       </div>
-      <div class="top-title">teralink.store / hacking · toolkit</div>
+      <div class="pill">KR-only · VPN-aware · readonly tools</div>
     </div>
-    <div class="pill">KR-only · VPN-aware · readonly tools</div>
-  </div>
 
-  <div class="layout">
-    <!-- 사이드바 -->
-    <aside class="sidebar">
-      <div class="nav-title">BASIC TOOLS</div>
-      <div class="tool-list">
-        <div class="tool-item active" data-target="hash">
-          <span>① Hash / Base64</span>
-          <span class="badge">crypto</span>
-        </div>
-        <div class="tool-item" data-target="ip">
-          <span>② IP · DNS</span>
-          <span class="badge">network</span>
-        </div>
-        <div class="tool-item" data-target="json">
-          <span>③ JSON / URL</span>
-          <span class="badge">dev</span>
-        </div>
-        <div class="tool-item" data-target="qr">
-          <span>④ QR 생성기</span>
-          <span class="badge">utility</span>
-        </div>
-        <div class="tool-item" data-target="webhook">
-          <span>⑤ Webhook Sender</span>
-          <span class="badge">discord</span>
-        </div>
-      </div>
-
-      <div class="nav-title">ADVANCED</div>
-      <div class="tool-list">
-        <div class="tool-item" data-target="urlscan">
-          <span>⑥ URL / Header Scan</span>
-          <span class="badge">http</span>
-        </div>
-        <div class="tool-item" data-target="crypto">
-          <span>⑦ Crypto Lab</span>
-          <span class="badge">AES · JWT · TOTP</span>
-        </div>
-        <div class="tool-item" data-target="speed">
-          <span>⑧ HTTP Speedtest</span>
-          <span class="badge">latency</span>
-        </div>
-        <div class="tool-item" data-target="osint">
-          <span>⑨ OSINT (Domain/User)</span>
-          <span class="badge">intel</span>
-        </div>
-        <div class="tool-item" data-target="color">
-          <span>⑩ Color & Base58/62</span>
-          <span class="badge">dev</span>
-        </div>
-        <div class="tool-item" data-target="webhook-pro">
-          <span>⑪ Webhook Pro</span>
-          <span class="badge">embed · schedule</span>
-        </div>
-      </div>
-
-      <p style="font-size:11px;color:var(--text-sub);line-height:1.5;margin-top:10px;">
-        모든 기능은 <strong>클라이언트 사이드</strong>에서만 동작합니다.<br/>
-        일부 외부 API는 CORS 정책에 따라 동작이 제한될 수 있습니다.
-      </p>
-    </aside>
-
-    <!-- 메인 -->
-    <main class="main">
-      <!-- ① 해시 / Base64 -->
-      <section id="sec-hash" class="section active">
-        <h2>① Hash &amp; Base64</h2>
-        <p class="subtitle">텍스트를 MD5 / SHA-256 해시로 변환하거나 Base64 인코딩·디코딩합니다.</p>
-
-        <div class="card">
-          <h3>입력 텍스트</h3>
-          <textarea id="hash-input" class="large" placeholder="여기에 텍스트를 입력하세요."></textarea>
-          <div class="row">
-            <button onclick="makeHash('md5')">MD5 생성</button>
-            <button onclick="makeHash('sha256')">SHA-256 생성</button>
-            <button class="secondary" onclick="copyOutput('hash-output')">해시 결과 복사</button>
+    <div class="layout">
+      <!-- 사이드바 -->
+      <aside class="sidebar">
+        <div class="nav-title">TOOLS</div>
+        <div class="tool-list">
+          <div class="tool-item active" data-target="hash">
+            <span>① Hash / Base64</span>
+            <span class="badge">crypto</span>
           </div>
-          <div class="mini-label">※ SHA-256은 Web Crypto API 사용, MD5는 JS 라이브러리 사용.</div>
-          <div id="hash-output" class="output" style="margin-top:8px;"></div>
+          <div class="tool-item" data-target="ip">
+            <span>② IP · DNS</span>
+            <span class="badge">network</span>
+          </div>
+          <div class="tool-item" data-target="json">
+            <span>③ JSON / URL</span>
+            <span class="badge">dev</span>
+          </div>
+          <div class="tool-item" data-target="qr">
+            <span>④ QR 생성기</span>
+            <span class="badge">utility</span>
+          </div>
+          <div class="tool-item" data-target="webhook">
+            <span>⑤ Webhook Sender</span>
+            <span class="badge">discord</span>
+          </div>
         </div>
+        <div class="nav-title">INFO</div>
+        <p style="font-size:11px;color:var(--text-sub);line-height:1.5;">
+          이 페이지는 <strong>클라이언트 사이드</strong>에서만 동작합니다.<br />
+          (IP/DNS 조회는 공개 API 사용)
+        </p>
+      </aside>
 
-        <div class="grid-2" style="margin-top:12px;">
+      <!-- 메인 -->
+      <main class="main">
+        <!-- ① 해시 / Base64 -->
+        <section id="sec-hash" class="section active">
+          <h2>① Hash &amp; Base64</h2>
+          <p class="subtitle">
+            텍스트를 MD5 / SHA-256 해시로 변환하거나 Base64 인코딩·디코딩합니다.
+          </p>
+
           <div class="card">
-            <h3>Base64 인코딩</h3>
-            <textarea id="b64-plain" class="small" placeholder="일반 텍스트"></textarea>
+            <h3>입력 텍스트</h3>
+            <textarea
+              id="hash-input"
+              class="large"
+              placeholder="여기에 텍스트를 입력하세요."
+            ></textarea>
             <div class="row">
-              <button onclick="encodeB64()">Base64로 인코딩</button>
-              <button class="secondary" onclick="copyOutput('b64-encoded')">복사</button>
+              <button onclick="makeHash('md5')">MD5 생성</button>
+              <button onclick="makeHash('sha256')">SHA-256 생성</button>
+              <button class="secondary" onclick="copyOutput('hash-output')">
+                해시 결과 복사
+              </button>
             </div>
-            <div id="b64-encoded" class="output" style="margin-top:6px;"></div>
-          </div>
-          <div class="card">
-            <h3>Base64 디코딩</h3>
-            <textarea id="b64-input" class="small" placeholder="Base64 문자열"></textarea>
-            <div class="row">
-              <button onclick="decodeB64()">일반 텍스트로 디코딩</button>
-              <button class="secondary" onclick="copyOutput('b64-decoded')">복사</button>
-            </div>
-            <div id="b64-decoded" class="output" style="margin-top:6px;"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ② IP / DNS -->
-      <section id="sec-ip" class="section">
-        <h2>② IP &amp; DNS</h2>
-        <p class="subtitle">현재 접속 IP 정보와 간단한 DNS 조회 도구입니다.</p>
-
-        <div class="grid-2">
-          <div class="card">
-            <h3>내 IP 정보</h3>
-            <div class="row">
-              <button onclick="fetchIpInfo()">IP 정보 조회</button>
-            </div>
-            <div id="ip-output" class="output" style="margin-top:6px;"></div>
-            <div class="mini-label">※ ipify + ipapi 등을 사용합니다. 응답 속도는 API 상황에 따라 달라질 수 있습니다.</div>
-          </div>
-
-          <div class="card">
-            <h3>DNS Lookup</h3>
-            <label for="dns-domain">도메인</label>
-            <input id="dns-domain" placeholder="예: example.com" />
-            <label for="dns-type">레코드 타입</label>
-            <select id="dns-type">
-              <option value="A">A</option>
-              <option value="AAAA">AAAA</option>
-              <option value="MX">MX</option>
-              <option value="TXT">TXT</option>
-              <option value="CNAME">CNAME</option>
-            </select>
-            <div class="row" style="margin-top:8px;">
-              <button onclick="lookupDNS()">조회</button>
-              <button class="secondary" onclick="copyOutput('dns-output')">결과 복사</button>
-            </div>
-            <div id="dns-output" class="output" style="margin-top:6px;"></div>
-            <div class="mini-label">※ Google DNS(DoH) API 사용: dns.google/resolve</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ③ JSON / URL -->
-      <section id="sec-json" class="section">
-        <h2>③ JSON Formatter &amp; URL 인코딩</h2>
-        <p class="subtitle">JSON을 포매팅하고, URL 인코딩/디코딩을 수행합니다.</p>
-
-        <div class="grid-2">
-          <div class="card">
-            <h3>JSON Formatter</h3>
-            <textarea id="json-input" class="large" placeholder='{"example": true, "value": 123}'></textarea>
-            <div class="row">
-              <button onclick="formatJSON()">포매팅</button>
-              <button class="secondary" onclick="minifyJSON()">압축(Minify)</button>
-              <button class="secondary" onclick="copyOutput('json-output')">결과 복사</button>
-            </div>
-            <div id="json-status" class="status"></div>
-            <div id="json-output" class="output" style="margin-top:6px;"></div>
-          </div>
-
-          <div class="card">
-            <h3>URL Encode / Decode</h3>
-            <label>원본 문자열</label>
-            <textarea id="url-input" class="small"></textarea>
-            <div class="row">
-              <button onclick="encodeURL()">Encode</button>
-              <button onclick="decodeURL()">Decode</button>
-              <button class="secondary" onclick="copyOutput('url-output')">결과 복사</button>
-            </div>
-            <div id="url-output" class="output" style="margin-top:6px;"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ④ QR 코드 -->
-      <section id="sec-qr" class="section">
-        <h2>④ QR 코드 생성기</h2>
-        <p class="subtitle">텍스트나 URL을 QR 코드로 변환합니다.</p>
-
-        <div class="card">
-          <h3>QR 내용</h3>
-          <textarea id="qr-input" class="small" placeholder="https://teralink.store/"></textarea>
-          <div class="row">
-            <button onclick="generateQR()">QR 생성</button>
-            <button class="secondary" onclick="downloadQR()">PNG로 저장</button>
-          </div>
-          <canvas id="qr-canvas"></canvas>
-        </div>
-      </section>
-
-      <!-- ⑤ Webhook Sender -->
-      <section id="sec-webhook" class="section">
-        <h2>⑤ Discord Webhook Sender</h2>
-        <p class="subtitle">테스트용으로 간단한 웹훅 메시지를 전송합니다. (악용 금지)</p>
-
-        <div class="card">
-          <label>Webhook URL</label>
-          <input id="wh-url" placeholder="https://discord.com/api/webhooks/..." />
-
-          <label style="margin-top:8px;">전송할 메시지</label>
-          <textarea id="wh-message" class="small" placeholder="테스트 메시지"></textarea>
-
-          <label style="margin-top:8px;">전송 횟수</label>
-          <input id="wh-count" type="number" min="1" value="1" />
-
-          <div class="row" style="margin-top:10px;">
-            <button onclick="sendWebhookMessages()">전송</button>
-          </div>
-          <div id="wh-status" class="status"></div>
-        </div>
-      </section>
-
-      <!-- ⑥ URL / Header Scanner -->
-      <section id="sec-urlscan" class="section">
-        <h2>⑥ URL Scanner &amp; Header 검사</h2>
-        <p class="subtitle">대상 URL의 메타 태그 / OG 정보와 HTTP 헤더(보안 헤더 포함)를 확인합니다.</p>
-
-        <div class="grid-2">
-          <div class="card">
-            <h3>URL 메타 / OG 스캐너</h3>
-            <label>대상 URL</label>
-            <input id="meta-url" placeholder="https://example.com" />
-            <div class="row">
-              <button onclick="scanMeta()">메타/OG 스캔</button>
-              <button class="secondary" onclick="copyOutput('meta-output')">결과 복사</button>
-            </div>
-            <div id="meta-output" class="output" style="margin-top:6px;"></div>
-            <div class="mini-label">※ 일부 사이트는 CORS 정책으로 인해 내용을 읽지 못할 수 있습니다.</div>
-          </div>
-
-          <div class="card">
-            <h3>HTTP Header / 보안 헤더</h3>
-            <label>대상 URL</label>
-            <input id="header-url" placeholder="https://example.com" />
-            <div class="row">
-              <button onclick="scanHeaders()">헤더 검사</button>
-              <button class="secondary" onclick="copyOutput('header-output')">결과 복사</button>
-            </div>
-            <div id="header-output" class="output" style="margin-top:6px;"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ⑦ Crypto Lab: AES, JWT Brute, TOTP, Pwned -->
-      <section id="sec-crypto" class="section">
-        <h2>⑦ Crypto Lab</h2>
-        <p class="subtitle">AES-256-GCM 텍스트 암복호화, JWT HS256 브루트(학습용), TOTP 생성, Pwned Password 체크.</p>
-
-        <div class="grid-2">
-          <div class="card">
-            <h3>AES-256-GCM Text Encryption</h3>
-            <label>평문 텍스트</label>
-            <textarea id="aes-plain" class="small" placeholder="여기에 암호화할 텍스트를 입력"></textarea>
-            <label style="margin-top:6px;">비밀번호 (키)</label>
-            <input id="aes-password" type="password" />
-            <div class="row" style="margin-top:8px;">
-              <button onclick="aesEncrypt()">암호화</button>
-              <button onclick="aesDecrypt()">복호화</button>
-              <button class="secondary" onclick="copyOutput('aes-output')">결과 복사</button>
-            </div>
-            <div class="mini-label">출력 형식: base64(salt) · base64(iv) · base64(ciphertext)를 `:`로 연결.</div>
-            <div id="aes-output" class="output" style="margin-top:6px;"></div>
-          </div>
-
-          <div class="card">
-            <h3>JWT HS256 Brute (Toy)</h3>
-            <label>JWT 토큰</label>
-            <textarea id="jwt-token" class="small" placeholder="헤더.페이로드.시그니처"></textarea>
-            <label style="margin-top:6px;">시크릿 후보 리스트 (줄마다 하나)</label>
-            <textarea id="jwt-wordlist" class="small" placeholder="secret123&#10;admin&#10;password&#10;..."></textarea>
-            <div class="row" style="margin-top:8px;">
-              <button onclick="jwtBruteForce()">브루트 시도</button>
-            </div>
-            <div id="jwt-output" class="output" style="margin-top:6px;"></div>
-            <div class="mini-label">※ 교육용 기능입니다. 실제 공격 목적 사용 금지.</div>
-          </div>
-        </div>
-
-        <div class="grid-2" style="margin-top:12px;">
-          <div class="card">
-            <div class="flex-between">
-              <h3>TOTP (Google Auth 스타일)</h3>
-              <span class="tag" id="totp-remaining">– s</span>
-            </div>
-            <label>Secret (Base32)</label>
-            <input id="totp-secret" placeholder="JBSWY3DPEHPK3PXP ..." />
-            <label style="margin-top:6px;">자릿수 / 주기(초)</label>
-            <div class="row">
-              <input id="totp-digits" type="number" min="6" max="8" value="6" style="max-width:80px;" />
-              <input id="totp-period" type="number" min="15" max="60" value="30" style="max-width:80px;" />
-            </div>
-            <div class="row" style="margin-top:8px;">
-              <button onclick="startTOTP()">시작</button>
-              <button class="secondary" onclick="stopTOTP()">정지</button>
-            </div>
-            <div id="totp-code" class="output" style="margin-top:6px;font-size:20px;text-align:center;"></div>
-          </div>
-
-          <div class="card">
-            <h3>Pwned Password 체크</h3>
-            <label>비밀번호</label>
-            <input id="pwned-pass" type="password" />
-            <div class="row" style="margin-top:8px;">
-              <button onclick="checkPwned()">HIBP 조회</button>
-            </div>
-            <div id="pwned-output" class="output" style="margin-top:6px;"></div>
             <div class="mini-label">
-              HaveIBeenPwned <code>/range</code> API(k-익명 SHA-1 prefix) 사용.<br/>
-              CORS 정책에 따라 브라우저에서 막힐 수 있습니다.
+              ※ SHA-256은 Web Crypto API 사용, MD5는 JS 라이브러리 사용.
             </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ⑧ HTTP Speedtest -->
-      <section id="sec-speed" class="section">
-        <h2>⑧ HTTP Speedtest</h2>
-        <p class="subtitle">teralink.store에 대한 다중 HTTP 요청 기반 지연 시간(대략적인 속도)을 측정합니다.</p>
-
-        <div class="card">
-          <label>테스트 대상 URL</label>
-          <input id="speed-url" value="https://teralink.store/" />
-          <label style="margin-top:6px;">요청 횟수</label>
-          <input id="speed-count" type="number" min="1" max="20" value="5" style="max-width:120px;" />
-          <div class="row" style="margin-top:8px;">
-            <button onclick="runSpeedTest()">Speedtest 실행</button>
-            <button class="secondary" onclick="copyOutput('speed-output')">결과 복사</button>
-          </div>
-          <div id="speed-output" class="output" style="margin-top:6px;"></div>
-          <div class="mini-label">※ 실제 ISP 속도 측정이 아닌, HTTP 왕복 시간 기반 간이 테스트입니다.</div>
-        </div>
-      </section>
-
-      <!-- ⑨ OSINT -->
-      <section id="sec-osint" class="section">
-        <h2>⑨ OSINT · Domain / Username</h2>
-        <p class="subtitle">도메인 정보(OSINT)와 유저네임 기반 프로필 링크를 빠르게 확인합니다.</p>
-
-        <div class="grid-2">
-          <div class="card">
-            <h3>Domain OSINT / Risk 힌트</h3>
-            <label>도메인</label>
-            <input id="osint-domain" placeholder="example.com" />
-            <div class="row" style="margin-top:8px;">
-              <button onclick="domainOSINT()">조회</button>
-              <button class="secondary" onclick="copyOutput('osint-domain-output')">결과 복사</button>
-            </div>
-            <div id="osint-domain-output" class="output" style="margin-top:6px;"></div>
-            <div class="mini-label">
-              Google DoH + ipapi를 이용해 A 레코드 / 국가 / ASN / 호스팅 사업자 등을 표시합니다.<br/>
-              DC/VPS 사업자가 많으면 호스팅/프록시일 가능성이 높습니다.
-            </div>
+            <div id="hash-output" class="output" style="margin-top:8px;"></div>
           </div>
 
-          <div class="card">
-            <h3>Username OSINT Helper</h3>
-            <label>Username</label>
-            <input id="osint-username" placeholder="taeyoon_0526" />
-            <div class="row" style="margin-top:8px;">
-              <button onclick="usernameOSINT()">링크 생성</button>
-              <button class="secondary" onclick="copyOutput('osint-user-output')">결과 복사</button>
-            </div>
-            <div id="osint-user-output" class="output" style="margin-top:6px;"></div>
-            <div class="mini-label">
-              GitHub / Twitter(X) / Reddit / Instagram / YouTube 등 주요 프로필 링크를 한 번에 생성합니다.<br/>
-              CORS 때문에 실제 존재 여부는 체크하지 않고, URL만 제공합니다.
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ⑩ Color & Base58/62 -->
-      <section id="sec-color" class="section">
-        <h2>⑩ Color · Base58 / Base62</h2>
-        <p class="subtitle">색상 변환과 Base58/Base62 인코딩/디코딩 도구입니다.</p>
-
-        <div class="grid-2">
-          <div class="card">
-            <h3>Color Converter</h3>
-            <div class="row">
-              <div style="flex:1;">
-                <label>HEX (#ffffff)</label>
-                <input id="color-hex" placeholder="#22c55e" />
+          <div class="grid-2" style="margin-top:12px;">
+            <div class="card">
+              <h3>Base64 인코딩</h3>
+              <textarea
+                id="b64-plain"
+                class="small"
+                placeholder="일반 텍스트"
+              ></textarea>
+              <div class="row">
+                <button onclick="encodeB64()">Base64로 인코딩</button>
+                <button
+                  class="secondary"
+                  onclick="copyOutput('b64-encoded')"
+                >
+                  복사
+                </button>
               </div>
-              <div style="flex:1;">
-                <label>RGB (r,g,b)</label>
-                <input id="color-rgb" placeholder="34,197,94" />
+              <div id="b64-encoded" class="output" style="margin-top:6px;"></div>
+            </div>
+            <div class="card">
+              <h3>Base64 디코딩</h3>
+              <textarea
+                id="b64-input"
+                class="small"
+                placeholder="Base64 문자열"
+              ></textarea>
+              <div class="row">
+                <button onclick="decodeB64()">일반 텍스트로 디코딩</button>
+                <button
+                  class="secondary"
+                  onclick="copyOutput('b64-decoded')"
+                >
+                  복사
+                </button>
+              </div>
+              <div id="b64-decoded" class="output" style="margin-top:6px;"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ② IP / DNS -->
+        <section id="sec-ip" class="section">
+          <h2>② IP &amp; DNS</h2>
+          <p class="subtitle">
+            현재 접속 IP 정보와 간단한 DNS 조회 도구입니다.
+          </p>
+
+          <div class="grid-2">
+            <div class="card">
+              <h3>내 IP 정보</h3>
+              <div class="row">
+                <button onclick="fetchIpInfo()">IP 정보 조회</button>
+              </div>
+              <div id="ip-output" class="output" style="margin-top:6px;"></div>
+              <div class="mini-label">
+                ※ ipify + ipapi 등을 사용합니다. 응답 속도는 API 상황에 따라
+                달라질 수 있습니다.
               </div>
             </div>
-            <label style="margin-top:6px;">HSL (h,s%,l%)</label>
-            <input id="color-hsl" placeholder="147,64%,45%" />
-            <div class="row" style="margin-top:8px;">
-              <button onclick="convertFromHex()">HEX → RGB/HSL</button>
-              <button onclick="convertFromRGB()">RGB → HEX/HSL</button>
-              <button onclick="convertFromHSL()">HSL → HEX/RGB</button>
-            </div>
-            <div class="mini-label">
-              Tailwind 색상 튜닝, UI 테마 조정 등에 활용 가능.
-            </div>
-          </div>
 
-          <div class="card">
-            <h3>Base58 / Base62 인코딩</h3>
-            <label>원본 텍스트</label>
-            <textarea id="b5862-input" class="small" placeholder="encode/decode 대상 문자열"></textarea>
-            <div class="row" style="margin-top:8px;">
-              <button onclick="encodeBase58()">Base58 Encode</button>
-              <button onclick="decodeBase58()">Base58 Decode</button>
-            </div>
-            <div class="row" style="margin-top:6px;">
-              <button onclick="encodeBase62()">Base62 Encode</button>
-              <button onclick="decodeBase62()">Base62 Decode</button>
-            </div>
-            <div class="row" style="margin-top:6px;">
-              <button class="secondary" onclick="copyOutput('b5862-output')">결과 복사</button>
-            </div>
-            <div id="b5862-output" class="output" style="margin-top:6px;"></div>
-            <div class="mini-label">
-              Base58 알파벳: Bitcoin 스타일(0,O,I,l 제거).<br/>
-              긴 텍스트는 속도가 느려질 수 있습니다.
+            <div class="card">
+              <h3>DNS Lookup</h3>
+              <label for="dns-domain">도메인</label>
+              <input id="dns-domain" placeholder="예: example.com" />
+              <label for="dns-type">레코드 타입</label>
+              <select id="dns-type">
+                <option value="A">A</option>
+                <option value="AAAA">AAAA</option>
+                <option value="MX">MX</option>
+                <option value="TXT">TXT</option>
+                <option value="CNAME">CNAME</option>
+              </select>
+              <div class="row" style="margin-top:8px;">
+                <button onclick="lookupDNS()">조회</button>
+                <button class="secondary" onclick="copyOutput('dns-output')">
+                  결과 복사
+                </button>
+              </div>
+              <div id="dns-output" class="output" style="margin-top:6px;"></div>
+              <div class="mini-label">
+                ※ Google DNS(DoH) API 사용: dns.google/resolve
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- ⑪ Webhook Pro -->
-      <section id="sec-webhook-pro" class="section">
-        <h2>⑪ Webhook Pro · Embed &amp; Scheduler</h2>
-        <p class="subtitle">Embed JSON 빌더와 다중 Webhook 전송 / 스케줄링 도구입니다.</p>
+        <!-- ③ JSON / URL -->
+        <section id="sec-json" class="section">
+          <h2>③ JSON Formatter &amp; URL 인코딩</h2>
+          <p class="subtitle">
+            JSON을 포매팅하고, URL 인코딩/디코딩을 수행합니다.
+          </p>
 
-        <div class="grid-2">
-          <div class="card">
-            <h3>Embed Builder</h3>
-            <label>Webhook URL 목록 (줄마다 하나)</label>
-            <textarea id="wp-urls" class="small" placeholder="https://discord.com/api/webhooks/..."></textarea>
-
-            <label style="margin-top:6px;">Embed Title</label>
-            <input id="wp-title" placeholder="알림 제목" />
-
-            <label style="margin-top:6px;">Embed Description</label>
-            <textarea id="wp-desc" class="small" placeholder="여기에 설명 텍스트"></textarea>
-
-            <label style="margin-top:6px;">Color (HEX, 예: #ff0000)</label>
-            <input id="wp-color" placeholder="#22c55e" />
-
-            <label style="margin-top:6px;">Footer Text (선택)</label>
-            <input id="wp-footer" placeholder="footer text" />
-
-            <div class="row" style="margin-top:8px;">
-              <button onclick="buildEmbedJSON()">Embed JSON 미리보기</button>
-              <button class="secondary" onclick="copyOutput('wp-json')">JSON 복사</button>
+          <div class="grid-2">
+            <div class="card">
+              <h3>JSON Formatter</h3>
+              <textarea
+                id="json-input"
+                class="large"
+                placeholder='{"example": true, "value": 123}'
+              ></textarea>
+              <div class="row">
+                <button onclick="formatJSON()">포매팅</button>
+                <button class="secondary" onclick="minifyJSON()">
+                  압축(Minify)
+                </button>
+                <button class="secondary" onclick="copyOutput('json-output')">
+                  결과 복사
+                </button>
+              </div>
+              <div id="json-status" class="status"></div>
+              <div
+                id="json-output"
+                class="output"
+                style="margin-top:6px;"
+              ></div>
             </div>
-            <div id="wp-json" class="output" style="margin-top:6px;"></div>
+
+            <div class="card">
+              <h3>URL Encode / Decode</h3>
+              <label>원본 문자열</label>
+              <textarea id="url-input" class="small"></textarea>
+              <div class="row">
+                <button onclick="encodeURL()">Encode</button>
+                <button onclick="decodeURL()">Decode</button>
+                <button class="secondary" onclick="copyOutput('url-output')">
+                  결과 복사
+                </button>
+              </div>
+              <div id="url-output" class="output" style="margin-top:6px;"></div>
+            </div>
           </div>
+        </section>
+
+        <!-- ④ QR 코드 -->
+        <section id="sec-qr" class="section">
+          <h2>④ QR 코드 생성기</h2>
+          <p class="subtitle">텍스트나 URL을 QR 코드로 변환합니다.</p>
 
           <div class="card">
-            <h3>멀티 Webhook 전송 · 스케줄러</h3>
-            <label>즉시 전송 옵션</label>
+            <h3>QR 내용</h3>
+            <textarea
+              id="qr-input"
+              class="small"
+              placeholder="https://teralink.store/"
+            ></textarea>
             <div class="row">
-              <button onclick="sendEmbedOnce()">한 번 전송</button>
+              <button onclick="generateQR()">QR 생성</button>
+              <button class="secondary" onclick="downloadQR()">
+                PNG로 저장
+              </button>
             </div>
-
-            <label style="margin-top:10px;">주기적 전송 (Scheduler)</label>
-            <div class="row">
-              <input id="wp-interval" type="number" min="5" value="30" style="max-width:120px;" />
-              <span class="mini-label" style="margin-top:6px;">초 단위 인터벌</span>
-            </div>
-            <div class="row" style="margin-top:8px;">
-              <button onclick="startWebhookSchedule()">스케줄 시작</button>
-              <button class="secondary" onclick="stopWebhookSchedule()">스케줄 정지</button>
-            </div>
-            <div id="wp-status" class="status" style="margin-top:8px;"></div>
+            <canvas id="qr-canvas"></canvas>
           </div>
-        </div>
-      </section>
-    </main>
+        </section>
+
+        <!-- ⑤ Webhook Sender -->
+        <section id="sec-webhook" class="section">
+          <h2>⑤ Discord Webhook Sender</h2>
+          <p class="subtitle">
+            테스트용으로 간단한 웹훅 메시지를 전송합니다. (악용 금지)
+          </p>
+
+          <div class="card">
+            <label>Webhook URL</label>
+            <input
+              id="wh-url"
+              placeholder="https://discord.com/api/webhooks/..."
+            />
+
+            <label style="margin-top:8px;">전송할 메시지</label>
+            <textarea
+              id="wh-message"
+              class="small"
+              placeholder="테스트 메시지"
+            ></textarea>
+
+            <label style="margin-top:8px;">전송 횟수</label>
+            <input id="wh-count" type="number" min="1" value="1" />
+
+            <div class="row" style="margin-top:10px;">
+              <button onclick="sendWebhookMessages()">전송</button>
+            </div>
+            <div id="wh-status" class="status"></div>
+          </div>
+        </section>
+      </main>
+    </div>
   </div>
-</div>
 
-<!-- MD5 라이브러리 -->
-<script src="https://cdn.jsdelivr.net/npm/blueimp-md5@2.19.0/js/md5.min.js"></script>
-<!-- QR 라이브러리 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <!-- 외부 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/blueimp-md5@2.19.0/js/md5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <!-- 메인 스크립트 -->
+  <script src="hacking.js"></script>
+</body>
+</html><!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>TERALINK Hacking Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="hacking.css" />
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="dots">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+        <div class="top-title">teralink.store / hacking · toolkit</div>
+      </div>
+      <div class="pill">KR-only · VPN-aware · readonly tools</div>
+    </div>
 
-<script>
-/* ========== 탭 전환 ========== */
-const toolItems = document.querySelectorAll(".tool-item");
-const sections = {
-  hash: document.getElementById("sec-hash"),
-  ip: document.getElementById("sec-ip"),
-  json: document.getElementById("sec-json"),
-  qr: document.getElementById("sec-qr"),
-  webhook: document.getElementById("sec-webhook"),
-  urlscan: document.getElementById("sec-urlscan"),
-  crypto: document.getElementById("sec-crypto"),
-  speed: document.getElementById("sec-speed"),
-  osint: document.getElementById("sec-osint"),
-  color: document.getElementById("sec-color"),
-  "webhook-pro": document.getElementById("sec-webhook-pro"),
-};
-toolItems.forEach(item => {
-  item.addEventListener("click", () => {
-    toolItems.forEach(i => i.classList.remove("active"));
-    item.classList.add("active");
-    const target = item.dataset.target;
-    Object.keys(sections).forEach(key => {
-      sections[key].classList.toggle("active", key === target);
-    });
-  });
-});
+    <div class="layout">
+      <!-- 사이드바 -->
+      <aside class="sidebar">
+        <div class="nav-title">TOOLS</div>
+        <div class="tool-list">
+          <div class="tool-item active" data-target="hash">
+            <span>① Hash / Base64</span>
+            <span class="badge">crypto</span>
+          </div>
+          <div class="tool-item" data-target="ip">
+            <span>② IP · DNS</span>
+            <span class="badge">network</span>
+          </div>
+          <div class="tool-item" data-target="json">
+            <span>③ JSON / URL</span>
+            <span class="badge">dev</span>
+          </div>
+          <div class="tool-item" data-target="qr">
+            <span>④ QR 생성기</span>
+            <span class="badge">utility</span>
+          </div>
+          <div class="tool-item" data-target="webhook">
+            <span>⑤ Webhook Sender</span>
+            <span class="badge">discord</span>
+          </div>
+        </div>
+        <div class="nav-title">INFO</div>
+        <p style="font-size:11px;color:var(--text-sub);line-height:1.5;">
+          이 페이지는 <strong>클라이언트 사이드</strong>에서만 동작합니다.<br />
+          (IP/DNS 조회는 공개 API 사용)
+        </p>
+      </aside>
 
-/* ========== 공통 출력 복사 ========== */
-function copyOutput(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const text = el.innerText || el.textContent;
-  if (!text) return;
-  navigator.clipboard.writeText(text).catch(() => {});
-}
+      <!-- 메인 -->
+      <main class="main">
+        <!-- ① 해시 / Base64 -->
+        <section id="sec-hash" class="section active">
+          <h2>① Hash &amp; Base64</h2>
+          <p class="subtitle">
+            텍스트를 MD5 / SHA-256 해시로 변환하거나 Base64 인코딩·디코딩합니다.
+          </p>
 
-/* ========== Hash ========== */
-async function makeHash(type) {
-  const input = document.getElementById("hash-input").value;
-  const out = document.getElementById("hash-output");
-  if (!input) {
-    out.textContent = "입력값이 없습니다.";
-    return;
-  }
-  try {
-    if (type === "md5") {
-      out.textContent = md5(input);
-    } else if (type === "sha256") {
-      const enc = new TextEncoder().encode(input);
-      const buf = await crypto.subtle.digest("SHA-256", enc);
-      const arr = Array.from(new Uint8Array(buf));
-      out.textContent = arr.map(b => b.toString(16).padStart(2,"0")).join("");
-    }
-  } catch(e) {
-    out.textContent = "해시 생성 중 오류: " + e;
-  }
-}
+          <div class="card">
+            <h3>입력 텍스트</h3>
+            <textarea
+              id="hash-input"
+              class="large"
+              placeholder="여기에 텍스트를 입력하세요."
+            ></textarea>
+            <div class="row">
+              <button onclick="makeHash('md5')">MD5 생성</button>
+              <button onclick="makeHash('sha256')">SHA-256 생성</button>
+              <button class="secondary" onclick="copyOutput('hash-output')">
+                해시 결과 복사
+              </button>
+            </div>
+            <div class="mini-label">
+              ※ SHA-256은 Web Crypto API 사용, MD5는 JS 라이브러리 사용.
+            </div>
+            <div id="hash-output" class="output" style="margin-top:8px;"></div>
+          </div>
 
-/* ========== Base64 ========== */
-function utf8ToB64(str) {
-  return btoa(unescape(encodeURIComponent(str)));
-}
-function b64ToUtf8(str) {
-  return decodeURIComponent(escape(atob(str)));
-}
-function encodeB64() {
-  const plain = document.getElementById("b64-plain").value;
-  const out = document.getElementById("b64-encoded");
-  if (!plain) { out.textContent = ""; return; }
-  try {
-    out.textContent = utf8ToB64(plain);
-  } catch(e) {
-    out.textContent = "인코딩 오류: " + e;
-  }
-}
-function decodeB64() {
-  const b64 = document.getElementById("b64-input").value;
-  const out = document.getElementById("b64-decoded");
-  if (!b64) { out.textContent = ""; return; }
-  try {
-    out.textContent = b64ToUtf8(b64);
-  } catch(e) {
-    out.textContent = "디코딩 오류: " + e;
-  }
-}
+          <div class="grid-2" style="margin-top:12px;">
+            <div class="card">
+              <h3>Base64 인코딩</h3>
+              <textarea
+                id="b64-plain"
+                class="small"
+                placeholder="일반 텍스트"
+              ></textarea>
+              <div class="row">
+                <button onclick="encodeB64()">Base64로 인코딩</button>
+                <button
+                  class="secondary"
+                  onclick="copyOutput('b64-encoded')"
+                >
+                  복사
+                </button>
+              </div>
+              <div id="b64-encoded" class="output" style="margin-top:6px;"></div>
+            </div>
+            <div class="card">
+              <h3>Base64 디코딩</h3>
+              <textarea
+                id="b64-input"
+                class="small"
+                placeholder="Base64 문자열"
+              ></textarea>
+              <div class="row">
+                <button onclick="decodeB64()">일반 텍스트로 디코딩</button>
+                <button
+                  class="secondary"
+                  onclick="copyOutput('b64-decoded')"
+                >
+                  복사
+                </button>
+              </div>
+              <div id="b64-decoded" class="output" style="margin-top:6px;"></div>
+            </div>
+          </div>
+        </section>
 
-/* ========== IP Info ========== */
-async function fetchIpInfo() {
-  const out = document.getElementById("ip-output");
-  out.textContent = "조회 중...";
-  try {
-    const r1 = await fetch("https://api.ipify.org?format=json");
-    const ipData = await r1.json();
-    const r2 = await fetch("https://ipapi.co/json/");
-    const geoData = await r2.json();
-    out.textContent = JSON.stringify({
-      ip: ipData.ip,
-      country: geoData.country,
-      country_name: geoData.country_name,
-      region: geoData.region,
-      city: geoData.city,
-      org: geoData.org,
-      asn: geoData.asn
-    }, null, 2);
-  } catch(e) {
-    out.textContent = "IP 정보 조회 실패: " + e;
-  }
-}
+        <!-- ② IP / DNS -->
+        <section id="sec-ip" class="section">
+          <h2>② IP &amp; DNS</h2>
+          <p class="subtitle">
+            현재 접속 IP 정보와 간단한 DNS 조회 도구입니다.
+          </p>
 
-/* ========== DNS Lookup ========== */
-async function lookupDNS() {
-  const domain = document.getElementById("dns-domain").value.trim();
-  const type = document.getElementById("dns-type").value;
-  const out = document.getElementById("dns-output");
-  if (!domain) {
-    out.textContent = "도메인을 입력하세요.";
-    return;
-  }
-  out.textContent = "조회 중...";
-  try {
-    const url = `https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=${encodeURIComponent(type)}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    out.textContent = JSON.stringify(data, null, 2);
-  } catch(e) {
-    out.textContent = "DNS 조회 실패: " + e;
-  }
-}
+          <div class="grid-2">
+            <div class="card">
+              <h3>내 IP 정보</h3>
+              <div class="row">
+                <button onclick="fetchIpInfo()">IP 정보 조회</button>
+              </div>
+              <div id="ip-output" class="output" style="margin-top:6px;"></div>
+              <div class="mini-label">
+                ※ ipify + ipapi 등을 사용합니다. 응답 속도는 API 상황에 따라
+                달라질 수 있습니다.
+              </div>
+            </div>
 
-/* ========== JSON Formatter ========== */
-function formatJSON() {
-  const input = document.getElementById("json-input").value;
-  const out = document.getElementById("json-output");
-  const status = document.getElementById("json-status");
-  if (!input) {
-    out.textContent = "";
-    status.textContent = "";
-    return;
-  }
-  try {
-    const obj = JSON.parse(input);
-    out.textContent = JSON.stringify(obj, null, 2);
-    status.textContent = "유효한 JSON입니다.";
-    status.className = "status ok";
-  } catch(e) {
-    out.textContent = "";
-    status.textContent = "JSON 파싱 오류: " + e.message;
-    status.className = "status err";
-  }
-}
-function minifyJSON() {
-  const input = document.getElementById("json-input").value;
-  const out = document.getElementById("json-output");
-  const status = document.getElementById("json-status");
-  if (!input) {
-    out.textContent = "";
-    status.textContent = "";
-    return;
-  }
-  try {
-    const obj = JSON.parse(input);
-    out.textContent = JSON.stringify(obj);
-    status.textContent = "Minify 완료.";
-    status.className = "status ok";
-  } catch(e) {
-    out.textContent = "";
-    status.textContent = "JSON 파싱 오류: " + e.message;
-    status.className = "status err";
-  }
-}
+            <div class="card">
+              <h3>DNS Lookup</h3>
+              <label for="dns-domain">도메인</label>
+              <input id="dns-domain" placeholder="예: example.com" />
+              <label for="dns-type">레코드 타입</label>
+              <select id="dns-type">
+                <option value="A">A</option>
+                <option value="AAAA">AAAA</option>
+                <option value="MX">MX</option>
+                <option value="TXT">TXT</option>
+                <option value="CNAME">CNAME</option>
+              </select>
+              <div class="row" style="margin-top:8px;">
+                <button onclick="lookupDNS()">조회</button>
+                <button class="secondary" onclick="copyOutput('dns-output')">
+                  결과 복사
+                </button>
+              </div>
+              <div id="dns-output" class="output" style="margin-top:6px;"></div>
+              <div class="mini-label">
+                ※ Google DNS(DoH) API 사용: dns.google/resolve
+              </div>
+            </div>
+          </div>
+        </section>
 
-/* ========== URL Encode/Decode ========== */
-function encodeURL() {
-  const src = document.getElementById("url-input").value;
-  const out = document.getElementById("url-output");
-  try {
-    out.textContent = encodeURIComponent(src);
-  } catch(e) {
-    out.textContent = "Encode 오류: " + e;
-  }
-}
-function decodeURL() {
-  const src = document.getElementById("url-input").value;
-  const out = document.getElementById("url-output");
-  try {
-    out.textContent = decodeURIComponent(src);
-  } catch(e) {
-    out.textContent = "Decode 오류: " + e;
-  }
-}
+        <!-- ③ JSON / URL -->
+        <section id="sec-json" class="section">
+          <h2>③ JSON Formatter &amp; URL 인코딩</h2>
+          <p class="subtitle">
+            JSON을 포매팅하고, URL 인코딩/디코딩을 수행합니다.
+          </p>
 
-/* ========== QR Code ========== */
-let qr;
-function generateQR() {
-  const val = document.getElementById("qr-input").value || "";
-  const canvas = document.getElementById("qr-canvas");
-  if (!qr) {
-    qr = new QRious({
-      element: canvas,
-      size: 180,
-      value: val || "https://teralink.store/"
-    });
-  } else {
-    qr.value = val || "https://teralink.store/";
-  }
-}
-function downloadQR() {
-  const canvas = document.getElementById("qr-canvas");
-  if (!canvas) return;
-  const a = document.createElement("a");
-  a.href = canvas.toDataURL("image/png");
-  a.download = "qr.png";
-  a.click();
-}
+          <div class="grid-2">
+            <div class="card">
+              <h3>JSON Formatter</h3>
+              <textarea
+                id="json-input"
+                class="large"
+                placeholder='{"example": true, "value": 123}'
+              ></textarea>
+              <div class="row">
+                <button onclick="formatJSON()">포매팅</button>
+                <button class="secondary" onclick="minifyJSON()">
+                  압축(Minify)
+                </button>
+                <button class="secondary" onclick="copyOutput('json-output')">
+                  결과 복사
+                </button>
+              </div>
+              <div id="json-status" class="status"></div>
+              <div
+                id="json-output"
+                class="output"
+                style="margin-top:6px;"
+              ></div>
+            </div>
 
-/* ========== Webhook Sender (횟수 제한 제거) ========== */
-async function sendWebhookMessages() {
-  const url = document.getElementById("wh-url").value.trim();
-  const msg = document.getElementById("wh-message").value;
-  const count = parseInt(document.getElementById("wh-count").value, 10) || 1;
-  const status = document.getElementById("wh-status");
+            <div class="card">
+              <h3>URL Encode / Decode</h3>
+              <label>원본 문자열</label>
+              <textarea id="url-input" class="small"></textarea>
+              <div class="row">
+                <button onclick="encodeURL()">Encode</button>
+                <button onclick="decodeURL()">Decode</button>
+                <button class="secondary" onclick="copyOutput('url-output')">
+                  결과 복사
+                </button>
+              </div>
+              <div id="url-output" class="output" style="margin-top:6px;"></div>
+            </div>
+          </div>
+        </section>
 
-  if (!url || !msg) {
-    status.textContent = "Webhook URL과 메시지를 모두 입력하세요.";
-    status.className = "status err";
-    return;
-  }
-  if (count < 1) {
-    status.textContent = "전송 횟수는 1 이상으로 입력하세요.";
-    status.className = "status err";
-    return;
-  }
+        <!-- ④ QR 코드 -->
+        <section id="sec-qr" class="section">
+          <h2>④ QR 코드 생성기</h2>
+          <p class="subtitle">텍스트나 URL을 QR 코드로 변환합니다.</p>
 
-  status.textContent = "전송 중...";
-  status.className = "status";
+          <div class="card">
+            <h3>QR 내용</h3>
+            <textarea
+              id="qr-input"
+              class="small"
+              placeholder="https://teralink.store/"
+            ></textarea>
+            <div class="row">
+              <button onclick="generateQR()">QR 생성</button>
+              <button class="secondary" onclick="downloadQR()">
+                PNG로 저장
+              </button>
+            </div>
+            <canvas id="qr-canvas"></canvas>
+          </div>
+        </section>
 
-  let ok = 0, fail = 0;
-  for (let i = 0; i < count; i++) {
-    try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: msg })
-      });
-      if (res.ok) ok++;
-      else fail++;
+        <!-- ⑤ Webhook Sender -->
+        <section id="sec-webhook" class="section">
+          <h2>⑤ Discord Webhook Sender</h2>
+          <p class="subtitle">
+            테스트용으로 간단한 웹훅 메시지를 전송합니다. (악용 금지)
+          </p>
 
-      await new Promise(r => setTimeout(r, 300));
-    } catch(e) {
-      fail++;
-    }
-  }
-  status.textContent = `전송 완료: 성공 ${ok} / 실패 ${fail}`;
-  status.className = fail === 0 ? "status ok" : "status warn";
-}
+          <div class="card">
+            <label>Webhook URL</label>
+            <input
+              id="wh-url"
+              placeholder="https://discord.com/api/webhooks/..."
+            />
 
-/* ========== URL Meta / Header Scanner ========== */
-function normalizeURL(u) {
-  if (!u.startsWith("http://") && !u.startsWith("https://")) {
-    return "https://" + u;
-  }
-  return u;
-}
+            <label style="margin-top:8px;">전송할 메시지</label>
+            <textarea
+              id="wh-message"
+              class="small"
+              placeholder="테스트 메시지"
+            ></textarea>
 
-async function scanMeta() {
-  const urlInput = document.getElementById("meta-url").value.trim();
-  const out = document.getElementById("meta-output");
-  if (!urlInput) {
-    out.textContent = "URL을 입력하세요.";
-    return;
-  }
-  const url = normalizeURL(urlInput);
-  out.textContent = "요청 중...";
-  try {
-    const res = await fetch(url, { method:"GET" });
-    const html = await res.text();
-    const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
-    const ogTitle = html.match(/<meta[^>]+property=["']og:title["'][^>]*content=["']([^"']*)["'][^>]*>/i);
-    const ogDesc = html.match(/<meta[^>]+property=["']og:description["'][^>]*content=["']([^"']*)["'][^>]*>/i);
-    const ogImg  = html.match(/<meta[^>]+property=["']og:image["'][^>]*content=["']([^"']*)["'][^>]*>/i);
-    const desc   = html.match(/<meta[^>]+name=["']description["'][^>]*content=["']([^"']*)["'][^>]*>/i);
+            <label style="margin-top:8px;">전송 횟수</label>
+            <input id="wh-count" type="number" min="1" value="1" />
 
-    const info = {
-      url,
-      httpStatus: res.status,
-      title: titleMatch ? titleMatch[1] : null,
-      meta_description: desc ? desc[1] : null,
-      og_title: ogTitle ? ogTitle[1] : null,
-      og_description: ogDesc ? ogDesc[1] : null,
-      og_image: ogImg ? ogImg[1] : null,
-    };
-    out.textContent = JSON.stringify(info, null, 2);
-  } catch(e) {
-    out.textContent = "요청 또는 파싱 중 오류: " + e;
-  }
-}
+            <div class="row" style="margin-top:10px;">
+              <button onclick="sendWebhookMessages()">전송</button>
+            </div>
+            <div id="wh-status" class="status"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
 
-async function scanHeaders() {
-  const urlInput = document.getElementById("header-url").value.trim();
-  const out = document.getElementById("header-output");
-  if (!urlInput) {
-    out.textContent = "URL을 입력하세요.";
-    return;
-  }
-  const url = normalizeURL(urlInput);
-  out.textContent = "요청 중...";
-  try {
-    let res;
-    try {
-      res = await fetch(url, { method:"HEAD" });
-    } catch {
-      res = await fetch(url, { method:"GET" });
-    }
-    const headersObj = {};
-    res.headers.forEach((v, k) => {
-      headersObj[k] = v;
-    });
-    const securityHeaders = {
-      "strict-transport-security": headersObj["strict-transport-security"] || null,
-      "x-frame-options": headersObj["x-frame-options"] || null,
-      "x-content-type-options": headersObj["x-content-type-options"] || null,
-      "content-security-policy": headersObj["content-security-policy"] || null,
-      "referrer-policy": headersObj["referrer-policy"] || null,
-      "permissions-policy": headersObj["permissions-policy"] || null,
-    };
-    const summary = {
-      url,
-      status: res.status,
-      server: headersObj["server"] || null,
-      content_type: headersObj["content-type"] || null,
-      security_headers: securityHeaders,
-      raw_headers: headersObj
-    };
-    out.textContent = JSON.stringify(summary, null, 2);
-  } catch(e) {
-    out.textContent = "헤더 조회 오류: " + e;
-  }
-}
+  <!-- 외부 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/blueimp-md5@2.19.0/js/md5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <!-- 메인 스크립트 -->
+  <script src="hacking.js"></script>
+</body>
+</html><!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>TERALINK Hacking Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="hacking.css" />
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="dots">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+        <div class="top-title">teralink.store / hacking · toolkit</div>
+      </div>
+      <div class="pill">KR-only · VPN-aware · readonly tools</div>
+    </div>
 
-/* ========== AES-256-GCM Text Encryption ========== */
-function getRandomBytes(len) {
-  const arr = new Uint8Array(len);
-  crypto.getRandomValues(arr);
-  return arr;
-}
+    <div class="layout">
+      <!-- 사이드바 -->
+      <aside class="sidebar">
+        <div class="nav-title">TOOLS</div>
+        <div class="tool-list">
+          <div class="tool-item active" data-target="hash">
+            <span>① Hash / Base64</span>
+            <span class="badge">crypto</span>
+          </div>
+          <div class="tool-item" data-target="ip">
+            <span>② IP · DNS</span>
+            <span class="badge">network</span>
+          </div>
+          <div class="tool-item" data-target="json">
+            <span>③ JSON / URL</span>
+            <span class="badge">dev</span>
+          </div>
+          <div class="tool-item" data-target="qr">
+            <span>④ QR 생성기</span>
+            <span class="badge">utility</span>
+          </div>
+          <div class="tool-item" data-target="webhook">
+            <span>⑤ Webhook Sender</span>
+            <span class="badge">discord</span>
+          </div>
+        </div>
+        <div class="nav-title">INFO</div>
+        <p style="font-size:11px;color:var(--text-sub);line-height:1.5;">
+          이 페이지는 <strong>클라이언트 사이드</strong>에서만 동작합니다.<br />
+          (IP/DNS 조회는 공개 API 사용)
+        </p>
+      </aside>
 
-async function deriveKeyFromPassword(password, salt) {
-  const enc = new TextEncoder();
-  const baseKey = await crypto.subtle.importKey(
-    "raw",
-    enc.encode(password),
-    { name: "PBKDF2" },
-    false,
-    ["deriveKey"]
-  );
-  return crypto.subtle.deriveKey(
-    {
-      name: "PBKDF2",
-      salt,
-      iterations: 100000,
-      hash: "SHA-256"
-    },
-    baseKey,
-    { name: "AES-GCM", length: 256 },
-    false,
-    ["encrypt","decrypt"]
-  );
-}
+      <!-- 메인 -->
+      <main class="main">
+        <!-- ① 해시 / Base64 -->
+        <section id="sec-hash" class="section active">
+          <h2>① Hash &amp; Base64</h2>
+          <p class="subtitle">
+            텍스트를 MD5 / SHA-256 해시로 변환하거나 Base64 인코딩·디코딩합니다.
+          </p>
 
-function bufToB64(buf) {
-  const bytes = new Uint8Array(buf);
-  let bin = "";
-  bytes.forEach(b => bin += String.fromCharCode(b));
-  return btoa(bin);
-}
-function b64ToBuf(b64) {
-  const bin = atob(b64);
-  const bytes = new Uint8Array(bin.length);
-  for (let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
-  return bytes.buffer;
-}
+          <div class="card">
+            <h3>입력 텍스트</h3>
+            <textarea
+              id="hash-input"
+              class="large"
+              placeholder="여기에 텍스트를 입력하세요."
+            ></textarea>
+            <div class="row">
+              <button onclick="makeHash('md5')">MD5 생성</button>
+              <button onclick="makeHash('sha256')">SHA-256 생성</button>
+              <button class="secondary" onclick="copyOutput('hash-output')">
+                해시 결과 복사
+              </button>
+            </div>
+            <div class="mini-label">
+              ※ SHA-256은 Web Crypto API 사용, MD5는 JS 라이브러리 사용.
+            </div>
+            <div id="hash-output" class="output" style="margin-top:8px;"></div>
+          </div>
 
-async function aesEncrypt() {
-  const plain = document.getElementById("aes-plain").value;
-  const pw = document.getElementById("aes-password").value;
-  const out = document.getElementById("aes-output");
-  if (!plain || !pw) {
-    out.textContent = "텍스트와 비밀번호를 모두 입력하세요.";
-    return;
-  }
-  try {
-    const salt = getRandomBytes(16);
-    const iv = getRandomBytes(12);
-    const key = await deriveKeyFromPassword(pw, salt);
-    const enc = new TextEncoder().encode(plain);
-    const cipherBuf = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, enc);
-    const s = bufToB64(salt);
-    const i = bufToB64(iv);
-    const c = bufToB64(cipherBuf);
-    out.textContent = `${s}:${i}:${c}`;
-  } catch(e) {
-    out.textContent = "암호화 오류: " + e;
-  }
-}
+          <div class="grid-2" style="margin-top:12px;">
+            <div class="card">
+              <h3>Base64 인코딩</h3>
+              <textarea
+                id="b64-plain"
+                class="small"
+                placeholder="일반 텍스트"
+              ></textarea>
+              <div class="row">
+                <button onclick="encodeB64()">Base64로 인코딩</button>
+                <button
+                  class="secondary"
+                  onclick="copyOutput('b64-encoded')"
+                >
+                  복사
+                </button>
+              </div>
+              <div id="b64-encoded" class="output" style="margin-top:6px;"></div>
+            </div>
+            <div class="card">
+              <h3>Base64 디코딩</h3>
+              <textarea
+                id="b64-input"
+                class="small"
+                placeholder="Base64 문자열"
+              ></textarea>
+              <div class="row">
+                <button onclick="decodeB64()">일반 텍스트로 디코딩</button>
+                <button
+                  class="secondary"
+                  onclick="copyOutput('b64-decoded')"
+                >
+                  복사
+                </button>
+              </div>
+              <div id="b64-decoded" class="output" style="margin-top:6px;"></div>
+            </div>
+          </div>
+        </section>
 
-async function aesDecrypt() {
-  const encText = document.getElementById("aes-output").textContent.trim();
-  const pw = document.getElementById("aes-password").value;
-  const out = document.getElementById("aes-output");
-  if (!encText || !pw) {
-    out.textContent = "복호화할 문자열과 비밀번호를 확인하세요.";
-    return;
-  }
-  try {
-    const parts = encText.split(":");
-    if (parts.length !== 3) throw new Error("형식이 salt:iv:cipher 가 아닙니다.");
-    const salt = new Uint8Array(b64ToBuf(parts[0]));
-    const iv = new Uint8Array(b64ToBuf(parts[1]));
-    const cipherBuf = b64ToBuf(parts[2]);
-    const key = await deriveKeyFromPassword(pw, salt);
-    const plainBuf = await crypto.subtle.decrypt({name:"AES-GCM", iv}, key, cipherBuf);
-    const dec = new TextDecoder().decode(plainBuf);
-    out.textContent = dec;
-  } catch(e) {
-    out.textContent = "복호화 오류: " + e;
-  }
-}
+        <!-- ② IP / DNS -->
+        <section id="sec-ip" class="section">
+          <h2>② IP &amp; DNS</h2>
+          <p class="subtitle">
+            현재 접속 IP 정보와 간단한 DNS 조회 도구입니다.
+          </p>
 
-/* ========== JWT Brute (HS256) ========== */
-function base64urlToUint8Array(b64url) {
-  let pad = b64url.length % 4;
-  if (pad === 2) b64url += "==";
-  else if (pad === 3) b64url += "=";
-  else if (pad === 1) throw new Error("잘못된 base64url");
-  b64url = b64url.replace(/-/g, "+").replace(/_/g, "/");
-  const bin = atob(b64url);
-  const arr = new Uint8Array(bin.length);
-  for (let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
-  return arr;
-}
-async function hmacSHA256(keyBytes, data) {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    keyBytes,
-    {name:"HMAC", hash:"SHA-256"},
-    false,
-    ["sign"]
-  );
-  return crypto.subtle.sign("HMAC", key, new TextEncoder().encode(data));
-}
-function bufToBase64url(buf) {
-  const bytes = new Uint8Array(buf);
-  let bin = "";
-  bytes.forEach(b => bin += String.fromCharCode(b));
-  let b64 = btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
-  return b64;
-}
+          <div class="grid-2">
+            <div class="card">
+              <h3>내 IP 정보</h3>
+              <div class="row">
+                <button onclick="fetchIpInfo()">IP 정보 조회</button>
+              </div>
+              <div id="ip-output" class="output" style="margin-top:6px;"></div>
+              <div class="mini-label">
+                ※ ipify + ipapi 등을 사용합니다. 응답 속도는 API 상황에 따라
+                달라질 수 있습니다.
+              </div>
+            </div>
 
-async function jwtBruteForce() {
-  const token = document.getElementById("jwt-token").value.trim();
-  const wordlist = document.getElementById("jwt-wordlist").value.trim();
-  const out = document.getElementById("jwt-output");
-  if (!token || !wordlist) {
-    out.textContent = "JWT 토큰과 시크릿 후보 리스트를 모두 입력하세요.";
-    return;
-  }
-  const parts = token.split(".");
-  if (parts.length !== 3) {
-    out.textContent = "올바른 JWT 형식이 아닙니다 (헤더.페이로드.시그니처).";
-    return;
-  }
-  const [h, p, sig] = parts;
-  const signingInput = `${h}.${p}`;
-  out.textContent = "브루트 중...";
-  const secrets = wordlist.split("\n").map(s => s.trim()).filter(Boolean);
-  for (let i=0; i<secrets.length; i++) {
-    const sec = secrets[i];
-    try {
-      const macBuf = await hmacSHA256(new TextEncoder().encode(sec), signingInput);
-      const testSig = bufToBase64url(macBuf);
-      if (testSig === sig) {
-        out.textContent = `✅ 일치하는 시크릿 발견: "${sec}" (시도 횟수: ${i+1})`;
-        return;
-      }
-    } catch(e) {
-      out.textContent = "오류 발생: " + e;
-      return;
-    }
-  }
-  out.textContent = `❌ 리스트 내에서 시크릿을 찾지 못했습니다. (시도: ${secrets.length}개)`;
-}
+            <div class="card">
+              <h3>DNS Lookup</h3>
+              <label for="dns-domain">도메인</label>
+              <input id="dns-domain" placeholder="예: example.com" />
+              <label for="dns-type">레코드 타입</label>
+              <select id="dns-type">
+                <option value="A">A</option>
+                <option value="AAAA">AAAA</option>
+                <option value="MX">MX</option>
+                <option value="TXT">TXT</option>
+                <option value="CNAME">CNAME</option>
+              </select>
+              <div class="row" style="margin-top:8px;">
+                <button onclick="lookupDNS()">조회</button>
+                <button class="secondary" onclick="copyOutput('dns-output')">
+                  결과 복사
+                </button>
+              </div>
+              <div id="dns-output" class="output" style="margin-top:6px;"></div>
+              <div class="mini-label">
+                ※ Google DNS(DoH) API 사용: dns.google/resolve
+              </div>
+            </div>
+          </div>
+        </section>
 
-/* ========== TOTP ========== */
-let totpTimer = null;
-function base32Decode(str) {
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-  const s = str.replace(/=+$/,"").toUpperCase().replace(/[^A-Z2-7]/g,"");
-  const bytes = [];
-  let bits = 0;
-  let value = 0;
-  for (let i=0;i<s.length;i++) {
-    const idx = alphabet.indexOf(s[i]);
-    if (idx === -1) continue;
-    value = (value << 5) | idx;
-    bits += 5;
-    if (bits >= 8) {
-      bits -= 8;
-      bytes.push((value >>> bits) & 0xff);
-    }
-  }
-  return new Uint8Array(bytes);
-}
-async function sha1Hmac(keyBytes, msgBytes) {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    keyBytes,
-    {name:"HMAC", hash:"SHA-1"},
-    false,
-    ["sign"]
-  );
-  return crypto.subtle.sign("HMAC", key, msgBytes);
-}
-function intToBytesBE(num) {
-  const arr = new Uint8Array(8);
-  for (let i=7;i>=0;i--) {
-    arr[i] = num & 0xff;
-    num = num >>> 8;
-  }
-  return arr;
-}
-async function computeTOTP(secret, digits, period) {
-  const keyBytes = base32Decode(secret);
-  if (!keyBytes.length) throw new Error("Secret(Base32)를 확인하세요.");
-  const now = Math.floor(Date.now() / 1000);
-  const counter = Math.floor(now / period);
-  const counterBytes = intToBytesBE(counter);
-  const mac = new Uint8Array(await sha1Hmac(keyBytes, counterBytes));
-  const offset = mac[mac.length - 1] & 0x0f;
-  const code =
-    ((mac[offset] & 0x7f) << 24) |
-    ((mac[offset+1] & 0xff) << 16) |
-    ((mac[offset+2] & 0xff) << 8) |
-    (mac[offset+3] & 0xff);
-  let otp = (code % (10 ** digits)).toString();
-  while (otp.length < digits) otp = "0" + otp;
-  const remain = period - (now % period);
-  return { otp, remain };
-}
-async function updateTOTP() {
-  const secret = document.getElementById("totp-secret").value.trim();
-  const digits = parseInt(document.getElementById("totp-digits").value, 10) || 6;
-  const period = parseInt(document.getElementById("totp-period").value, 10) || 30;
-  const out = document.getElementById("totp-code");
-  const remainEl = document.getElementById("totp-remaining");
-  if (!secret) {
-    out.textContent = "Secret을 입력하세요.";
-    remainEl.textContent = "– s";
-    return;
-  }
-  try {
-    const { otp, remain } = await computeTOTP(secret, digits, period);
-    out.textContent = otp;
-    remainEl.textContent = remain + " s";
-  } catch(e) {
-    out.textContent = "오류: " + e.message;
-    remainEl.textContent = "– s";
-  }
-}
-function startTOTP() {
-  if (totpTimer) clearInterval(totpTimer);
-  updateTOTP();
-  totpTimer = setInterval(updateTOTP, 1000);
-}
-function stopTOTP() {
-  if (totpTimer) clearInterval(totpTimer);
-  totpTimer = null;
-  document.getElementById("totp-remaining").textContent = "– s";
-}
+        <!-- ③ JSON / URL -->
+        <section id="sec-json" class="section">
+          <h2>③ JSON Formatter &amp; URL 인코딩</h2>
+          <p class="subtitle">
+            JSON을 포매팅하고, URL 인코딩/디코딩을 수행합니다.
+          </p>
 
-/* ========== Pwned Password (HIBP) ========== */
-async function sha1Hex(str) {
-  const buf = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(str));
-  const arr = Array.from(new Uint8Array(buf));
-  return arr.map(b => b.toString(16).padStart(2,"0")).join("").toUpperCase();
-}
-async function checkPwned() {
-  const pw = document.getElementById("pwned-pass").value;
-  const out = document.getElementById("pwned-output");
-  if (!pw) {
-    out.textContent = "비밀번호를 입력하세요.";
-    return;
-  }
-  out.textContent = "SHA-1 계산 및 HIBP 조회 중...";
-  try {
-    const hash = await sha1Hex(pw);
-    const prefix = hash.slice(0,5);
-    const suffix = hash.slice(5);
-    const res = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`);
-    if (!res.ok) {
-      out.textContent = "HIBP API 응답 오류: " + res.status;
-      return;
-    }
-    const text = await res.text();
-    const lines = text.split("\n");
-    let count = 0;
-    for (const line of lines) {
-      const [h, c] = line.trim().split(":");
-      if (!h) continue;
-      if (h.toUpperCase() === suffix) {
-        count = parseInt(c, 10) || 0;
-        break;
-      }
-    }
-    if (count > 0) {
-      out.textContent = `⚠️ 이 비밀번호는 데이터 유출에 총 ${count.toLocaleString()}회 등장했습니다. 다른 비밀번호 사용을 강력히 권장합니다.`;
-    } else {
-      out.textContent = "✅ 현재까지 알려진 데이터베이스에서 이 비밀번호는 발견되지 않았습니다.";
-    }
-  } catch(e) {
-    out.textContent = "조회 중 오류(또는 CORS 차단) 발생: " + e;
-  }
-}
+          <div class="grid-2">
+            <div class="card">
+              <h3>JSON Formatter</h3>
+              <textarea
+                id="json-input"
+                class="large"
+                placeholder='{"example": true, "value": 123}'
+              ></textarea>
+              <div class="row">
+                <button onclick="formatJSON()">포매팅</button>
+                <button class="secondary" onclick="minifyJSON()">
+                  압축(Minify)
+                </button>
+                <button class="secondary" onclick="copyOutput('json-output')">
+                  결과 복사
+                </button>
+              </div>
+              <div id="json-status" class="status"></div>
+              <div
+                id="json-output"
+                class="output"
+                style="margin-top:6px;"
+              ></div>
+            </div>
 
-/* ========== HTTP Speedtest ========== */
-async function runSpeedTest() {
-  const url = normalizeURL(document.getElementById("speed-url").value.trim());
-  const out = document.getElementById("speed-output");
-  let n = parseInt(document.getElementById("speed-count").value, 10) || 5;
-  if (n < 1) n = 1;
-  if (n > 20) n = 20;
-  out.textContent = `테스트 준비 중... (횟수: ${n})`;
-  const times = [];
-  for (let i=0; i<n; i++) {
-    const start = performance.now();
-    try {
-      const res = await fetch(url, { cache:"no-store" });
-      await res.text();
-      const ms = performance.now() - start;
-      times.push(ms);
-      out.textContent = `요청 ${i+1}/${n} 완료: ${ms.toFixed(1)} ms`;
-    } catch(e) {
-      const ms = performance.now() - start;
-      times.push(ms);
-      out.textContent = `요청 ${i+1}/${n} 실패: ${ms.toFixed(1)} ms (${e})`;
-    }
-  }
-  const avg = times.reduce((a,b)=>a+b,0)/times.length;
-  const min = Math.min(...times);
-  const max = Math.max(...times);
-  out.textContent =
-    `테스트 완료 (N=${n})\n` +
-    `평균: ${avg.toFixed(1)} ms\n` +
-    `최소: ${min.toFixed(1)} ms\n` +
-    `최대: ${max.toFixed(1)} ms\n` +
-    `URL: ${url}`;
-}
+            <div class="card">
+              <h3>URL Encode / Decode</h3>
+              <label>원본 문자열</label>
+              <textarea id="url-input" class="small"></textarea>
+              <div class="row">
+                <button onclick="encodeURL()">Encode</button>
+                <button onclick="decodeURL()">Decode</button>
+                <button class="secondary" onclick="copyOutput('url-output')">
+                  결과 복사
+                </button>
+              </div>
+              <div id="url-output" class="output" style="margin-top:6px;"></div>
+            </div>
+          </div>
+        </section>
 
-/* ========== Domain OSINT ========== */
-async function domainOSINT() {
-  const dom = document.getElementById("osint-domain").value.trim();
-  const out = document.getElementById("osint-domain-output");
-  if (!dom) {
-    out.textContent = "도메인을 입력하세요.";
-    return;
-  }
-  out.textContent = "DNS 및 IP 정보 조회 중...";
-  try {
-    const dnsRes = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(dom)}&type=A`);
-    const dnsData = await dnsRes.json();
-    const answers = dnsData.Answer || [];
-    const ips = answers.filter(a => a.type === 1).map(a => a.data);
-    let geo = null;
-    if (ips.length > 0) {
-      const r2 = await fetch(`https://ipapi.co/${ips[0]}/json/`);
-      geo = await r2.json();
-    }
-    const riskHints = [];
-    if (geo && geo.org) {
-      const orgLower = geo.org.toLowerCase();
-      const dcKeywords = ["hosting","host","cloud","vps","llc","digitalocean","aws","amazon","ovh","vultr","data","colo"];
-      if (dcKeywords.some(k => orgLower.includes(k))) {
-        riskHints.push("데이터센터/호스팅 사업자 ASN으로 추정.");
-      }
-    }
-    if (dom.endsWith(".zip") || dom.endsWith(".top") || dom.endsWith(".xyz")) {
-      riskHints.push("피싱에 자주 쓰이는 TLD일 수 있습니다. (맥락에 따라 다름)");
-    }
-    const summary = {
-      domain: dom,
-      dns_status: dnsData.Status,
-      a_records: ips,
-      geo: geo || null,
-      risk_hints: riskHints
-    };
-    out.textContent = JSON.stringify(summary, null, 2);
-  } catch(e) {
-    out.textContent = "OSINT 조회 오류: " + e;
-  }
-}
+        <!-- ④ QR 코드 -->
+        <section id="sec-qr" class="section">
+          <h2>④ QR 코드 생성기</h2>
+          <p class="subtitle">텍스트나 URL을 QR 코드로 변환합니다.</p>
 
-/* ========== Username OSINT Helper ========== */
-function usernameOSINT() {
-  const u = document.getElementById("osint-username").value.trim();
-  const out = document.getElementById("osint-user-output");
-  if (!u) {
-    out.textContent = "Username을 입력하세요.";
-    return;
-  }
-  const sites = [
-    ["GitHub", `https://github.com/${u}`],
-    ["Twitter (X)", `https://x.com/${u}`],
-    ["Reddit", `https://www.reddit.com/user/${u}`],
-    ["Instagram", `https://www.instagram.com/${u}/`],
-    ["YouTube", `https://www.youtube.com/@${u}`],
-    ["Twitch", `https://www.twitch.tv/${u}`],
-    ["Discord (id는 별도)", "https://discord.com/"],
-  ];
-  const lines = sites.map(([name, url]) => `${name}: ${url}`).join("\n");
-  out.textContent = lines;
-}
+          <div class="card">
+            <h3>QR 내용</h3>
+            <textarea
+              id="qr-input"
+              class="small"
+              placeholder="https://teralink.store/"
+            ></textarea>
+            <div class="row">
+              <button onclick="generateQR()">QR 생성</button>
+              <button class="secondary" onclick="downloadQR()">
+                PNG로 저장
+              </button>
+            </div>
+            <canvas id="qr-canvas"></canvas>
+          </div>
+        </section>
 
-/* ========== Color Converter ========== */
-function hexToRgbObj(hex) {
-  hex = hex.trim().replace("#","");
-  if (hex.length === 3) {
-    hex = hex.split("").map(c => c + c).join("");
-  }
-  if (hex.length !== 6) return null;
-  const r = parseInt(hex.slice(0,2),16);
-  const g = parseInt(hex.slice(2,4),16);
-  const b = parseInt(hex.slice(4,6),16);
-  if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) return null;
-  return {r,g,b};
-}
-function rgbToHexObj(r,g,b) {
-  const clamp = v => Math.max(0, Math.min(255, v|0));
-  return "#" + [clamp(r),clamp(g),clamp(b)].map(v => v.toString(16).padStart(2,"0")).join("");
-}
-function rgbToHsl(r,g,b) {
-  r /= 255; g /= 255; b /= 255;
-  const max = Math.max(r,g,b), min = Math.min(r,g,b);
-  let h, s, l = (max+min)/2;
-  if (max === min) {
-    h = s = 0;
-  } else {
-    const d = max-min;
-    s = l > 0.5 ? d/(2-max-min) : d/(max+min);
-    switch(max){
-      case r: h = (g-b)/d + (g < b ? 6 : 0); break;
-      case g: h = (b-r)/d + 2; break;
-      case b: h = (r-g)/d + 4; break;
-    }
-    h *= 60;
-  }
-  return {h:Math.round(h), s:Math.round(s*100), l:Math.round(l*100)};
-}
-function hslToRgb(h,s,l) {
-  h = h%360; if (h<0) h+=360;
-  s/=100; l/=100;
-  const c = (1-Math.abs(2*l-1))*s;
-  const x = c*(1-Math.abs((h/60)%2-1));
-  const m = l-c/2;
-  let r1,g1,b1;
-  if (h<60){r1=c;g1=x;b1=0;}
-  else if (h<120){r1=x;g1=c;b1=0;}
-  else if (h<180){r1=0;g1=c;b1=x;}
-  else if (h<240){r1=0;g1=x;b1=c;}
-  else if (h<300){r1=x;g1=0;b1=c;}
-  else {r1=c;g1=0;b1=x;}
-  return {
-    r: Math.round((r1+m)*255),
-    g: Math.round((g1+m)*255),
-    b: Math.round((b1+m)*255),
-  };
-}
-function convertFromHex() {
-  const hex = document.getElementById("color-hex").value;
-  const rgbField = document.getElementById("color-rgb");
-  const hslField = document.getElementById("color-hsl");
-  const rgb = hexToRgbObj(hex);
-  if (!rgb) {
-    rgbField.value = "";
-    hslField.value = "";
-    return;
-  }
-  const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-  rgbField.value = `${rgb.r},${rgb.g},${rgb.b}`;
-  hslField.value = `${hsl.h},${hsl.s}%,${hsl.l}%`;
-}
-function convertFromRGB() {
-  const rgbStr = document.getElementById("color-rgb").value;
-  const [r,g,b] = rgbStr.split(",").map(v=>parseInt(v.trim(),10));
-  const hexField = document.getElementById("color-hex");
-  const hslField = document.getElementById("color-hsl");
-  if (Number.isNaN(r)||Number.isNaN(g)||Number.isNaN(b)) {
-    hexField.value = "";
-    hslField.value = "";
-    return;
-  }
-  const hex = rgbToHexObj(r,g,b);
-  const hsl = rgbToHsl(r,g,b);
-  hexField.value = hex;
-  hslField.value = `${hsl.h},${hsl.s}%,${hsl.l}%`;
-}
-function convertFromHSL() {
-  const hslStr = document.getElementById("color-hsl").value;
-  const parts = hslStr.split(",");
-  if (parts.length !== 3) return;
-  const h = parseFloat(parts[0].trim());
-  const s = parseFloat(parts[1].replace("%","").trim());
-  const l = parseFloat(parts[2].replace("%","").trim());
-  const rgb = hslToRgb(h,s,l);
-  const hex = rgbToHexObj(rgb.r,rgb.g,rgb.b);
-  document.getElementById("color-hex").value = hex;
-  document.getElementById("color-rgb").value = `${rgb.r},${rgb.g},${rgb.b}`;
-}
+        <!-- ⑤ Webhook Sender -->
+        <section id="sec-webhook" class="section">
+          <h2>⑤ Discord Webhook Sender</h2>
+          <p class="subtitle">
+            테스트용으로 간단한 웹훅 메시지를 전송합니다. (악용 금지)
+          </p>
 
-/* ========== Base58 / Base62 ========== */
-const BASE58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-const BASE62_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+          <div class="card">
+            <label>Webhook URL</label>
+            <input
+              id="wh-url"
+              placeholder="https://discord.com/api/webhooks/..."
+            />
 
-function textToBytes(str) {
-  return new TextEncoder().encode(str);
-}
-function bytesToText(bytes) {
-  return new TextDecoder().decode(bytes);
-}
+            <label style="margin-top:8px;">전송할 메시지</label>
+            <textarea
+              id="wh-message"
+              class="small"
+              placeholder="테스트 메시지"
+            ></textarea>
 
-function encodeBigInt(bytes, alphabet) {
-  let n = 0n;
-  for (const b of bytes) {
-    n = (n << 8n) + BigInt(b);
-  }
-  if (n === 0n) return alphabet[0];
-  let out = "";
-  while (n > 0n) {
-    const rem = n % BigInt(alphabet.length);
-    n = n / BigInt(alphabet.length);
-    out = alphabet[Number(rem)] + out;
-  }
-  return out;
-}
-function decodeBigInt(str, alphabet) {
-  let n = 0n;
-  for (const ch of str) {
-    const idx = alphabet.indexOf(ch);
-    if (idx === -1) throw new Error("알파벳에 없는 문자 포함");
-    n = n * BigInt(alphabet.length) + BigInt(idx);
-  }
-  const bytes = [];
-  while (n > 0n) {
-    bytes.unshift(Number(n & 0xffn));
-    n >>= 8n;
-  }
-  return new Uint8Array(bytes);
-}
+            <label style="margin-top:8px;">전송 횟수</label>
+            <input id="wh-count" type="number" min="1" value="1" />
 
-function encodeBase58() {
-  const input = document.getElementById("b5862-input").value;
-  const out = document.getElementById("b5862-output");
-  try {
-    const bytes = textToBytes(input);
-    out.textContent = encodeBigInt(bytes, BASE58_ALPHABET);
-  } catch(e) {
-    out.textContent = "Base58 인코딩 오류: " + e;
-  }
-}
-function decodeBase58() {
-  const input = document.getElementById("b5862-output").textContent.trim();
-  const out = document.getElementById("b5862-output");
-  try {
-    const bytes = decodeBigInt(input, BASE58_ALPHABET);
-    out.textContent = bytesToText(bytes);
-  } catch(e) {
-    out.textContent = "Base58 디코딩 오류: " + e;
-  }
-}
-function encodeBase62() {
-  const input = document.getElementById("b5862-input").value;
-  const out = document.getElementById("b5862-output");
-  try {
-    const bytes = textToBytes(input);
-    out.textContent = encodeBigInt(bytes, BASE62_ALPHABET);
-  } catch(e) {
-    out.textContent = "Base62 인코딩 오류: " + e;
-  }
-}
-function decodeBase62() {
-  const input = document.getElementById("b5862-output").textContent.trim();
-  const out = document.getElementById("b5862-output");
-  try {
-    const bytes = decodeBigInt(input, BASE62_ALPHABET);
-    out.textContent = bytesToText(bytes);
-  } catch(e) {
-    out.textContent = "Base62 디코딩 오류: " + e;
-  }
-}
+            <div class="row" style="margin-top:10px;">
+              <button onclick="sendWebhookMessages()">전송</button>
+            </div>
+            <div id="wh-status" class="status"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
 
-/* ========== Webhook Pro: Embed Builder & Scheduler ========== */
-let webhookScheduleTimer = null;
-
-function buildEmbedObject() {
-  const title = document.getElementById("wp-title").value;
-  const desc = document.getElementById("wp-desc").value;
-  const colorHex = document.getElementById("wp-color").value.trim();
-  const footer = document.getElementById("wp-footer").value;
-
-  let colorInt = null;
-  if (colorHex) {
-    const hex = colorHex.replace("#","").trim();
-    if (hex.length === 6) {
-      colorInt = parseInt(hex,16);
-    }
-  }
-  const embed = {};
-  if (title) embed.title = title;
-  if (desc) embed.description = desc;
-  if (colorInt != null && !Number.isNaN(colorInt)) embed.color = colorInt;
-  if (footer) embed.footer = { text: footer };
-  return embed;
-}
-
-function buildEmbedJSON() {
-  const embed = buildEmbedObject();
-  const json = JSON.stringify({ embeds:[embed] }, null, 2);
-  document.getElementById("wp-json").textContent = json;
-}
-
-function getWebhookURLList() {
-  const raw = document.getElementById("wp-urls").value.trim();
-  if (!raw) return [];
-  return raw.split("\n").map(s => s.trim()).filter(Boolean);
-}
-
-async function sendEmbedOnce() {
-  const urls = getWebhookURLList();
-  const status = document.getElementById("wp-status");
-  if (urls.length === 0) {
-    status.textContent = "Webhook URL을 한 개 이상 입력하세요.";
-    status.className = "status err";
-    return;
-  }
-  const embed = buildEmbedObject();
-  const payload = { embeds:[embed] };
-  status.textContent = "전송 중...";
-  status.className = "status";
-
-  let ok = 0, fail = 0;
-  for (const url of urls) {
-    try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type":"application/json" },
-        body: JSON.stringify(payload)
-      });
-      if (res.ok) ok++;
-      else fail++;
-    } catch(e) {
-      fail++;
-    }
-  }
-  status.textContent = `전송 완료: 성공 ${ok} / 실패 ${fail}`;
-  status.className = fail === 0 ? "status ok" : "status warn";
-}
-
-function startWebhookSchedule() {
-  const intervalSec = parseInt(document.getElementById("wp-interval").value, 10) || 30;
-  const status = document.getElementById("wp-status");
-  if (intervalSec < 5) {
-    status.textContent = "인터벌은 최소 5초 이상으로 설정하세요.";
-    status.className = "status err";
-    return;
-  }
-  if (webhookScheduleTimer) clearInterval(webhookScheduleTimer);
-  sendEmbedOnce(); // 즉시 한 번
-  webhookScheduleTimer = setInterval(sendEmbedOnce, intervalSec * 1000);
-  status.textContent = `스케줄 시작: ${intervalSec}초마다 전송`;
-  status.className = "status ok";
-}
-
-function stopWebhookSchedule() {
-  const status = document.getElementById("wp-status");
-  if (webhookScheduleTimer) {
-    clearInterval(webhookScheduleTimer);
-    webhookScheduleTimer = null;
-    status.textContent = "스케줄 정지됨.";
-    status.className = "status";
-  } else {
-    status.textContent = "동작 중인 스케줄이 없습니다.";
-    status.className = "status warn";
-  }
-}
-</script>
+  <!-- 외부 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/blueimp-md5@2.19.0/js/md5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <!-- 메인 스크립트 -->
+  <script src="hacking.js"></script>
 </body>
 </html>
