@@ -258,8 +258,9 @@ function encodePathObfuscated() {
 }
 
 function decodePathObfuscated() {
-  const src = document.getElementById("path-output").textContent.trim() ||
-              document.getElementById("path-input").value.trim();
+  const src =
+    document.getElementById("path-output").textContent.trim() ||
+    document.getElementById("path-input").value.trim();
   const out = document.getElementById("path-output");
   const status = document.getElementById("path-status");
   if (!src) {
@@ -349,7 +350,6 @@ async function sendWebhookMessages() {
 }
 
 // ========== Client Tools ==========
-
 function showClientInfo() {
   const out = document.getElementById("client-output");
   const ua = navigator.userAgent || "unknown";
@@ -437,8 +437,8 @@ async function createShortLink() {
       body: JSON.stringify({
         url: rawUrl,
         days,
-        password
-      })
+        password,
+      }),
     });
 
     const data = await res.json();
@@ -460,7 +460,6 @@ async function createShortLink() {
 
     // 결과 링크 저장 (복사 버튼용)
     window.__last_short_url__ = data.short_url;
-
   } catch (e) {
     status.textContent = "오류 발생: " + e;
     status.className = "status err";
@@ -473,7 +472,6 @@ async function createShortLink() {
 function copyShortLink() {
   const out = window.__last_short_url__;
   if (!out) return;
-
   navigator.clipboard.writeText(out).catch(() => {});
 }
 
