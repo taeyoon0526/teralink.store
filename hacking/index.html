@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>TERALINK Hacking Lab</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- 스타일 -->
   <link rel="stylesheet" href="hacking.css" />
   <!-- 폰트 -->
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet" />
@@ -11,8 +12,6 @@
   <script src="https://cdn.jsdelivr.net/npm/blueimp-md5@2.19.0/js/md5.min.js"></script>
   <!-- QR 라이브러리 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-  <!-- 메인 스크립트 -->
-  <script src="hacking.js" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -190,7 +189,7 @@
         <div class="card" style="margin-top:12px;">
           <h3>PATH 난독화 인코딩</h3>
           <p class="mini-label">
-            예: <code>/application?step=1</code> 같은 PATH 전체를 난독화합니다.  
+            예: <code>/application?step=1</code> 같은 PATH 전체를 난독화합니다.<br />
             결과는 URL-safe(16진수)라서 주소창에 그대로 넣어도 됩니다.
           </p>
           <label for="path-input">원본 PATH</label>
@@ -340,5 +339,8 @@
     </main>
   </div>
 </div>
+
+<!-- 메인 스크립트: body 끝에서 로드 -->
+<script src="hacking.js"></script>
 </body>
 </html>
