@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8" />
   <title>TERALINK Hacking Lab</title>
@@ -13,334 +14,328 @@
   <!-- QR 라이브러리 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 </head>
+
 <body>
-<div class="shell">
-  <div class="topbar">
-    <div style="display:flex;align-items:center;gap:10px;">
-      <div class="dots">
-        <span class="dot red"></span>
-        <span class="dot yellow"></span>
-        <span class="dot green"></span>
+  <div class="shell">
+    <div class="topbar">
+      <div class="topbar-flex">
+        <div class="dots">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+        <div class="top-title">teralink.store / hacking · toolkit</div>
       </div>
-      <div class="top-title">teralink.store / hacking · toolkit</div>
+      <div class="pill">KR-only · VPN-aware · read-only tools</div>
     </div>
-    <div class="pill">KR-only · VPN-aware · read-only tools</div>
-  </div>
 
-  <div class="layout">
-    <!-- 사이드바 -->
-    <aside class="sidebar">
-      <div class="nav-title">TOOLS</div>
-      <div class="tool-list">
-        <div class="tool-item active" data-target="hash">
-          <span>① Hash / Base64</span>
-          <span class="badge">crypto</span>
+    <div class="layout">
+      <!-- 사이드바 -->
+      <aside class="sidebar">
+        <div class="nav-title">TOOLS</div>
+        <div class="tool-list">
+          <div class="tool-item active" data-target="hash">
+            <span>① Hash / Base64</span>
+            <span class="badge">crypto</span>
+          </div>
+          <div class="tool-item" data-target="ip">
+            <span>② IP · DNS</span>
+            <span class="badge">network</span>
+          </div>
+          <div class="tool-item" data-target="json">
+            <span>③ JSON / URL</span>
+            <span class="badge">dev</span>
+          </div>
+          <div class="tool-item" data-target="qr">
+            <span>④ QR 생성기</span>
+            <span class="badge">utility</span>
+          </div>
+          <div class="tool-item" data-target="webhook">
+            <span>⑤ Webhook Sender</span>
+            <span class="badge">discord</span>
+          </div>
+          <div class="tool-item" data-target="client">
+            <span>⑥ Client Tools</span>
+            <span class="badge">misc</span>
+          </div>
+          <div class="tool-item" data-target="short">
+            <span>⑦ URL Shortener</span>
+            <span class="badge">link</span>
+          </div>
         </div>
-        <div class="tool-item" data-target="ip">
-          <span>② IP · DNS</span>
-          <span class="badge">network</span>
-        </div>
-        <div class="tool-item" data-target="json">
-          <span>③ JSON / URL</span>
-          <span class="badge">dev</span>
-        </div>
-        <div class="tool-item" data-target="qr">
-          <span>④ QR 생성기</span>
-          <span class="badge">utility</span>
-        </div>
-        <div class="tool-item" data-target="webhook">
-          <span>⑤ Webhook Sender</span>
-          <span class="badge">discord</span>
-        </div>
-        <div class="tool-item" data-target="client">
-          <span>⑥ Client Tools</span>
-          <span class="badge">misc</span>
-        </div>
-        <div class="tool-item" data-target="short">
-          <span>⑦ URL Shortener</span>
-          <span class="badge">link</span>
-        </div>
-      </div>
 
-      <div class="nav-title">INFO</div>
-      <p class="info-text">
-        이 페이지는 <strong>클라이언트 사이드</strong>에서만 동작합니다.<br/>
-        (IP/DNS 조회는 공개 API 사용)
-      </p>
-    </aside>
-
-    <!-- 메인 -->
-    <main class="main">
-      <!-- ① 해시 / Base64 -->
-      <section id="sec-hash" class="section active">
-        <h2>① Hash &amp; Base64</h2>
-        <p class="subtitle">
-          텍스트를 MD5 / SHA-256 해시로 변환하거나 Base64 인코딩·디코딩합니다.
+        <div class="nav-title">INFO</div>
+        <p class="info-text">
+          이 페이지는 <strong>클라이언트 사이드</strong>에서만 동작합니다.<br />
+          (IP/DNS 조회는 공개 API 사용)
         </p>
+      </aside>
 
-        <div class="card">
-          <h3>입력 텍스트</h3>
-          <textarea id="hash-input" class="large" placeholder="여기에 텍스트를 입력하세요."></textarea>
-          <div class="row">
-            <button type="button" onclick="makeHash('md5')">MD5 생성</button>
-            <button type="button" onclick="makeHash('sha256')">SHA-256 생성</button>
-            <button type="button" class="secondary" onclick="copyOutput('hash-output')">해시 결과 복사</button>
-          </div>
-          <div class="mini-label">※ SHA-256은 Web Crypto API 사용, MD5는 JS 라이브러리 사용.</div>
-          <div id="hash-output" class="output" style="margin-top:8px;"></div>
-        </div>
-
-        <div class="grid-2" style="margin-top:12px;">
-          <div class="card">
-            <h3>Base64 인코딩</h3>
-            <textarea id="b64-plain" class="small" placeholder="일반 텍스트"></textarea>
-            <div class="row">
-              <button type="button" onclick="encodeB64()">Base64로 인코딩</button>
-              <button type="button" class="secondary" onclick="copyOutput('b64-encoded')">복사</button>
-            </div>
-            <div id="b64-encoded" class="output" style="margin-top:6px;"></div>
-          </div>
-          <div class="card">
-            <h3>Base64 디코딩</h3>
-            <textarea id="b64-input" class="small" placeholder="Base64 문자열"></textarea>
-            <div class="row">
-              <button type="button" onclick="decodeB64()">일반 텍스트로 디코딩</button>
-              <button type="button" class="secondary" onclick="copyOutput('b64-decoded')">복사</button>
-            </div>
-            <div id="b64-decoded" class="output" style="margin-top:6px;"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ② IP / DNS -->
-      <section id="sec-ip" class="section">
-        <h2>② IP &amp; DNS</h2>
-        <p class="subtitle">
-          현재 접속 IP 정보와 간단한 DNS 조회 도구입니다.
-        </p>
-
-        <div class="grid-2">
-          <div class="card">
-            <h3>내 IP 정보</h3>
-            <div class="row">
-              <button type="button" onclick="fetchIpInfo()">IP 정보 조회</button>
-            </div>
-            <div id="ip-output" class="output" style="margin-top:6px;"></div>
-            <div class="mini-label">
-              ※ ipify + ipapi 등을 사용합니다. 응답 속도는 API 상황에 따라 달라질 수 있습니다.
-            </div>
-          </div>
-
-          <div class="card">
-            <h3>DNS Lookup</h3>
-            <label for="dns-domain">도메인</label>
-            <input id="dns-domain" placeholder="예: example.com" />
-            <label for="dns-type">레코드 타입</label>
-            <select id="dns-type">
-              <option value="A">A</option>
-              <option value="AAAA">AAAA</option>
-              <option value="MX">MX</option>
-              <option value="TXT">TXT</option>
-              <option value="CNAME">CNAME</option>
-            </select>
-            <div class="row" style="margin-top:8px;">
-              <button type="button" onclick="lookupDNS()">조회</button>
-              <button type="button" class="secondary" onclick="copyOutput('dns-output')">결과 복사</button>
-            </div>
-            <div id="dns-output" class="output" style="margin-top:6px;"></div>
-            <div class="mini-label">※ Google DNS(DoH) API 사용: dns.google/resolve</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ③ JSON / URL -->
-      <section id="sec-json" class="section">
-        <h2>③ JSON Formatter &amp; URL 인코딩</h2>
-        <p class="subtitle">
-          JSON을 포매팅하고, URL 인코딩/디코딩과 PATH 난독화를 수행합니다.
-        </p>
-
-        <div class="grid-2">
-          <div class="card">
-            <h3>JSON Formatter</h3>
-            <textarea id="json-input" class="large" placeholder='{"example": true, "value": 123}'></textarea>
-            <div class="row">
-              <button type="button" onclick="formatJSON()">포매팅</button>
-              <button type="button" onclick="minifyJSON()">압축(Minify)</button>
-              <button type="button" class="secondary" onclick="copyOutput('json-output')">결과 복사</button>
-            </div>
-            <div id="json-status" class="status"></div>
-            <div id="json-output" class="output" style="margin-top:6px;"></div>
-          </div>
-
-          <div class="card">
-            <h3>URL Encode / Decode</h3>
-            <label>원본 문자열</label>
-            <textarea id="url-input" class="small" placeholder="예: q=테스트&lang=ko"></textarea>
-            <div class="row">
-              <button type="button" onclick="encodeURL()">Encode</button>
-              <button type="button" onclick="decodeURL()">Decode</button>
-              <button type="button" class="secondary" onclick="copyOutput('url-output')">결과 복사</button>
-            </div>
-            <div id="url-output" class="output" style="margin-top:6px;"></div>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top:12px;">
-          <h3>PATH 난독화 인코딩</h3>
-          <p class="mini-label">
-            예: <code>/application?step=1</code> 같은 PATH 전체를 난독화합니다.<br />
-            결과는 URL-safe(16진수)라서 주소창에 그대로 넣어도 됩니다.
+      <!-- 메인 -->
+      <main class="main">
+        <!-- ① 해시 / Base64 -->
+        <section id="sec-hash" class="section active">
+          <h2>① Hash &amp; Base64</h2>
+          <p class="subtitle">
+            텍스트를 MD5 / SHA-256 해시로 변환하거나 Base64 인코딩·디코딩합니다.
           </p>
-          <label for="path-input">원본 PATH</label>
-          <input id="path-input" placeholder="/application?step=1&mode=edit" />
-          <div class="row" style="margin-top:8px;">
-            <button type="button" onclick="encodePathObfuscated()">PATH 난독화</button>
-            <button type="button" onclick="decodePathObfuscated()">복호화</button>
-            <button type="button" class="secondary" onclick="copyOutput('path-output')">결과 복사</button>
-          </div>
-          <div id="path-status" class="status"></div>
-          <div id="path-output" class="output" style="margin-top:6px;"></div>
-        </div>
-      </section>
 
-      <!-- ④ QR 코드 -->
-      <section id="sec-qr" class="section">
-        <h2>④ QR 코드 생성기</h2>
-        <p class="subtitle">
-          텍스트나 URL을 QR 코드로 변환합니다.
-        </p>
-
-        <div class="card">
-          <h3>QR 내용</h3>
-          <textarea id="qr-input" class="small" placeholder="https://teralink.store/"></textarea>
-          <div class="row">
-            <button type="button" onclick="generateQR()">QR 생성</button>
-            <button type="button" class="secondary" onclick="downloadQR()">PNG로 저장</button>
-          </div>
-          <canvas id="qr-canvas"></canvas>
-        </div>
-      </section>
-
-      <!-- ⑤ Webhook Sender -->
-      <section id="sec-webhook" class="section">
-        <h2>⑤ Discord Webhook Sender</h2>
-        <p class="subtitle">
-          테스트용으로 간단한 웹훅 메시지를 전송합니다. (악용 금지)
-        </p>
-
-        <div class="card">
-          <label>Webhook URL</label>
-          <input id="wh-url" placeholder="https://discord.com/api/webhooks/..." />
-
-          <label style="margin-top:8px;">전송할 메시지</label>
-          <textarea id="wh-message" class="small" placeholder="테스트 메시지"></textarea>
-
-          <label style="margin-top:8px;">전송 횟수</label>
-          <input id="wh-count" type="number" min="1" value="1" />
-
-          <div class="row" style="margin-top:10px;">
-            <button type="button" onclick="sendWebhookMessages()">전송</button>
-          </div>
-          <div id="wh-status" class="status"></div>
-        </div>
-      </section>
-
-      <!-- ⑥ Client Tools -->
-      <section id="sec-client" class="section">
-        <h2>⑥ Client Tools</h2>
-        <p class="subtitle">
-          간단한 클라이언트 정보와 랜덤 토큰 생성 도구입니다.
-        </p>
-
-        <div class="grid-2">
           <div class="card">
-            <h3>User-Agent / 브라우저 정보</h3>
+            <h3>입력 텍스트</h3>
+            <textarea id="hash-input" class="large" placeholder="여기에 텍스트를 입력하세요."></textarea>
             <div class="row">
-              <button type="button" onclick="showClientInfo()">현재 브라우저 정보</button>
-              <button type="button" class="secondary" onclick="copyOutput('client-output')">복사</button>
+              <button type="button" onclick="makeHash('md5')">MD5 생성</button>
+              <button type="button" onclick="makeHash('sha256')">SHA-256 생성</button>
+              <button type="button" class="secondary" onclick="copyOutput('hash-output')">해시 결과 복사</button>
             </div>
-            <div id="client-output" class="output" style="margin-top:6px;"></div>
+            <div class="mini-label">※ SHA-256은 Web Crypto API 사용, MD5는 JS 라이브러리 사용.</div>
+            <div id="hash-output" class="output mt-8"></div>
           </div>
+
+          <div class="grid-2 mt-12">
+            <div class="card">
+              <h3>Base64 인코딩</h3>
+              <textarea id="b64-plain" class="small" placeholder="일반 텍스트"></textarea>
+              <div class="row">
+                <button type="button" onclick="encodeB64()">Base64로 인코딩</button>
+                <button type="button" class="secondary" onclick="copyOutput('b64-encoded')">복사</button>
+              </div>
+              <div id="b64-encoded" class="output mt-6"></div>
+            </div>
+            <div class="card">
+              <h3>Base64 디코딩</h3>
+              <textarea id="b64-input" class="small" placeholder="Base64 문자열"></textarea>
+              <div class="row">
+                <button type="button" onclick="decodeB64()">일반 텍스트로 디코딩</button>
+                <button type="button" class="secondary" onclick="copyOutput('b64-decoded')">복사</button>
+              </div>
+              <div id="b64-decoded" class="output mt-6"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ② IP / DNS -->
+        <section id="sec-ip" class="section">
+          <h2>② IP &amp; DNS</h2>
+          <p class="subtitle">
+            현재 접속 IP 정보와 간단한 DNS 조회 도구입니다.
+          </p>
+
+          <div class="grid-2">
+            <div class="card">
+              <h3>내 IP 정보</h3>
+              <div class="row">
+                <button type="button" onclick="fetchIpInfo()">IP 정보 조회</button>
+              </div>
+              <div id="ip-output" class="output mt-6"></div>
+              <div class="mini-label">
+                ※ ipify + ipapi 등을 사용합니다. 응답 속도는 API 상황에 따라 달라질 수 있습니다.
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>DNS Lookup</h3>
+              <label for="dns-domain">도메인</label>
+              <input id="dns-domain" placeholder="예: example.com" />
+              <label for="dns-type">레코드 타입</label>
+              <select id="dns-type">
+                <option value="A">A</option>
+                <option value="AAAA">AAAA</option>
+                <option value="MX">MX</option>
+                <option value="TXT">TXT</option>
+                <option value="CNAME">CNAME</option>
+              </select>
+              <div class="row mt-8">
+                <button type="button" onclick="lookupDNS()">조회</button>
+                <button type="button" class="secondary" onclick="copyOutput('dns-output')">결과 복사</button>
+              </div>
+              <div id="dns-output" class="output mt-6"></div>
+              <div class="mini-label">※ Google DNS(DoH) API 사용: dns.google/resolve</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ③ JSON / URL -->
+        <section id="sec-json" class="section">
+          <h2>③ JSON Formatter &amp; URL 인코딩</h2>
+          <p class="subtitle">
+            JSON을 포매팅하고, URL 인코딩/디코딩과 PATH 난독화를 수행합니다.
+          </p>
+
+          <div class="grid-2">
+            <div class="card">
+              <h3>JSON Formatter</h3>
+              <textarea id="json-input" class="large" placeholder='{"example": true, "value": 123}'></textarea>
+              <div class="row">
+                <button type="button" onclick="formatJSON()">포매팅</button>
+                <button type="button" onclick="minifyJSON()">압축(Minify)</button>
+                <button type="button" class="secondary" onclick="copyOutput('json-output')">결과 복사</button>
+              </div>
+              <div id="json-status" class="status"></div>
+              <div id="json-output" class="output mt-6"></div>
+            </div>
+
+            <div class="card">
+              <h3>URL Encode / Decode</h3>
+              <label>원본 문자열</label>
+              <textarea id="url-input" class="small" placeholder="예: q=테스트&lang=ko"></textarea>
+              <div class="row">
+                <button type="button" onclick="encodeURL()">Encode</button>
+                <button type="button" onclick="decodeURL()">Decode</button>
+                <button type="button" class="secondary" onclick="copyOutput('url-output')">결과 복사</button>
+              </div>
+              <div id="url-output" class="output mt-6"></div>
+            </div>
+          </div>
+
+          <div class="card mt-12">
+            <h3>PATH 난독화 인코딩</h3>
+            <p class="mini-label">
+              예: <code>/application?step=1</code> 같은 PATH 전체를 난독화합니다.<br />
+              결과는 URL-safe(16진수)라서 주소창에 그대로 넣어도 됩니다.
+            </p>
+            <label for="path-input">원본 PATH</label>
+            <input id="path-input" placeholder="/application?step=1&mode=edit" />
+            <div class="row mt-8">
+              <button type="button" onclick="encodePathObfuscated()">PATH 난독화</button>
+              <button type="button" onclick="decodePathObfuscated()">복호화</button>
+              <button type="button" class="secondary" onclick="copyOutput('path-output')">결과 복사</button>
+            </div>
+            <div id="path-status" class="status"></div>
+            <div id="path-output" class="output mt-6"></div>
+          </div>
+        </section>
+
+        <!-- ④ QR 코드 -->
+        <section id="sec-qr" class="section">
+          <h2>④ QR 코드 생성기</h2>
+          <p class="subtitle">
+            텍스트나 URL을 QR 코드로 변환합니다.
+          </p>
 
           <div class="card">
-            <h3>랜덤 토큰 생성</h3>
-            <label for="token-length">길이</label>
-            <input id="token-length" type="number" min="8" max="128" value="32" />
-            <div class="row" style="margin-top:8px;">
-              <button type="button" onclick="generateRandomToken()">토큰 생성</button>
-              <button type="button" class="secondary" onclick="copyOutput('token-output')">복사</button>
+            <h3>QR 내용</h3>
+            <textarea id="qr-input" class="small" placeholder="https://teralink.store/"></textarea>
+            <div class="row">
+              <button type="button" onclick="generateQR()">QR 생성</button>
+              <button type="button" class="secondary" onclick="downloadQR()">PNG로 저장</button>
             </div>
-            <div id="token-output" class="output" style="margin-top:6px;"></div>
-            <div class="mini-label">
-              영문 대/소문자 + 숫자로 구성된 토큰을 만듭니다.
-            </div>
+            <canvas id="qr-canvas"></canvas>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- ⑦ URL Shortener -->
-      <section id="sec-short" class="section">
-        <h2>⑦ URL Shortener</h2>
-        <p class="subtitle">
-          원하는 링크를 짧게 만들고, 최대 30일 만료 + 선택적 비밀번호 보호를 적용합니다.
-          (백엔드는 Cloudflare Worker + D1)
-        </p>
+        <!-- ⑤ Webhook Sender -->
+        <section id="sec-webhook" class="section">
+          <h2>⑤ Discord Webhook Sender</h2>
+          <p class="subtitle">
+            테스트용으로 간단한 웹훅 메시지를 전송합니다. (악용 금지)
+          </p>
 
-        <div class="card">
-          <h3>단축 링크 생성</h3>
+          <div class="card">
+            <label>Webhook URL</label>
+            <input id="wh-url" placeholder="https://discord.com/api/webhooks/..." />
 
-          <label for="short-url-input">원본 URL</label>
-          <input
-            id="short-url-input"
-            placeholder="https://example.com/path?param=1"
-          />
+            <label class="mt-8">전송할 메시지</label>
+            <textarea id="wh-message" class="small" placeholder="테스트 메시지"></textarea>
 
-          <div class="row" style="margin-top:8px;">
-            <div class="field-half">
-              <label for="short-expiry">만료일 (최대 30일)</label>
-              <select id="short-expiry">
-                <option value="1">1일</option>
-                <option value="3">3일</option>
-                <option value="7">7일</option>
-                <option value="14">14일</option>
-                <option value="30" selected>30일</option>
-              </select>
+            <label for="wh-count" class="mt-8">전송 횟수</label>
+            <input id="wh-count" type="number" min="1" value="1" aria-label="전송 횟수" />
+
+            <div class="row mt-10">
+              <button type="button" onclick="sendWebhookMessages()">전송</button>
+            </div>
+            <div id="wh-status" class="status"></div>
+          </div>
+        </section>
+
+        <!-- ⑥ Client Tools -->
+        <section id="sec-client" class="section">
+          <h2>⑥ Client Tools</h2>
+          <p class="subtitle">
+            간단한 클라이언트 정보와 랜덤 토큰 생성 도구입니다.
+          </p>
+
+          <div class="grid-2">
+            <div class="card">
+              <h3>User-Agent / 브라우저 정보</h3>
+              <div class="row">
+                <button type="button" onclick="showClientInfo()">현재 브라우저 정보</button>
+                <button type="button" class="secondary" onclick="copyOutput('client-output')">복사</button>
+              </div>
+              <div id="client-output" class="output mt-6"></div>
             </div>
 
-            <div class="field-half">
-              <label>비밀번호 보호</label>
-              <div class="row-inline">
-                <input id="short-use-pass" type="checkbox" />
-                <span class="inline-label">사용</span>
+            <div class="card">
+              <h3>랜덤 토큰 생성</h3>
+              <label for="token-length">길이</label>
+              <input id="token-length" type="number" min="8" max="128" value="32" />
+              <div class="row mt-8">
+                <button type="button" onclick="generateRandomToken()">토큰 생성</button>
+                <button type="button" class="secondary" onclick="copyOutput('token-output')">복사</button>
+              </div>
+              <div id="token-output" class="output mt-6"></div>
+              <div class="mini-label">
+                영문 대/소문자 + 숫자로 구성된 토큰을 만듭니다.
               </div>
             </div>
           </div>
+        </section>
 
-          <div style="margin-top:8px;">
-            <label for="short-password">비밀번호 (옵션)</label>
-            <input
-              id="short-password"
-              type="password"
-              placeholder="비밀번호 보호를 사용할 때만 입력"
-              disabled
-            />
+        <!-- ⑦ URL Shortener -->
+        <section id="sec-short" class="section">
+          <h2>⑦ URL Shortener</h2>
+          <p class="subtitle">
+            원하는 링크를 짧게 만들고, 최대 30일 만료 + 선택적 비밀번호 보호를 적용합니다.
+            (백엔드는 Cloudflare Worker + D1)
+          </p>
+
+          <div class="card">
+            <h3>단축 링크 생성</h3>
+
+            <label for="short-url-input">원본 URL</label>
+            <input id="short-url-input" placeholder="https://example.com/path?param=1" />
+
+            <div class="row mt-8">
+              <div class="field-half">
+                <label for="short-expiry">만료일 (최대 30일)</label>
+                <select id="short-expiry">
+                  <option value="1">1일</option>
+                  <option value="3">3일</option>
+                  <option value="7">7일</option>
+                  <option value="14">14일</option>
+                  <option value="30" selected>30일</option>
+                </select>
+              </div>
+
+              <div class="field-half">
+                <label>비밀번호 보호</label>
+                <div class="row-inline">
+                  <input id="short-use-pass" type="checkbox" aria-label="비밀번호 보호 사용" />
+                  <span class="inline-label">사용</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-8">
+              <label for="short-password">비밀번호 (옵션)</label>
+              <input id="short-password" type="password" placeholder="비밀번호 보호를 사용할 때만 입력" disabled />
+            </div>
+
+            <div class="row mt-10">
+              <button type="button" onclick="createShortLink()">단축 URL 생성</button>
+              <button type="button" class="secondary" onclick="copyShortLink()">결과 복사</button>
+            </div>
+
+            <div id="short-status" class="status"></div>
+            <div id="short-output" class="output mt-6"></div>
           </div>
-
-          <div class="row" style="margin-top:10px;">
-            <button type="button" onclick="createShortLink()">단축 URL 생성</button>
-            <button type="button" class="secondary" onclick="copyShortLink()">결과 복사</button>
-          </div>
-
-          <div id="short-status" class="status"></div>
-          <div id="short-output" class="output" style="margin-top:6px;"></div>
-        </div>
-      </section>
-    </main>
+        </section>
+      </main>
+    </div>
   </div>
-</div>
 
-<!-- 메인 스크립트: body 끝에서 로드 -->
-<script src="hacking.js"></script>
+  <!-- 메인 스크립트: body 끝에서 로드 -->
+  <script src="hacking.js"></script>
 </body>
+
 </html>

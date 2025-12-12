@@ -168,6 +168,7 @@ body {
     opacity: 0;
     transform: translateY(4px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -366,3 +367,25 @@ button.secondary {
   }
 }
 
+/* 추가 유틸리티 클래스 */
+.mt-6 {
+  margin-top: 6px;
+}
+
+.mt-8 {
+  margin-top: 8px;
+}
+
+.mt-10 {
+  margin-top: 10px;
+}
+
+.mt-12 {
+  margin-top: 12px;
+}
+
+.topbar-flex {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

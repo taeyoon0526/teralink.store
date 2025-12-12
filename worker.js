@@ -1,24 +1,17 @@
-// =======================
-// 설정 상수
-// =======================
-const HACK_PASSWORD = "Hackers!";
-const HACK_COOKIE = "hacking_auth_v1";
+var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// /api/hacking/logs 조회용 API 키
-const LOG_API_KEY = "110526taeyoon!"; // 이미 써둔 값 유지
-
-// 단축 URL 관련
-const SHORT_MAX_DAYS = 30;
-
-// =======================
-// /hacking 로그인 페이지 HTML
-// =======================
+// worker.js
+var HACK_PASSWORD = "Hackers!";
+var HACK_COOKIE = "hacking_auth_v1";
+var LOG_API_KEY = "110526taeyoon!";
+var SHORT_MAX_DAYS = 30;
 function hackingLoginPage(message = "") {
   return new Response(`<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>TERALINK / hacking · auth</title>
+<title>TERALINK / hacking \xB7 auth</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body {
@@ -75,15 +68,15 @@ button {
 </head>
 <body>
 <div class="card">
-  <h1>/hacking 접근 제한</h1>
-  <p>승인된 사용자만 접근 가능한 도구 모음입니다.</p>
+  <h1>/hacking \uC811\uADFC \uC81C\uD55C</h1>
+  <p>\uC2B9\uC778\uB41C \uC0AC\uC6A9\uC790\uB9CC \uC811\uADFC \uAC00\uB2A5\uD55C \uB3C4\uAD6C \uBAA8\uC74C\uC785\uB2C8\uB2E4.</p>
   <form method="POST" action="/hacking">
-    <label for="pw">접근 비밀번호</label>
+    <label for="pw">\uC811\uADFC \uBE44\uBC00\uBC88\uD638</label>
     <input id="pw" name="password" type="password" autocomplete="off" />
-    <button type="submit">입장하기</button>
+    <button type="submit">\uC785\uC7A5\uD558\uAE30</button>
   </form>
   <div class="msg">${message ? message : ""}</div>
-  <div class="hint">※ 비밀번호는 관리자에게 직접 문의하세요.</div>
+  <div class="hint">\u203B \uBE44\uBC00\uBC88\uD638\uB294 \uAD00\uB9AC\uC790\uC5D0\uAC8C \uC9C1\uC811 \uBB38\uC758\uD558\uC138\uC694.</div>
 </div>
 </body>
 </html>`, {
@@ -91,15 +84,12 @@ button {
     headers: { "Content-Type": "text/html; charset=UTF-8" }
   });
 }
-
+__name(hackingLoginPage, "hackingLoginPage");
 function hasHackingAuth(request) {
   const cookie = request.headers.get("Cookie") || "";
-  return cookie.split(";").some(c => c.trim() === `${HACK_COOKIE}=1`);
+  return cookie.split(";").some((c) => c.trim() === `${HACK_COOKIE}=1`);
 }
-
-// =======================
-// 단축 URL용 랜덤 코드 + 비밀번호 페이지
-// =======================
+__name(hasHackingAuth, "hasHackingAuth");
 function makeShortCode(len = 6) {
   const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let out = "";
@@ -108,13 +98,13 @@ function makeShortCode(len = 6) {
   }
   return out;
 }
-
+__name(makeShortCode, "makeShortCode");
 function shortPasswordPage(code, message = "") {
   return new Response(`<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>보호된 링크 - 비밀번호 입력</title>
+<title>\uBCF4\uD638\uB41C \uB9C1\uD06C - \uBE44\uBC00\uBC88\uD638 \uC785\uB825</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   body {
@@ -187,12 +177,12 @@ function shortPasswordPage(code, message = "") {
 </head>
 <body>
 <div class="box">
-  <h1>보호된 링크</h1>
-  <p>이 단축 링크는 비밀번호로 보호되어 있습니다.</p>
+  <h1>\uBCF4\uD638\uB41C \uB9C1\uD06C</h1>
+  <p>\uC774 \uB2E8\uCD95 \uB9C1\uD06C\uB294 \uBE44\uBC00\uBC88\uD638\uB85C \uBCF4\uD638\uB418\uC5B4 \uC788\uC2B5\uB2C8\uB2E4.</p>
   <form method="POST" action="/s/${code}">
-    <label for="pw">비밀번호</label>
+    <label for="pw">\uBE44\uBC00\uBC88\uD638</label>
     <input id="pw" type="password" name="password" autocomplete="off" />
-    <button type="submit">열기</button>
+    <button type="submit">\uC5F4\uAE30</button>
   </form>
   <div class="msg">${message ? message : ""}</div>
 </div>
@@ -202,94 +192,72 @@ function shortPasswordPage(code, message = "") {
     headers: { "Content-Type": "text/html; charset=UTF-8" }
   });
 }
-
-// =======================
-// Worker 메인
-// =======================
-export default {
+__name(shortPasswordPage, "shortPasswordPage");
+var worker_default = {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const pathname = url.pathname.toLowerCase();
-
-    // -------------------------
-    // 공통 CF 정보 (VPN / 국가)
-    // -------------------------
     const cf = request.cf || {};
     const asn = cf.asn;
-    const country = cf.country;   // 국가 코드 (예: KR)
+    const country = cf.country;
     const isTor = cf.tor || false;
     const threat = cf.threat_score || 0;
     const botScore = cf.bot_score || 100;
-
-    // 한국만 허용 (그 외 국가는 전부 VPN 취급)
     const isForeign = country !== "KR";
-
     const vpnASN = [
-      16509,  // AWS
-      14618,  // Amazon
-      14061,  // DigitalOcean
-      16276,  // OVH
-      20473,  // Vultr
-      13335,  // Cloudflare
-      174,    // Cogent
-      9009,   // M247
-      41051,  // Contabo
-      212238, // US VPN ASN (테스트 값)
-      3258    // JP VPN ASN (테스트 값)
+      16509,
+      // AWS
+      14618,
+      // Amazon
+      14061,
+      // DigitalOcean
+      16276,
+      // OVH
+      20473,
+      // Vultr
+      13335,
+      // Cloudflare
+      174,
+      // Cogent
+      9009,
+      // M247
+      41051,
+      // Contabo
+      212238,
+      // US VPN ASN (테스트 값)
+      3258
+      // JP VPN ASN (테스트 값)
     ];
-
-    const isKR_VPN =
-      vpnASN.includes(asn) ||
-      isTor ||
-      threat > 0 ||
-      botScore < 80;
-
+    const isKR_VPN = vpnASN.includes(asn) || isTor || threat > 0 || botScore < 80;
     const isVPN = isForeign || isKR_VPN;
-
-    // =========================
-    // 1) /api/shorten : 단축 URL 생성
-    // =========================
     if (pathname === "/api/shorten" && request.method === "POST") {
       if (!env.LOG_DB) {
         return new Response("DB not configured", { status: 500 });
       }
-
       let body;
       try {
         body = await request.json();
       } catch {
         return new Response("invalid json", { status: 400 });
       }
-
       let rawUrl = (body.url || "").toString().trim();
       let days = parseInt(body.days || "30", 10);
       const password = (body.password || "").toString();
-
       if (!rawUrl) {
         return new Response("url required", { status: 400 });
       }
-
-      // 스킴 없으면 https 붙이기
       if (!/^https?:\/\//i.test(rawUrl)) {
         rawUrl = "https://" + rawUrl;
       }
-
       if (Number.isNaN(days) || days < 1) days = 1;
       if (days > SHORT_MAX_DAYS) days = SHORT_MAX_DAYS;
-
       const now = Date.now();
-      const expiresAt = new Date(now + days * 24 * 60 * 60 * 1000).toISOString();
+      const expiresAt = new Date(now + days * 24 * 60 * 60 * 1e3).toISOString();
       const createdAt = new Date(now).toISOString();
-
-      // 유니크 코드 생성
       let code = "";
       for (let i = 0; i < 5; i++) {
         const candidate = makeShortCode(6);
-        const exists = await env.LOG_DB
-          .prepare("SELECT 1 FROM short_urls WHERE code = ?")
-          .bind(candidate)
-          .first();
-
+        const exists = await env.LOG_DB.prepare("SELECT 1 FROM short_urls WHERE code = ?").bind(candidate).first();
         if (!exists) {
           code = candidate;
           break;
@@ -298,12 +266,7 @@ export default {
       if (!code) {
         return new Response("failed to generate code", { status: 500 });
       }
-
-      await env.LOG_DB
-        .prepare("INSERT INTO short_urls (code, url, password, expires_at, created_at) VALUES (?, ?, ?, ?, ?)")
-        .bind(code, rawUrl, password || null, expiresAt, createdAt)
-        .run();
-
+      await env.LOG_DB.prepare("INSERT INTO short_urls (code, url, password, expires_at, created_at) VALUES (?, ?, ?, ?, ?)").bind(code, rawUrl, password || null, expiresAt, createdAt).run();
       const result = {
         ok: true,
         code,
@@ -312,77 +275,49 @@ export default {
         expires_at: expiresAt,
         password_protected: !!password
       };
-
       return new Response(JSON.stringify(result), {
         status: 200,
         headers: { "Content-Type": "application/json; charset=UTF-8" }
       });
     }
-
-    // =========================
-    // 2) /s/<code> 단축 URL 접근
-    // =========================
     if (pathname.startsWith("/s/")) {
       if (!env.LOG_DB) {
         return new Response("DB not configured", { status: 500 });
       }
-
       const code = pathname.replace("/s/", "");
       if (!code || code.length > 64) {
         return new Response("invalid code", { status: 400 });
       }
-
-      const row = await env.LOG_DB
-        .prepare("SELECT url, password, expires_at FROM short_urls WHERE code = ?")
-        .bind(code)
-        .first();
-
+      const row = await env.LOG_DB.prepare("SELECT url, password, expires_at FROM short_urls WHERE code = ?").bind(code).first();
       if (!row) {
-        return new Response("해당 단축 링크를 찾을 수 없습니다.", { status: 404 });
+        return new Response("\uD574\uB2F9 \uB2E8\uCD95 \uB9C1\uD06C\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.", { status: 404 });
       }
-
-      const now = new Date();
+      const now = /* @__PURE__ */ new Date();
       if (row.expires_at) {
         const exp = new Date(row.expires_at);
         if (exp.getTime() < now.getTime()) {
-          return new Response("이 단축 링크는 만료되었습니다.", { status: 410 });
+          return new Response("\uC774 \uB2E8\uCD95 \uB9C1\uD06C\uB294 \uB9CC\uB8CC\uB418\uC5C8\uC2B5\uB2C8\uB2E4.", { status: 410 });
         }
       }
-
-      // 비밀번호 없는 경우 → 바로 리다이렉트
       if (!row.password) {
         return Response.redirect(row.url, 302);
       }
-
-      // 비밀번호 있는 경우
       if (request.method === "POST") {
         const formData = await request.formData();
         const pw = (formData.get("password") || "").toString();
         if (pw === row.password) {
           return Response.redirect(row.url, 302);
         }
-        return shortPasswordPage(code, "비밀번호가 올바르지 않습니다.");
+        return shortPasswordPage(code, "\uBE44\uBC00\uBC88\uD638\uAC00 \uC62C\uBC14\uB974\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.");
       }
-
-      // GET 요청이면 비밀번호 입력 페이지
       return shortPasswordPage(code, "");
     }
-
-    // =========================
-    // 3) /hacking 비밀번호 보호 + 접속 로그 기록
-    // =========================
-    const isHackingPath =
-      pathname === "/hacking" ||
-      pathname === "/hacking/" ||
-      pathname === "/hacking/index.html";
-
+    const isHackingPath = pathname === "/hacking" || pathname === "/hacking/" || pathname === "/hacking/index.html";
     if (isHackingPath) {
-      // 비밀번호 제출 (POST)
       if (request.method === "POST") {
         const formData = await request.formData();
         const pw = formData.get("password") || "";
         if (pw === HACK_PASSWORD) {
-          // 비밀번호 일치 → 쿠키 발급 후 /hacking/으로 리다이렉트
           return new Response(null, {
             status: 302,
             headers: {
@@ -391,70 +326,156 @@ export default {
             }
           });
         } else {
-          // 비밀번호 불일치
-          return hackingLoginPage("비밀번호가 올바르지 않습니다.");
+          return hackingLoginPage("\uBE44\uBC00\uBC88\uD638\uAC00 \uC62C\uBC14\uB974\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.");
         }
       }
-
-      // GET인데 쿠키 없음 → 로그인 페이지
       if (!hasHackingAuth(request)) {
         return hackingLoginPage("");
       }
-
-      // 여기까지 오면 인증 완료 상태 → 접속 로그를 DB에 기록
       try {
         const ip = request.headers.get("CF-Connecting-IP") || "";
         const ua = request.headers.get("User-Agent") || "";
         const path = pathname;
-        const nowISO = new Date().toISOString();
-
+        const nowISO = (/* @__PURE__ */ new Date()).toISOString();
         if (env.LOG_DB) {
           await env.LOG_DB.prepare(
             "INSERT INTO hacking_logs (ip, country, asn, ua, path, created_at) VALUES (?, ?, ?, ?, ?, ?)"
-          )
-          .bind(ip, country || "", asn || 0, ua, path, nowISO)
-          .run();
+          ).bind(ip, country || "", asn || 0, ua, path, nowISO).run();
         }
       } catch (e) {
-        // 로그 실패는 무시
       }
-
-      // 인증 + 로그 기록 후 → GitHub Pages의 /hacking/index.html로 패스
       return fetch(request);
     }
-
-    // =========================
-    // 4) /api/hacking/logs : D1에서 최근 로그 조회 (디스코드 봇에서 사용)
-    // =========================
     if (pathname === "/api/hacking/logs") {
       const key = url.searchParams.get("key") || "";
       if (key !== LOG_API_KEY) {
         return new Response("forbidden", { status: 403 });
       }
-
       const rawLimit = url.searchParams.get("limit") || "20";
       let limit = parseInt(rawLimit, 10);
       if (isNaN(limit)) limit = 20;
-      limit = Math.min(Math.max(limit, 1), 100); // 1~100 사이로 제한
-
+      limit = Math.min(Math.max(limit, 1), 100);
       if (!env.LOG_DB) {
         return new Response("DB not configured", { status: 500 });
       }
-
-      const result = await env.LOG_DB
-        .prepare("SELECT id, ip, country, asn, ua, path, created_at FROM hacking_logs ORDER BY id DESC LIMIT ?")
-        .bind(limit)
-        .all();
-
+      const result = await env.LOG_DB.prepare("SELECT id, ip, country, asn, ua, path, created_at FROM hacking_logs ORDER BY id DESC LIMIT ?").bind(limit).all();
       return new Response(JSON.stringify(result.results || result), {
         status: 200,
         headers: { "Content-Type": "application/json" }
       });
     }
-
-    // =========================
-    // 5) /__check_vpn : 클라이언트용 JSON 진단
-    // =========================
+    if (pathname === "/api/vpn-check" && request.method === "POST") {
+      const corsHeaders = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Content-Type": "application/json"
+      };
+      let clientData;
+      try {
+        clientData = await request.json();
+      } catch {
+        return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+          status: 400,
+          headers: corsHeaders
+        });
+      }
+      const ip = request.headers.get("CF-Connecting-IP") || clientData.ip || "";
+      const result = {
+        serverChecks: {
+          headers: {},
+          cloudflare: {},
+          ipReputation: {},
+          geoConsistency: {},
+          advancedDetection: {}
+        },
+        suspicionPoints: 0,
+        reasons: []
+      };
+      const proxyHeaders = [
+        "X-Forwarded-For",
+        "X-Real-IP",
+        "X-Proxy-ID",
+        "Via",
+        "Forwarded",
+        "X-BlueCoat-Via",
+        "CF-Connecting-IP",
+        "True-Client-IP",
+        "X-Original-Forwarded-For",
+        "X-ProxyUser-IP",
+        "Client-IP",
+        "WL-Proxy-Client-IP",
+        "Proxy-Client-IP"
+      ];
+      const detectedHeaders = [];
+      for (const header of proxyHeaders) {
+        const value = request.headers.get(header);
+        if (value) {
+          detectedHeaders.push({ name: header, value });
+        }
+      }
+      result.serverChecks.headers = {
+        detectedHeaders,
+        suspicionPoints: detectedHeaders.length > 2 ? 15 : 0
+      };
+      if (detectedHeaders.length > 2) {
+        result.suspicionPoints += 15;
+        result.reasons.push(`\uB2E4\uC911 \uD504\uB85D\uC2DC \uD5E4\uB354 \uAC10\uC9C0: ${detectedHeaders.length}\uAC1C`);
+      }
+      result.serverChecks.cloudflare = {
+        country,
+        asn,
+        isTor,
+        threatScore: threat,
+        botScore,
+        suspicionPoints: 0
+      };
+      if (isTor) {
+        result.suspicionPoints += 90;
+        result.reasons.push("Tor \uB124\uD2B8\uC6CC\uD06C \uAC10\uC9C0 (Cloudflare)");
+      }
+      if (threat > 10) {
+        result.suspicionPoints += 30;
+        result.reasons.push(`\uB192\uC740 \uC704\uD611 \uC810\uC218: ${threat}`);
+      }
+      if (botScore < 30) {
+        result.suspicionPoints += 25;
+        result.reasons.push(`\uB0AE\uC740 \uBD07 \uC810\uC218: ${botScore}`);
+      }
+      if (vpnASN.includes(asn)) {
+        result.suspicionPoints += 40;
+        result.reasons.push(`VPN/\uD638\uC2A4\uD305 ASN \uAC10\uC9C0: AS${asn}`);
+        result.serverChecks.advancedDetection.isHosting = true;
+      }
+      if (clientData.location && clientData.location.country !== country) {
+        result.suspicionPoints += 35;
+        result.reasons.push(`\uAD6D\uAC00 \uBD88\uC77C\uCE58: \uD074\uB77C\uC774\uC5B8\uD2B8(${clientData.location.country}) vs \uC11C\uBC84(${country})`);
+        result.serverChecks.geoConsistency = {
+          consistent: false,
+          clientCountry: clientData.location.country,
+          serverCountry: country
+        };
+      }
+      result.serverChecks.ipReputation = {
+        ip,
+        isTor,
+        isProxy: detectedHeaders.length > 2 || vpnASN.includes(asn),
+        isVPN: vpnASN.includes(asn) || isTor
+      };
+      return new Response(JSON.stringify(result), {
+        status: 200,
+        headers: corsHeaders
+      });
+    }
+    if (pathname === "/api/vpn-check" && request.method === "OPTIONS") {
+      return new Response(null, {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type"
+        }
+      });
+    }
     if (pathname.startsWith("/__check_vpn")) {
       return new Response(JSON.stringify({
         vpn: isVPN ? "blocked" : "ok",
@@ -472,29 +493,22 @@ export default {
         headers: { "Content-Type": "application/json" }
       });
     }
-
-    // =========================
-    // 6) /application 보호
-    // =========================
     const protectPaths = [
       "/application",
       "/application/",
       "/application.html"
     ];
-    const isApplication =
-      protectPaths.includes(pathname) ||
-      pathname.startsWith("/application?");
-
+    const isApplication = protectPaths.includes(pathname) || pathname.startsWith("/application?");
     if (isApplication) {
       if (isVPN) {
         return Response.redirect(url.origin + "/vpn.html", 302);
       }
       return fetch(request);
     }
-
-    // =========================
-    // 7) 그 외 모든 경로는 기본 패스
-    // =========================
     return fetch(request);
   }
 };
+export {
+  worker_default as default
+};
+//# sourceMappingURL=worker.js.map

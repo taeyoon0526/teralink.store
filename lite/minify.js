@@ -3,7 +3,7 @@ const path = require('path');
 const obfuscator = require('javascript-obfuscator');
 
 // 난독화할 파일 경로 설정
-const inputFilePath = path.join(__dirname, 'script.js');
+const inputFilePath = path.join(__dirname, 'default.js');
 const outputFilePath = path.join(__dirname, 'obfuscator.js');
 
 // 코드 난독화 함수
