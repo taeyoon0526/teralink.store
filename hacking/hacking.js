@@ -21,13 +21,34 @@ toolItems.forEach((item) => {
   });
 });
 
-// ========== 공통 출력 복사 ==========
+// ========== 공통 유틸 ==========
 function copyOutput(id) {
   const el = document.getElementById(id);
   if (!el) return;
   const text = el.innerText || el.textContent;
   if (!text) return;
-  navigator.clipboard.writeText(text).catch(() => {});
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).catch(() => {});
+  } else {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+  }
+}
+
+async function fetchJSONWithTimeout(url, options = {}, timeout = 8000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  try {
+    const res = await fetch(url, { ...options, signal: controller.signal });
+    const data = await res.json();
+    return { ok: res.ok, status: res.status, data };
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // ========== Hash ==========
@@ -52,13 +73,18 @@ async function makeHash(type) {
   }
 }
 
-// ========== Base64 ==========
+// ========== Base64 (UTF-8 safe) ==========
 function utf8ToB64(str) {
-  return btoa(unescape(encodeURIComponent(str)));
+  const bytes = new TextEncoder().encode(str);
+  let binary = "";
+  bytes.forEach((b) => (binary += String.fromCharCode(b)));
+  return btoa(binary);
 }
 
 function b64ToUtf8(str) {
-  return decodeURIComponent(escape(atob(str)));
+  const binary = atob(str);
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
 }
 
 function encodeB64() {
@@ -94,10 +120,13 @@ async function fetchIpInfo() {
   const out = document.getElementById("ip-output");
   out.textContent = "조회 중...";
   try {
-    const r1 = await fetch("https://api.ipify.org?format=json");
-    const ipData = await r1.json();
-    const r2 = await fetch("https://ipapi.co/json/");
-    const geoData = await r2.json();
+    const ipRes = await fetchJSONWithTimeout("https://api.ipify.org?format=json");
+    const geoRes = await fetchJSONWithTimeout("https://ipapi.co/json/");
+
+    if (!ipRes.ok || !geoRes.ok) throw new Error("IP 또는 위치 API 실패");
+
+    const ipData = ipRes.data || {};
+    const geoData = geoRes.data || {};
     out.textContent = JSON.stringify(
       {
         ip: ipData.ip,
@@ -112,7 +141,14 @@ async function fetchIpInfo() {
       2
     );
   } catch (e) {
-    out.textContent = "IP 정보 조회 실패: " + e;
+    // IPv6 차단 등에 대비한 Cloudflare trace 백업
+    try {
+      const trace = await fetch("https://1.1.1.1/cdn-cgi/trace", { cache: "no-store" });
+      const text = await trace.text();
+      out.textContent = text;
+    } catch (_) {
+      out.textContent = "IP 정보 조회 실패: " + e;
+    }
   }
 }
 
@@ -130,8 +166,8 @@ async function lookupDNS() {
     const url = `https://dns.google/resolve?name=${encodeURIComponent(
       domain
     )}&type=${encodeURIComponent(type)}`;
-    const res = await fetch(url);
-    const data = await res.json();
+    const { data, ok, status } = await fetchJSONWithTimeout(url, {}, 8000);
+    if (!ok) throw new Error(`DNS API 응답 오류 (${status})`);
     out.textContent = JSON.stringify(data, null, 2);
   } catch (e) {
     out.textContent = "DNS 조회 실패: " + e;
@@ -205,7 +241,10 @@ function decodeURL() {
 // ========== PATH 난독화 인코딩 ==========
 function obfuscatePath(path) {
   // 1) UTF-8 → Base64
-  const b64 = btoa(unescape(encodeURIComponent(path)));
+  const bytes = new TextEncoder().encode(path);
+  let bin = "";
+  bytes.forEach((b) => (bin += String.fromCharCode(b)));
+  const b64 = btoa(bin);
   // 2) 문자열 뒤집기
   const rev = b64.split("").reverse().join("");
   // 3) 각 문자 charCode를 16진수로 변환
@@ -231,8 +270,9 @@ function deobfuscatePath(hex) {
     rev += String.fromCharCode(code);
   }
   const b64 = rev.split("").reverse().join("");
-  const path = decodeURIComponent(escape(atob(b64)));
-  return path;
+  const bin = atob(b64);
+  const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
 }
 
 function encodePathObfuscated() {
@@ -318,8 +358,8 @@ async function sendWebhookMessages() {
     status.className = "status err";
     return;
   }
-  if (count < 1) {
-    status.textContent = "전송 횟수는 1 이상으로 입력하세요.";
+  if (count < 1 || count > 10) {
+    status.textContent = "전송 횟수는 1~10 사이로 입력하세요.";
     status.className = "status err";
     return;
   }
@@ -335,12 +375,13 @@ async function sendWebhookMessages() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: msg }),
+        signal: AbortSignal.timeout(8000),
       });
       if (res.ok) ok++;
       else fail++;
 
       // 레이트리밋 보호용 딜레이
-      await new Promise((r) => setTimeout(r, 300));
+      await new Promise((r) => setTimeout(r, 400));
     } catch (e) {
       fail++;
     }

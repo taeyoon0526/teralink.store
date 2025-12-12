@@ -22,33 +22,33 @@ let visitorInfo = {};
 
 // ========== 설정 상수 ==========
 const VPN_DETECTION_CONFIG = {
-    // 의심도 임계값
+    // 의심도 임계값 (더 엄격하게 조정)
     THRESHOLDS: {
-        CRITICAL: 85,      // 확실한 VPN/Tor
-        HIGH: 70,          // 매우 의심
-        MEDIUM: 50,        // 의심
-        LOW: 30            // 약간 의심
+        CRITICAL: 75,      // 확실한 VPN/Tor (85 → 75)
+        HIGH: 60,          // 매우 의심 (70 → 60)
+        MEDIUM: 40,        // 의심 (50 → 40)
+        LOW: 25            // 약간 의심 (30 → 25)
     },
     
-    // 최소 증거 요구 (오탐지 방지)
+    // 최소 증거 요구 (더 유연하게)
     MIN_EVIDENCE_COUNT: {
-        CRITICAL: 3,  // 85점 이상이라도 최소 3개 증거 필요
+        CRITICAL: 2,  // 75점 이상이면 2개 증거로 충분 (3 → 2)
         HIGH: 2,
         MEDIUM: 1
     },
     
-    // 가중치 (신뢰도)
+    // 가중치 (더 강하게 조정)
     WEIGHTS: {
         TOR_DETECTED: 1.0,              // 100% 신뢰
-        KNOWN_VPN_SERVICE: 0.95,        // 95% 신뢰
-        DATACENTER_ASN: 0.90,           // 90% 신뢰
-        SERVER_IP_REPUTATION: 0.85,     // 85% 신뢰
-        WEBRTC_IP_MISMATCH: 0.75,       // 75% 신뢰
-        TIMEZONE_MISMATCH: 0.60,        // 60% 신뢰
-        MULTIPLE_PROXY_HEADERS: 0.70,   // 70% 신뢰
-        DNS_LEAK: 0.50,                 // 50% 신뢰
-        BROWSER_ANOMALIES: 0.40,        // 40% 신뢰
-        HIGH_LATENCY: 0.35              // 35% 신뢰
+        KNOWN_VPN_SERVICE: 0.98,        // 98% 신뢰 (0.95 → 0.98)
+        DATACENTER_ASN: 0.95,           // 95% 신뢰 (0.90 → 0.95)
+        SERVER_IP_REPUTATION: 0.90,     // 90% 신뢰 (0.85 → 0.90)
+        WEBRTC_IP_MISMATCH: 0.80,       // 80% 신뢰 (0.75 → 0.80)
+        TIMEZONE_MISMATCH: 0.65,        // 65% 신뢰 (0.60 → 0.65)
+        MULTIPLE_PROXY_HEADERS: 0.75,   // 75% 신뢰 (0.70 → 0.75)
+        DNS_LEAK: 0.55,                 // 55% 신뢰 (0.50 → 0.55)
+        BROWSER_ANOMALIES: 0.45,        // 45% 신뢰 (0.40 → 0.45)
+        HIGH_LATENCY: 0.40              // 40% 신뢰 (0.35 → 0.40)
     },
     
     // 화이트리스트 (정상 사용자 보호)
@@ -67,7 +67,7 @@ const VPN_DETECTION_CONFIG = {
 /**
  * 강화된 VPN 탐지 메인 함수
  */
-async function detectVPNProxyEnhanced(visitorInfo) {
+async function detectVPNProxy(visitorInfo) {
     const detection = {
         // 최종 판단
         isVPN: false,
@@ -147,14 +147,14 @@ async function detectVPNProxyEnhanced(visitorInfo) {
         if (serverCheck && !serverCheck.error) {
             detection.details.server = serverCheck;
             
-            // 2.1 IP 평판 (외부 API)
+            // 2.1 IP 평판 (외부 API) - 점수 대폭 상향
             if (serverCheck.ipReputation) {
                 const rep = serverCheck.ipReputation;
                 if (rep.isVPN || rep.isTor || rep.isProxy) {
                     addEvidence(detection, {
                         type: 'SERVER_IP_REPUTATION',
                         weight: VPN_DETECTION_CONFIG.WEIGHTS.SERVER_IP_REPUTATION,
-                        score: rep.confidenceScore || 85,
+                        score: rep.confidenceScore || 95,  // 85 → 95로 상향
                         description: `IP 평판 DB 매칭: ${rep.sources.join(', ')}`,
                         critical: true
                     });
@@ -164,7 +164,7 @@ async function detectVPNProxyEnhanced(visitorInfo) {
                 }
             }
             
-            // 2.2 데이터센터/호스팅 ASN
+            // 2.2 데이터센터/호스팅 ASN - 점수 상향
             if (serverCheck.advancedDetection?.isHosting) {
                 // 화이트리스트 체크
                 const isLegitimate = isLegitimateHosting(serverCheck.advancedDetection.asn);
@@ -172,7 +172,7 @@ async function detectVPNProxyEnhanced(visitorInfo) {
                     addEvidence(detection, {
                         type: 'DATACENTER_ASN',
                         weight: VPN_DETECTION_CONFIG.WEIGHTS.DATACENTER_ASN,
-                        score: 80,
+                        score: 90,  // 80 → 90으로 상향
                         description: `데이터센터/호스팅 감지: ${serverCheck.advancedDetection.asn}`
                     });
                     detection.isDatacenter = true;
@@ -291,7 +291,27 @@ async function detectVPNProxyEnhanced(visitorInfo) {
         const hasCriticalEvidence = detection.evidence.some(e => e.critical);
         if (hasCriticalEvidence) {
             detection.isVPN = true;
-            detection.confidence = Math.max(detection.confidence, 90);
+            detection.confidence = Math.max(detection.confidence, 94);
+        }
+
+        // 가중치 기반 최종 의심도(0-100) 산출 및 이유 목록 생성
+        detection.suspicionLevel = Math.round(Math.min(Math.max(detection.score, 0), 100));
+        detection.reasons = detection.evidence.map((e, idx) => `[#${idx + 1}] ${e.description || e.type}`);
+
+        // 증거가 있고 점수가 중간 이상이면 VPN 확정
+        if (!detection.isVPN && detection.evidenceCount > 0 && detection.suspicionLevel >= VPN_DETECTION_CONFIG.THRESHOLDS.MEDIUM) {
+            detection.isVPN = true;
+        }
+
+        // 증거가 전무하고 점수가 매우 낮으면 확실히 정상으로 판정
+        if (detection.evidenceCount === 0 && detection.suspicionLevel < VPN_DETECTION_CONFIG.THRESHOLDS.LOW) {
+            detection.isVPN = false;
+            detection.isProxy = false;
+            detection.isTor = false;
+            detection.isDatacenter = false;
+            detection.riskLevel = 'none';
+            detection.confidence = Math.max(detection.confidence, 96);
+            detection.reasons = ['정상 연결로 판단 (의심 증거 없음)'];
         }
         
     } catch (error) {
@@ -1652,26 +1672,37 @@ async function collectAndSendInfo() {
         visitorInfo.ip = ipInfo.primary;
         visitorInfo.ipVersion = ipInfo.ipVersion;
 
-        // 위치 정보 (ip-api) - primary IP 기준
+        // 위치 정보 - Cloudflare trace로 변경 (IPv6 지원)
         if (visitorInfo.ip) {
             try {
-                const locationResponse = await fetch(`https://ip-api.com/json/${visitorInfo.ip}`);
-                const locationData = await locationResponse.json();
-
-                if (locationData.status === 'success') {
-                    visitorInfo.location = {
-                        country: locationData.country,
-                        countryCode: locationData.countryCode,
-                        region: locationData.regionName,
-                        city: locationData.city,
-                        isp: locationData.isp,
-                        org: locationData.org,
-                        timezone: locationData.timezone,
-                        lat: locationData.lat,
-                        lon: locationData.lon
-                    };
-                }
-            } catch {}
+                // Cloudflare trace 사용 (CORS 이슈 없음)
+                const traceResponse = await fetch('https://1.1.1.1/cdn-cgi/trace');
+                const traceText = await traceResponse.text();
+                const traceData = {};
+                traceText.split('\n').forEach(line => {
+                    const [key, value] = line.split('=');
+                    if (key && value) traceData[key] = value;
+                });
+                
+                visitorInfo.location = {
+                    country: traceData.loc || 'Unknown',
+                    countryCode: traceData.loc || 'XX',
+                    region: '',
+                    city: '',
+                    isp: traceData.colo || 'Unknown',
+                    org: '',
+                    timezone: traceData.tz || '',
+                    lat: 0,
+                    lon: 0
+                };
+            } catch {
+                // 실패 시 기본값
+                visitorInfo.location = {
+                    country: 'Unknown',
+                    countryCode: 'XX',
+                    isp: 'Unknown'
+                };
+            }
         }
 
         const now = new Date();
