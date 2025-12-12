@@ -1,514 +1,418 @@
-var __defProp = Object.defineProperty;
-var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+/**
+ * Cloudflare Workers - VPN/프록시 서버 사이드 체크 API
+ * 엔드포인트: /api/vpn-check
+ */
 
-// worker.js
-var HACK_PASSWORD = "Hackers!";
-var HACK_COOKIE = "hacking_auth_v1";
-var LOG_API_KEY = "110526taeyoon!";
-var SHORT_MAX_DAYS = 30;
-function hackingLoginPage(message = "") {
-  return new Response(`<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<title>TERALINK / hacking \xB7 auth</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body {
-  margin:0;
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:#020617;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color:#e5e7eb;
-}
-.card {
-  width:100%;
-  max-width:380px;
-  padding:22px;
-  border-radius:16px;
-  background:radial-gradient(circle at top left,#0f172a,#020617 60%);
-  border:1px solid #1f2937;
-  box-shadow:0 24px 60px rgba(0,0,0,0.7);
-}
-h1 {
-  margin:0 0 6px;
-  font-size:20px;
-}
-p { margin:4px 0 14px; font-size:13px; color:#9ca3af; }
-label { font-size:12px; color:#9ca3af; display:block; margin-bottom:4px; }
-input {
-  width:100%;
-  padding:9px 10px;
-  border-radius:10px;
-  border:1px solid #1f2937;
-  background:#020617;
-  color:#e5e7eb;
-  font-size:13px;
-  outline:none;
-}
-input:focus { border-color:#22c55e; box-shadow:0 0 0 1px rgba(34,197,94,0.5); }
-button {
-  margin-top:10px;
-  width:100%;
-  padding:9px;
-  border-radius:999px;
-  border:none;
-  background:linear-gradient(135deg,#22c55e,#4ade80);
-  color:#022c22;
-  font-weight:600;
-  cursor:pointer;
-  font-size:13px;
-}
-.msg { font-size:12px; color:#f97373; min-height:16px; margin-top:6px; }
-.hint { font-size:11px; color:#6b7280; margin-top:8px; }
-</style>
-</head>
-<body>
-<div class="card">
-  <h1>/hacking \uC811\uADFC \uC81C\uD55C</h1>
-  <p>\uC2B9\uC778\uB41C \uC0AC\uC6A9\uC790\uB9CC \uC811\uADFC \uAC00\uB2A5\uD55C \uB3C4\uAD6C \uBAA8\uC74C\uC785\uB2C8\uB2E4.</p>
-  <form method="POST" action="/hacking">
-    <label for="pw">\uC811\uADFC \uBE44\uBC00\uBC88\uD638</label>
-    <input id="pw" name="password" type="password" autocomplete="off" />
-    <button type="submit">\uC785\uC7A5\uD558\uAE30</button>
-  </form>
-  <div class="msg">${message ? message : ""}</div>
-  <div class="hint">\u203B \uBE44\uBC00\uBC88\uD638\uB294 \uAD00\uB9AC\uC790\uC5D0\uAC8C \uC9C1\uC811 \uBB38\uC758\uD558\uC138\uC694.</div>
-</div>
-</body>
-</html>`, {
-    status: 200,
-    headers: { "Content-Type": "text/html; charset=UTF-8" }
-  });
-}
-__name(hackingLoginPage, "hackingLoginPage");
-function hasHackingAuth(request) {
-  const cookie = request.headers.get("Cookie") || "";
-  return cookie.split(";").some((c) => c.trim() === `${HACK_COOKIE}=1`);
-}
-__name(hasHackingAuth, "hasHackingAuth");
-function makeShortCode(len = 6) {
-  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let out = "";
-  for (let i = 0; i < len; i++) {
-    out += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return out;
-}
-__name(makeShortCode, "makeShortCode");
-function shortPasswordPage(code, message = "") {
-  return new Response(`<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<title>\uBCF4\uD638\uB41C \uB9C1\uD06C - \uBE44\uBC00\uBC88\uD638 \uC785\uB825</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<style>
-  body {
-    margin:0;
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:#020617;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    color:#e5e7eb;
-  }
-  .box {
-    max-width:380px;
-    width:100%;
-    padding:22px;
-    background:#020617;
-    border-radius:16px;
-    border:1px solid #1f2937;
-    box-shadow:0 20px 60px rgba(0,0,0,0.7);
-  }
-  h1 {
-    margin:0 0 6px;
-    font-size:20px;
-  }
-  p {
-    margin:4px 0 10px;
-    font-size:13px;
-    color:#9ca3af;
-  }
-  label {
-    font-size:12px;
-    color:#9ca3af;
-    display:block;
-    margin-bottom:4px;
-  }
-  input {
-    width:100%;
-    padding:9px 10px;
-    border-radius:10px;
-    border:1px solid #1f2937;
-    background:#020617;
-    color:#e5e7eb;
-    font-size:13px;
-    outline:none;
-  }
-  input:focus {
-    border-color:#22c55e;
-    box-shadow:0 0 0 1px rgba(34,197,94,0.5);
-  }
-  button {
-    margin-top:10px;
-    width:100%;
-    padding:9px;
-    border-radius:999px;
-    border:none;
-    background:linear-gradient(135deg,#22c55e,#4ade80);
-    color:#022c22;
-    font-weight:600;
-    cursor:pointer;
-    font-size:13px;
-  }
-  .msg {
-    font-size:12px;
-    color:#f97373;
-    min-height:16px;
-    margin-top:6px;
-  }
-</style>
-</head>
-<body>
-<div class="box">
-  <h1>\uBCF4\uD638\uB41C \uB9C1\uD06C</h1>
-  <p>\uC774 \uB2E8\uCD95 \uB9C1\uD06C\uB294 \uBE44\uBC00\uBC88\uD638\uB85C \uBCF4\uD638\uB418\uC5B4 \uC788\uC2B5\uB2C8\uB2E4.</p>
-  <form method="POST" action="/s/${code}">
-    <label for="pw">\uBE44\uBC00\uBC88\uD638</label>
-    <input id="pw" type="password" name="password" autocomplete="off" />
-    <button type="submit">\uC5F4\uAE30</button>
-  </form>
-  <div class="msg">${message ? message : ""}</div>
-</div>
-</body>
-</html>`, {
-    status: 200,
-    headers: { "Content-Type": "text/html; charset=UTF-8" }
-  });
-}
-__name(shortPasswordPage, "shortPasswordPage");
-var worker_default = {
+export default {
   async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-    const pathname = url.pathname.toLowerCase();
-    const cf = request.cf || {};
-    const asn = cf.asn;
-    const country = cf.country;
-    const isTor = cf.tor || false;
-    const threat = cf.threat_score || 0;
-    const botScore = cf.bot_score || 100;
-    const isForeign = country !== "KR";
-    const vpnASN = [
-      16509,
-      // AWS
-      14618,
-      // Amazon
-      14061,
-      // DigitalOcean
-      16276,
-      // OVH
-      20473,
-      // Vultr
-      13335,
-      // Cloudflare
-      174,
-      // Cogent
-      9009,
-      // M247
-      41051,
-      // Contabo
-      212238,
-      // US VPN ASN (테스트 값)
-      3258
-      // JP VPN ASN (테스트 값)
-    ];
-    const isKR_VPN = vpnASN.includes(asn) || isTor || threat > 0 || botScore < 80;
-    const isVPN = isForeign || isKR_VPN;
-    if (pathname === "/api/shorten" && request.method === "POST") {
-      if (!env.LOG_DB) {
-        return new Response("DB not configured", { status: 500 });
-      }
-      let body;
-      try {
-        body = await request.json();
-      } catch {
-        return new Response("invalid json", { status: 400 });
-      }
-      let rawUrl = (body.url || "").toString().trim();
-      let days = parseInt(body.days || "30", 10);
-      const password = (body.password || "").toString();
-      if (!rawUrl) {
-        return new Response("url required", { status: 400 });
-      }
-      if (!/^https?:\/\//i.test(rawUrl)) {
-        rawUrl = "https://" + rawUrl;
-      }
-      if (Number.isNaN(days) || days < 1) days = 1;
-      if (days > SHORT_MAX_DAYS) days = SHORT_MAX_DAYS;
-      const now = Date.now();
-      const expiresAt = new Date(now + days * 24 * 60 * 60 * 1e3).toISOString();
-      const createdAt = new Date(now).toISOString();
-      let code = "";
-      for (let i = 0; i < 5; i++) {
-        const candidate = makeShortCode(6);
-        const exists = await env.LOG_DB.prepare("SELECT 1 FROM short_urls WHERE code = ?").bind(candidate).first();
-        if (!exists) {
-          code = candidate;
-          break;
-        }
-      }
-      if (!code) {
-        return new Response("failed to generate code", { status: 500 });
-      }
-      await env.LOG_DB.prepare("INSERT INTO short_urls (code, url, password, expires_at, created_at) VALUES (?, ?, ?, ?, ?)").bind(code, rawUrl, password || null, expiresAt, createdAt).run();
-      const result = {
-        ok: true,
-        code,
-        short_url: `${url.origin}/s/${code}`,
-        url: rawUrl,
-        expires_at: expiresAt,
-        password_protected: !!password
-      };
+    // CORS 헤더 설정
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    };
+
+    // OPTIONS 요청 처리 (CORS preflight)
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders });
+    }
+
+    if (request.method !== 'POST') {
+      return new Response('Method not allowed', { status: 405, headers: corsHeaders });
+    }
+
+    try {
+      const clientData = await request.json();
+      const result = await performServerSideChecks(request, clientData);
+
       return new Response(JSON.stringify(result), {
-        status: 200,
-        headers: { "Content-Type": "application/json; charset=UTF-8" }
-      });
-    }
-    if (pathname.startsWith("/s/")) {
-      if (!env.LOG_DB) {
-        return new Response("DB not configured", { status: 500 });
-      }
-      const code = pathname.replace("/s/", "");
-      if (!code || code.length > 64) {
-        return new Response("invalid code", { status: 400 });
-      }
-      const row = await env.LOG_DB.prepare("SELECT url, password, expires_at FROM short_urls WHERE code = ?").bind(code).first();
-      if (!row) {
-        return new Response("\uD574\uB2F9 \uB2E8\uCD95 \uB9C1\uD06C\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.", { status: 404 });
-      }
-      const now = /* @__PURE__ */ new Date();
-      if (row.expires_at) {
-        const exp = new Date(row.expires_at);
-        if (exp.getTime() < now.getTime()) {
-          return new Response("\uC774 \uB2E8\uCD95 \uB9C1\uD06C\uB294 \uB9CC\uB8CC\uB418\uC5C8\uC2B5\uB2C8\uB2E4.", { status: 410 });
-        }
-      }
-      if (!row.password) {
-        return Response.redirect(row.url, 302);
-      }
-      if (request.method === "POST") {
-        const formData = await request.formData();
-        const pw = (formData.get("password") || "").toString();
-        if (pw === row.password) {
-          return Response.redirect(row.url, 302);
-        }
-        return shortPasswordPage(code, "\uBE44\uBC00\uBC88\uD638\uAC00 \uC62C\uBC14\uB974\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.");
-      }
-      return shortPasswordPage(code, "");
-    }
-    const isHackingPath = pathname === "/hacking" || pathname === "/hacking/" || pathname === "/hacking/index.html";
-    if (isHackingPath) {
-      if (request.method === "POST") {
-        const formData = await request.formData();
-        const pw = formData.get("password") || "";
-        if (pw === HACK_PASSWORD) {
-          return new Response(null, {
-            status: 302,
-            headers: {
-              "Location": "/hacking/",
-              "Set-Cookie": `${HACK_COOKIE}=1; Path=/hacking; HttpOnly; Secure; SameSite=Lax`
-            }
-          });
-        } else {
-          return hackingLoginPage("\uBE44\uBC00\uBC88\uD638\uAC00 \uC62C\uBC14\uB974\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.");
-        }
-      }
-      if (!hasHackingAuth(request)) {
-        return hackingLoginPage("");
-      }
-      try {
-        const ip = request.headers.get("CF-Connecting-IP") || "";
-        const ua = request.headers.get("User-Agent") || "";
-        const path = pathname;
-        const nowISO = (/* @__PURE__ */ new Date()).toISOString();
-        if (env.LOG_DB) {
-          await env.LOG_DB.prepare(
-            "INSERT INTO hacking_logs (ip, country, asn, ua, path, created_at) VALUES (?, ?, ?, ?, ?, ?)"
-          ).bind(ip, country || "", asn || 0, ua, path, nowISO).run();
-        }
-      } catch (e) {
-      }
-      return fetch(request);
-    }
-    if (pathname === "/api/hacking/logs") {
-      const key = url.searchParams.get("key") || "";
-      if (key !== LOG_API_KEY) {
-        return new Response("forbidden", { status: 403 });
-      }
-      const rawLimit = url.searchParams.get("limit") || "20";
-      let limit = parseInt(rawLimit, 10);
-      if (isNaN(limit)) limit = 20;
-      limit = Math.min(Math.max(limit, 1), 100);
-      if (!env.LOG_DB) {
-        return new Response("DB not configured", { status: 500 });
-      }
-      const result = await env.LOG_DB.prepare("SELECT id, ip, country, asn, ua, path, created_at FROM hacking_logs ORDER BY id DESC LIMIT ?").bind(limit).all();
-      return new Response(JSON.stringify(result.results || result), {
-        status: 200,
-        headers: { "Content-Type": "application/json" }
-      });
-    }
-    if (pathname === "/api/vpn-check" && request.method === "POST") {
-      const corsHeaders = {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Content-Type": "application/json"
-      };
-      let clientData;
-      try {
-        clientData = await request.json();
-      } catch {
-        return new Response(JSON.stringify({ error: "Invalid JSON" }), {
-          status: 400,
-          headers: corsHeaders
-        });
-      }
-      const ip = request.headers.get("CF-Connecting-IP") || clientData.ip || "";
-      const result = {
-        serverChecks: {
-          headers: {},
-          cloudflare: {},
-          ipReputation: {},
-          geoConsistency: {},
-          advancedDetection: {}
-        },
-        suspicionPoints: 0,
-        reasons: []
-      };
-      const proxyHeaders = [
-        "X-Forwarded-For",
-        "X-Real-IP",
-        "X-Proxy-ID",
-        "Via",
-        "Forwarded",
-        "X-BlueCoat-Via",
-        "CF-Connecting-IP",
-        "True-Client-IP",
-        "X-Original-Forwarded-For",
-        "X-ProxyUser-IP",
-        "Client-IP",
-        "WL-Proxy-Client-IP",
-        "Proxy-Client-IP"
-      ];
-      const detectedHeaders = [];
-      for (const header of proxyHeaders) {
-        const value = request.headers.get(header);
-        if (value) {
-          detectedHeaders.push({ name: header, value });
-        }
-      }
-      result.serverChecks.headers = {
-        detectedHeaders,
-        suspicionPoints: detectedHeaders.length > 2 ? 15 : 0
-      };
-      if (detectedHeaders.length > 2) {
-        result.suspicionPoints += 15;
-        result.reasons.push(`\uB2E4\uC911 \uD504\uB85D\uC2DC \uD5E4\uB354 \uAC10\uC9C0: ${detectedHeaders.length}\uAC1C`);
-      }
-      result.serverChecks.cloudflare = {
-        country,
-        asn,
-        isTor,
-        threatScore: threat,
-        botScore,
-        suspicionPoints: 0
-      };
-      if (isTor) {
-        result.suspicionPoints += 90;
-        result.reasons.push("Tor \uB124\uD2B8\uC6CC\uD06C \uAC10\uC9C0 (Cloudflare)");
-      }
-      if (threat > 10) {
-        result.suspicionPoints += 30;
-        result.reasons.push(`\uB192\uC740 \uC704\uD611 \uC810\uC218: ${threat}`);
-      }
-      if (botScore < 30) {
-        result.suspicionPoints += 25;
-        result.reasons.push(`\uB0AE\uC740 \uBD07 \uC810\uC218: ${botScore}`);
-      }
-      if (vpnASN.includes(asn)) {
-        result.suspicionPoints += 40;
-        result.reasons.push(`VPN/\uD638\uC2A4\uD305 ASN \uAC10\uC9C0: AS${asn}`);
-        result.serverChecks.advancedDetection.isHosting = true;
-      }
-      if (clientData.location && clientData.location.country !== country) {
-        result.suspicionPoints += 35;
-        result.reasons.push(`\uAD6D\uAC00 \uBD88\uC77C\uCE58: \uD074\uB77C\uC774\uC5B8\uD2B8(${clientData.location.country}) vs \uC11C\uBC84(${country})`);
-        result.serverChecks.geoConsistency = {
-          consistent: false,
-          clientCountry: clientData.location.country,
-          serverCountry: country
-        };
-      }
-      result.serverChecks.ipReputation = {
-        ip,
-        isTor,
-        isProxy: detectedHeaders.length > 2 || vpnASN.includes(asn),
-        isVPN: vpnASN.includes(asn) || isTor
-      };
-      return new Response(JSON.stringify(result), {
-        status: 200,
-        headers: corsHeaders
-      });
-    }
-    if (pathname === "/api/vpn-check" && request.method === "OPTIONS") {
-      return new Response(null, {
         headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type"
-        }
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch (error) {
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 500,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
       });
     }
-    if (pathname.startsWith("/__check_vpn")) {
-      return new Response(JSON.stringify({
-        vpn: isVPN ? "blocked" : "ok",
-        reason: {
-          country,
-          isForeign,
-          asn,
-          isKR_VPN,
-          isTor,
-          threat,
-          botScore
-        }
-      }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" }
-      });
-    }
-    const protectPaths = [
-      "/application",
-      "/application/",
-      "/application.html"
-    ];
-    const isApplication = protectPaths.includes(pathname) || pathname.startsWith("/application?");
-    if (isApplication) {
-      if (isVPN) {
-        return Response.redirect(url.origin + "/vpn.html", 302);
-      }
-      return fetch(request);
-    }
-    return fetch(request);
+  },
+};
+
+/**
+ * 서버 사이드 VPN/프록시 체크
+ */
+async function performServerSideChecks(request, clientData) {
+  const result = {
+    serverChecks: {
+      headers: {},
+      ipReputation: {},
+      geoConsistency: {},
+      advancedDetection: {}
+    },
+    suspicionPoints: 0,
+    reasons: []
+  };
+
+  // 1. HTTP 헤더 분석
+  const headerCheck = analyzeHeaders(request);
+  result.serverChecks.headers = headerCheck;
+  result.suspicionPoints += headerCheck.suspicionPoints;
+  if (headerCheck.reasons.length > 0) {
+    result.reasons.push(...headerCheck.reasons);
   }
-};
-export {
-  worker_default as default
-};
-//# sourceMappingURL=worker.js.map
+
+  // 2. Cloudflare 제공 정보 활용
+  const cfData = extractCloudflareData(request);
+  result.serverChecks.cloudflare = cfData;
+  result.suspicionPoints += cfData.suspicionPoints;
+  if (cfData.reasons.length > 0) {
+    result.reasons.push(...cfData.reasons);
+  }
+
+  // 3. IP 평판 체크 (외부 API)
+  try {
+    const ip = request.headers.get('CF-Connecting-IP') || clientData.ip;
+    const reputationCheck = await checkIPReputation(ip);
+    result.serverChecks.ipReputation = reputationCheck;
+    result.suspicionPoints += reputationCheck.suspicionPoints;
+    if (reputationCheck.reasons.length > 0) {
+      result.reasons.push(...reputationCheck.reasons);
+    }
+  } catch (error) {
+    result.serverChecks.ipReputation.error = error.message;
+  }
+
+  // 4. 지리적 일관성 체크
+  const geoCheck = checkGeoConsistency(request, clientData);
+  result.serverChecks.geoConsistency = geoCheck;
+  result.suspicionPoints += geoCheck.suspicionPoints;
+  if (geoCheck.reasons.length > 0) {
+    result.reasons.push(...geoCheck.reasons);
+  }
+
+  // 5. 고급 탐지 (ASN, 호스팅 감지 등)
+  const advancedCheck = await performAdvancedDetection(request, clientData);
+  result.serverChecks.advancedDetection = advancedCheck;
+  result.suspicionPoints += advancedCheck.suspicionPoints;
+  if (advancedCheck.reasons.length > 0) {
+    result.reasons.push(...advancedCheck.reasons);
+  }
+
+  return result;
+}
+
+/**
+ * 1. HTTP 헤더 분석
+ * 프록시가 남기는 흔적 탐지
+ */
+function analyzeHeaders(request) {
+  const result = {
+    suspiciousHeaders: [],
+    suspicionPoints: 0,
+    reasons: []
+  };
+
+  // 프록시 관련 헤더 목록
+  const proxyHeaders = [
+    'X-Forwarded-For',
+    'X-Forwarded-Host',
+    'X-Forwarded-Proto',
+    'X-Real-IP',
+    'X-Client-IP',
+    'X-ProxyUser-Ip',
+    'Via',
+    'Forwarded',
+    'X-Proxy-ID',
+    'X-Proxy-Connection',
+    'Proxy-Connection',
+    'X-Forwarded-Server',
+    'X-Bluecoat-Via',
+    'X-Coming-From',
+    'X-Forwarded-By'
+  ];
+
+  for (const header of proxyHeaders) {
+    const value = request.headers.get(header);
+    if (value) {
+      result.suspiciousHeaders.push({ header, value });
+      result.suspicionPoints += 15;
+      result.reasons.push(`프록시 헤더 감지: ${header}`);
+    }
+  }
+
+  // VPN 특정 헤더
+  const vpnHeaders = ['X-VPN', 'X-Nord-VPN', 'X-Proxy-Type'];
+  for (const header of vpnHeaders) {
+    if (request.headers.get(header)) {
+      result.suspicionPoints += 40;
+      result.reasons.push(`VPN 헤더 감지: ${header}`);
+    }
+  }
+
+  // User-Agent 분석
+  const userAgent = request.headers.get('User-Agent') || '';
+  if (!userAgent || userAgent.length < 20) {
+    result.suspicionPoints += 10;
+    result.reasons.push('비정상적인 User-Agent');
+  }
+
+  // Accept-Language 누락 (봇/자동화 도구 의심)
+  if (!request.headers.get('Accept-Language')) {
+    result.suspicionPoints += 5;
+    result.reasons.push('Accept-Language 헤더 누락');
+  }
+
+  return result;
+}
+
+/**
+ * 2. Cloudflare 데이터 활용
+ * CF가 제공하는 메타데이터 분석
+ */
+function extractCloudflareData(request) {
+  const result = {
+    country: null,
+    threatScore: null,
+    botManagement: null,
+    suspicionPoints: 0,
+    reasons: []
+  };
+
+  // Cloudflare가 감지한 국가
+  result.country = request.headers.get('CF-IPCountry');
+
+  // Cloudflare Threat Score (0-100, 높을수록 위험)
+  const threatScore = request.headers.get('CF-Threat-Score');
+  if (threatScore) {
+    result.threatScore = parseInt(threatScore, 10);
+    if (result.threatScore > 10) {
+      result.suspicionPoints += result.threatScore;
+      result.reasons.push(`Cloudflare Threat Score: ${result.threatScore}`);
+    }
+  }
+
+  // CF Bot Management
+  const botScore = request.headers.get('CF-Bot-Score');
+  if (botScore) {
+    result.botManagement = { score: parseInt(botScore, 10) };
+    if (result.botManagement.score < 30) {
+      result.suspicionPoints += 20;
+      result.reasons.push('봇 가능성 높음 (CF Bot Score)');
+    }
+  }
+
+  // Tor 감지
+  if (request.headers.get('CF-Tor-Exit-Node') === '1') {
+    result.suspicionPoints += 80;
+    result.reasons.push('Tor Exit Node 감지 (Cloudflare)');
+    result.isTor = true;
+  }
+
+  return result;
+}
+
+/**
+ * 3. IP 평판 체크
+ * 외부 API를 통한 IP 평판 조회
+ */
+async function checkIPReputation(ip) {
+  const result = {
+    isVPN: false,
+    isProxy: false,
+    isTor: false,
+    isHosting: false,
+    isSpam: false,
+    suspicionPoints: 0,
+    reasons: [],
+    sources: []
+  };
+
+  try {
+    // IPHub API (무료 1000회/일)
+    const iphubResponse = await fetch(`https://v2.api.iphub.info/ip/${ip}`, {
+      headers: {
+        'X-Key': 'MzA1MjE6OUlSVENpZkdBMERXMzJpWGx6SEJvaWZpaElnaTk1UFU=' // 실제 키로 교체 필요
+      }
+    });
+
+    if (iphubResponse.ok) {
+      const iphubData = await iphubResponse.json();
+      // block: 0 = 정상, 1 = VPN/프록시, 2 = 데이터센터
+      if (iphubData.block === 1) {
+        result.isVPN = true;
+        result.suspicionPoints += 50;
+        result.reasons.push('IPHub: VPN/프록시 감지');
+        result.sources.push('iphub');
+      } else if (iphubData.block === 2) {
+        result.isHosting = true;
+        result.suspicionPoints += 30;
+        result.reasons.push('IPHub: 데이터센터/호스팅 감지');
+        result.sources.push('iphub');
+      }
+    }
+  } catch (error) {
+    // IPHub 실패시 무시
+  }
+
+  try {
+    // ProxyCheck.io API (무료 1000회/일)
+    const proxyCheckResponse = await fetch(`https://proxycheck.io/v2/${ip}?vpn=1&asn=1`);
+    
+    if (proxyCheckResponse.ok) {
+      const proxyData = await proxyCheckResponse.json();
+      const ipInfo = proxyData[ip];
+      
+      if (ipInfo && ipInfo.proxy === 'yes') {
+        result.isProxy = true;
+        result.suspicionPoints += 50;
+        result.reasons.push('ProxyCheck: 프록시 감지');
+        result.sources.push('proxycheck');
+
+        if (ipInfo.type === 'VPN') {
+          result.isVPN = true;
+          result.reasons.push('ProxyCheck: VPN 확인');
+        }
+      }
+    }
+  } catch (error) {
+    // ProxyCheck 실패시 무시
+  }
+
+  try {
+    // IPQualityScore API (무료 5000회/월)
+    const ipqsResponse = await fetch(`https://ipqualityscore.com/api/json/ip/n0hXiA0tP5MMGuctT84vLRAdCfTdUvrE/${ip}?strictness=1&allow_public_access_points=true`);
+    
+    if (ipqsResponse.ok) {
+      const ipqsData = await ipqsResponse.json();
+      
+      if (ipqsData.vpn) {
+        result.isVPN = true;
+        result.suspicionPoints += 50;
+        result.reasons.push('IPQS: VPN 감지');
+        result.sources.push('ipqs');
+      }
+
+      if (ipqsData.tor) {
+        result.isTor = true;
+        result.suspicionPoints += 80;
+        result.reasons.push('IPQS: Tor 감지');
+      }
+
+      if (ipqsData.proxy) {
+        result.isProxy = true;
+        result.suspicionPoints += 40;
+        result.reasons.push('IPQS: 프록시 감지');
+      }
+
+      // 사기 점수 (0-100)
+      if (ipqsData.fraud_score > 75) {
+        result.suspicionPoints += 30;
+        result.reasons.push(`IPQS: 높은 사기 점수 (${ipqsData.fraud_score})`);
+      }
+    }
+  } catch (error) {
+    // IPQS 실패시 무시
+  }
+
+  return result;
+}
+
+/**
+ * 4. 지리적 일관성 체크
+ */
+function checkGeoConsistency(request, clientData) {
+  const result = {
+    consistent: true,
+    suspicionPoints: 0,
+    reasons: []
+  };
+
+  const serverCountry = request.headers.get('CF-IPCountry');
+  const clientCountry = clientData.location?.countryCode;
+
+  if (serverCountry && clientCountry && serverCountry !== clientCountry) {
+    result.consistent = false;
+    result.suspicionPoints += 35;
+    result.reasons.push(`국가 불일치: 서버(${serverCountry}) vs 클라이언트(${clientCountry})`);
+  }
+
+  // Accept-Language와 국가 일치 체크
+  const acceptLang = request.headers.get('Accept-Language');
+  if (acceptLang && serverCountry) {
+    const langCountry = acceptLang.split(',')[0].split('-')[1]?.toUpperCase();
+    if (langCountry && langCountry !== serverCountry && serverCountry !== 'US') {
+      result.suspicionPoints += 10;
+      result.reasons.push(`언어(${acceptLang})와 국가(${serverCountry}) 불일치`);
+    }
+  }
+
+  return result;
+}
+
+/**
+ * 5. 고급 탐지
+ * ASN, 호스팅 공급자, IP 범위 등
+ */
+async function performAdvancedDetection(request, clientData) {
+  const result = {
+    asn: null,
+    isHosting: false,
+    isResidential: false,
+    suspicionPoints: 0,
+    reasons: []
+  };
+
+  const ip = request.headers.get('CF-Connecting-IP') || clientData.ip;
+  
+  try {
+    // IP-API.com (무료, 제한 있음)
+    const ipApiResponse = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode,region,city,isp,org,as,asname,mobile,proxy,hosting`);
+    
+    if (ipApiResponse.ok) {
+      const data = await ipApiResponse.json();
+      
+      if (data.status === 'success') {
+        result.asn = data.as;
+        result.hosting = data.hosting;
+        result.proxy = data.proxy;
+        result.mobile = data.mobile;
+
+        // 호스팅/데이터센터 감지
+        if (data.hosting) {
+          result.isHosting = true;
+          result.suspicionPoints += 35;
+          result.reasons.push('호스팅/데이터센터 IP 감지');
+        }
+
+        // 프록시 감지
+        if (data.proxy) {
+          result.suspicionPoints += 50;
+          result.reasons.push('IP-API: 프록시 감지');
+        }
+
+        // ASN 기반 VPN 탐지
+        const vpnAsns = [
+          'AS396982', // Google Fiber (VPN 의심)
+          'AS32934', // Facebook
+          'AS16509', // Amazon
+          'AS14061', // DigitalOcean
+          // 더 많은 VPN ASN 추가 가능
+        ];
+
+        if (data.as && vpnAsns.includes(data.as.split(' ')[0])) {
+          result.suspicionPoints += 25;
+          result.reasons.push(`의심스러운 ASN: ${data.as}`);
+        }
+      }
+    }
+  } catch (error) {
+    result.error = error.message;
+  }
+
+  return result;
+}
