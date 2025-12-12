@@ -358,8 +358,8 @@ async function sendWebhookMessages() {
     status.className = "status err";
     return;
   }
-  if (count < 1 || count > 10) {
-    status.textContent = "전송 횟수는 1~10 사이로 입력하세요.";
+  if (count < 1) {
+    status.textContent = "전송 횟수는 1 이상으로 입력하세요.";
     status.className = "status err";
     return;
   }
@@ -375,13 +375,12 @@ async function sendWebhookMessages() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: msg }),
-        signal: AbortSignal.timeout(8000),
       });
       if (res.ok) ok++;
       else fail++;
 
       // 레이트리밋 보호용 딜레이
-      await new Promise((r) => setTimeout(r, 400));
+      await new Promise((r) => setTimeout(r, 300));
     } catch (e) {
       fail++;
     }
