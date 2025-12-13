@@ -1,51 +1,70 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8" />
   <title>프리미엄 관리자 지원서</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+    rel="stylesheet" />
   <style>
     body {
       margin: 0;
       min-height: 100vh;
       font-family: "Noto Sans KR", sans-serif;
-      background: linear-gradient(135deg,#030712,#09121d,#030712);
+      background: linear-gradient(135deg, #030712, #09121d, #030712);
       color: #e5e7eb;
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 20px;
     }
-    .wrapper { width: 100%; max-width: 540px; }
+
+    .wrapper {
+      width: 100%;
+      max-width: 540px;
+    }
+
     .card {
-      background: rgba(15,23,42,0.7);
+      background: rgba(15, 23, 42, 0.7);
+      -webkit-backdrop-filter: blur(14px);
       backdrop-filter: blur(14px);
       border-radius: 20px;
-      border: 1px solid rgba(148,163,184,0.35);
+      border: 1px solid rgba(148, 163, 184, 0.35);
       padding: 25px;
       animation: fadeIn .8s ease-out;
     }
+
     @keyframes fadeIn {
-      from { opacity:0; transform:translateY(15px); }
-      to { opacity:1; transform:translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    input, textarea {
+    input,
+    textarea {
       width: 100%;
       padding: 12px;
       border-radius: 12px;
-      border: 1px solid rgba(148,163,184,0.4);
+      border: 1px solid rgba(148, 163, 184, 0.4);
       margin-top: 6px;
       margin-bottom: 14px;
-      background: rgba(15,23,42,0.8);
+      background: rgba(15, 23, 42, 0.8);
       color: #e5e7eb;
       outline: none;
       transition: .2s;
     }
-    input:focus, textarea:focus {
+
+    input:focus,
+    textarea:focus {
       border-color: #22d3ee;
-      box-shadow: 0 0 12px rgba(34,211,238,0.45);
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.45);
     }
 
     button {
@@ -53,7 +72,7 @@
       padding: 12px;
       border-radius: 30px;
       border: none;
-      background: linear-gradient(120deg,#22d3ee,#a855f7,#f97316);
+      background: linear-gradient(120deg, #22d3ee, #a855f7, #f97316);
       background-size: 200% 200%;
       font-size: 15px;
       font-weight: 700;
@@ -61,12 +80,30 @@
       transition: .3s;
       color: #0f172a;
     }
-    button:hover { background-position: 100% 0; }
 
-    #submitting-indicator { display:none; text-align:center; margin-top:10px; }
-    #status-message { margin-top: 10px; font-size: 13px; min-height: 16px; }
-    .status--success { color:#4ade80; }
-    .status--error { color:#f87171; }
+    button:hover {
+      background-position: 100% 0;
+    }
+
+    #submitting-indicator {
+      display: none;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    #status-message {
+      margin-top: 10px;
+      font-size: 13px;
+      min-height: 16px;
+    }
+
+    .status--success {
+      color: #4ade80;
+    }
+
+    .status--error {
+      color: #f87171;
+    }
   </style>
 </head>
 
@@ -76,28 +113,28 @@
       <h2>프리미엄 관리자 지원서</h2>
 
       <form id="application-form">
-        <label>나이 *</label>
-        <input type="number" id="age" required>
+        <label for="age">나이 *</label>
+        <input type="number" id="age" name="age" title="나이를 입력하세요" placeholder="예: 20" required>
 
-        <label>디스코드 닉네임 *</label>
-        <input type="text" id="discord" required>
+        <label for="discord">디스코드 닉네임 *</label>
+        <input type="text" id="discord" name="discord" title="디스코드 닉네임을 입력하세요" placeholder="예: username#1234" required>
 
-        <label>활동 가능 시간 *</label>
-        <input type="text" id="active_time" required>
+        <label for="active_time">활동 가능 시간 *</label>
+        <input type="text" id="active_time" name="active_time" title="활동 가능 시간을 입력하세요" placeholder="예: 평일 저녁, 주말 오전" required>
 
-        <label>지원 동기 *</label>
-        <textarea id="reason" required></textarea>
+        <label for="reason">지원 동기 *</label>
+        <textarea id="reason" name="reason" title="지원 동기를 입력하세요" placeholder="관리자 지원 동기를 작성해주세요" required></textarea>
 
-        <label>각오 *</label>
-        <textarea id="resolution" required></textarea>
+        <label for="resolution">각오 *</label>
+        <textarea id="resolution" name="resolution" title="각오를 입력하세요" placeholder="관리자로서의 각오를 작성해주세요" required></textarea>
 
-        <label>운영 경험 *</label>
-        <textarea id="operation_experience" required></textarea>
+        <label for="operation_experience">운영 경험 *</label>
+        <textarea id="operation_experience" name="operation_experience" title="운영 경험을 입력하세요" placeholder="이전 운영 경험이 있다면 작성해주세요" required></textarea>
 
-        <label>해킹/개발 경험 *</label>
-        <textarea id="dev_experience" required></textarea>
+        <label for="dev_experience">해킹/개발 경험 *</label>
+        <textarea id="dev_experience" name="dev_experience" title="해킹/개발 경험을 입력하세요" placeholder="해킹 또는 개발 경험이 있다면 작성해주세요" required></textarea>
 
-        <button id="submit-button" onclick="finalSubmitCheck(event)">제출하기</button>
+        <button type="submit" id="submit-button" onclick="finalSubmitCheck(event)">제출하기</button>
 
         <div id="submitting-indicator">제출 중입니다…</div>
         <div id="status-message"></div>
@@ -108,4 +145,5 @@
 
   <script src="/application.js?v=1.0.0"></script>
 </body>
+
 </html>
