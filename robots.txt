@@ -1,0 +1,40 @@
+# robots.txt - Prevent indexing of source files
+User-agent: *
+Disallow: /*.js$
+Disallow: /*.css$
+Disallow: /lite/*.js
+Disallow: /lite/*.css
+Disallow: /api/
+Disallow: /_middleware.js
+Disallow: /worker.js
+Disallow: /application.js
+Disallow: /vpn.js
+
+# Block common crawlers and bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: archive.org_bot
+Disallow: /
+
+User-agent: ia_archiver
+Disallow: /
+
+# Allow only main pages
+Allow: /
+Allow: /lite/
+Allow: /hacking/
+Allow: /application.html
+Allow: /vpn.html
+
+# Sitemap (optional)
+Sitemap: https://teralink.store/sitemap.xml

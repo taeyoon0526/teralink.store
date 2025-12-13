@@ -7,6 +7,12 @@
   Permissions-Policy: geolocation=(), microphone=(), camera=()
   Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://api.ipify.org https://api64.ipify.org https://api6.ipify.org https://ipapi.co https://1.1.1.1 https://discord.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
+
+# Block direct access to JavaScript files
+/*.js
+  X-Robots-Tag: noindex, nofollow, noarchive
+  Cache-Control: private, no-cache, no-store, must-revalidate
 
 # Cache Control for JavaScript files
 /lite/*.js

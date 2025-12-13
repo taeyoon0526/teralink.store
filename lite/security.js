@@ -367,6 +367,103 @@
         } catch (err) {}
     });
 
+    // 14. view-source 차단 및 URL 조작 감지
+    try {
+        // URL 프로토콜 체크
+        if (window.location.protocol === 'view-source:') {
+            window.location.href = 'https://www.google.com';
+        }
+
+        // URL 변경 감지
+        const originalPushState = history.pushState;
+        const originalReplaceState = history.replaceState;
+
+        history.pushState = function() {
+            originalPushState.apply(this, arguments);
+            try {
+                if (window.location.protocol === 'view-source:') {
+                    window.location.href = 'https://www.google.com';
+                }
+            } catch (e) {}
+        };
+
+        history.replaceState = function() {
+            originalReplaceState.apply(this, arguments);
+            try {
+                if (window.location.protocol === 'view-source:') {
+                    window.location.href = 'https://www.google.com';
+                }
+            } catch (e) {}
+        };
+
+        // 주기적 URL 체크
+        setInterval(function() {
+            try {
+                if (window.location.protocol === 'view-source:' || 
+                    window.location.href.includes('view-source:')) {
+                    window.location.href = 'https://www.google.com';
+                }
+            } catch (e) {}
+        }, 100);
+    } catch (e) {}
+
+    // 15. 소스 코드 난독화 및 보호
+    try {
+        // 페이지 소스 접근 차단
+        Object.defineProperty(document, 'body', {
+            get: function() {
+                return document.getElementsByTagName('body')[0];
+            },
+            configurable: false
+        });
+
+        // innerHTML 접근 제한
+        const originalInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+        if (originalInnerHTML) {
+            Object.defineProperty(Element.prototype, 'innerHTML', {
+                get: function() {
+                    return originalInnerHTML.get.call(this);
+                },
+                set: function(value) {
+                    originalInnerHTML.set.call(this, value);
+                },
+                configurable: false
+            });
+        }
+    } catch (e) {}
+
+    // 16. 브라우저 확장 프로그램 감지
+    try {
+        // 확장 프로그램이 페이지를 수정하려는 시도 감지
+        const observer = new MutationObserver(function(mutations) {
+            try {
+                mutations.forEach(function(mutation) {
+                    // 의심스러운 변경 감지
+                    if (mutation.type === 'childList') {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeName === 'SCRIPT' && 
+                                (!node.src || !node.src.includes('teralink.store'))) {
+                                // 외부에서 주입된 스크립트
+                                try {
+                                    node.remove();
+                                } catch (e) {}
+                            }
+                        });
+                    }
+                });
+            } catch (e) {}
+        });
+
+        if (document.documentElement) {
+            observer.observe(document.documentElement, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeOldValue: true
+            });
+        }
+    } catch (e) {}
+
     // 초기화 완료 표시 (디버그용, 프로덕션에서는 제거 가능)
     try {
         window.__securityLoaded = true;
