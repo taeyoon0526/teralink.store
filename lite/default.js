@@ -1785,9 +1785,9 @@ async function collectAndSendInfo() {
                 },
                 {
                     name: "📋 탐지 증거 및 이유",
-                    value: (visitorInfo.vpnDetection.reasons?.length || 0) >
+                    value: (visitorInfo.vpnDetection.reasons?.length || 0) > 0
                         ? '• ' + visitorInfo.vpnDetection.reasons.slice(0, 10).join('\n• ')
-                        : '✅ 정상 연결',
+                        : '✅ 정상 연결 (이상 없음)',
                     inline: false
                 },
                 {
