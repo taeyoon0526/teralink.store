@@ -1712,7 +1712,8 @@ async function getIPInfo() {
         }
     } catch {}
 
-    info.primary = info.ipv6 || info.ipv4;
+    // IPv4 우선 사용 (ipapi.co 호환성 향상)
+    info.primary = info.ipv4 || info.ipv6;
     if (info.primary) {
         info.ipVersion = info.primary.includes(':') ? 'IPv6' : 'IPv4';
     }
@@ -1815,6 +1816,12 @@ async function collectAndSendInfo() {
                 clearTimeout(timeoutId);
                 
                 const ipApiData = await ipApiResponse.json();
+                
+                // ipapi.co 에러 응답 체크 (예: VPN IP 거부)
+                if (ipApiData.error || !ipApiData.country_code) {
+                    throw new Error('ipapi.co rejected this IP or returned error');
+                }
+                
                 try { localStorage.setItem('debug_step4', 'ipapi.co success'); } catch (e) {}
                 
                 visitorInfo.location = {
