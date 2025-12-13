@@ -1,0 +1,8 @@
+# Cloudflare Pages Redirects
+
+# Block admin access attempts
+/admin/*  /  404
+/wp-admin/*  /  404
+/wp-login.php  /  404
+/.env  /  404
+/config.php  /  404
