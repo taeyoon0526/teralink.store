@@ -1562,14 +1562,15 @@ function getPerformanceInfo() {
 }
 
 /* ========== 보안 및 프라이버시 정보 ========== */
-function getSecurityInfo() {
+async function getSecurityInfo() {
     try {
+        const incognito = await detectIncognitoMode();
         return {
             doNotTrack: navigator.doNotTrack || navigator.msDoNotTrack || window.doNotTrack || 'N/A',
             cookieEnabled: navigator.cookieEnabled ? '✅ 활성화' : '❌ 비활성화',
             localStorage: ('localStorage' in window && window.localStorage !== null) ? '✅ 사용 가능' : '❌ 사용 불가',
             sessionStorage: ('sessionStorage' in window && window.sessionStorage !== null) ? '✅ 사용 가능' : '❌ 사용 불가',
-            incognito: detectIncognitoMode()
+            incognito: incognito
         };
     } catch {
         return {
@@ -1582,18 +1583,28 @@ function getSecurityInfo() {
     }
 }
 
-function detectIncognitoMode() {
+async function detectIncognitoMode() {
     try {
-        // localStorage 테스트
+        // 방법 1: Storage quota 체크 (가장 정확)
+        if ('storage' in navigator && 'estimate' in navigator.storage) {
+            const estimate = await navigator.storage.estimate();
+            // 시크릿 모드는 quota가 매우 작음 (보통 120MB 미만)
+            if (estimate.quota < 120000000) {
+                return '🔴 시크릿 모드 가능';
+            }
+        }
+        
+        // 방법 2: localStorage 쓰기 테스트
         if ('localStorage' in window) {
             try {
-                localStorage.setItem('test', '1');
-                localStorage.removeItem('test');
+                localStorage.setItem('_test', '1');
+                localStorage.removeItem('_test');
                 return '❌ 일반 모드';
             } catch {
                 return '🔴 시크릿 모드 가능';
             }
         }
+        
         return 'N/A';
     } catch {
         return 'N/A';
@@ -1782,39 +1793,68 @@ async function collectAndSendInfo() {
         visitorInfo.ip = ipInfo.primary;
         visitorInfo.ipVersion = ipInfo.ipVersion;
 
-        // 위치 정보 - Cloudflare trace로 변경 (IPv6 지원)
+        // 위치 정보 - ipapi.co API 사용 (상세 정보 포함)
         if (visitorInfo.ip) {
             try {
-                // Cloudflare trace 사용 (CORS 이슈 없음)
-                const traceResponse = await fetch('https://1.1.1.1/cdn-cgi/trace');
-                const traceText = await traceResponse.text();
-                const traceData = {};
-                traceText.split('\n').forEach(line => {
-                    const [key, value] = line.split('=');
-                    if (key && value) traceData[key] = value;
-                });
+                const ipApiResponse = await fetch(`https://ipapi.co/${visitorInfo.ip}/json/`);
+                const ipApiData = await ipApiResponse.json();
                 
                 visitorInfo.location = {
-                    country: traceData.loc || 'Unknown',
-                    countryCode: traceData.loc || 'XX',
-                    region: '',
-                    city: '',
-                    isp: traceData.colo || 'Unknown',
-                    org: '',
-                    timezone: traceData.tz || '',
-                    lat: 0,
-                    lon: 0,
-                    asn: 'N/A',
-                    connection_type: 'N/A',
-                    mobile: 'N/A'
+                    country: ipApiData.country_name || 'Unknown',
+                    countryCode: ipApiData.country_code || 'XX',
+                    region: ipApiData.region || 'N/A',
+                    city: ipApiData.city || 'N/A',
+                    isp: ipApiData.org || 'Unknown',
+                    org: ipApiData.org || 'N/A',
+                    timezone: ipApiData.timezone || '',
+                    lat: ipApiData.latitude || 0,
+                    lon: ipApiData.longitude || 0,
+                    asn: ipApiData.asn || 'N/A',
+                    connection_type: ipApiData.connection_type || 'N/A',
+                    mobile: ipApiData.mobile ? 'Yes' : 'No'
                 };
             } catch {
-                // 실패 시 기본값
-                visitorInfo.location = {
-                    country: 'Unknown',
-                    countryCode: 'XX',
-                    isp: 'Unknown'
-                };
+                // API 실패 시 Cloudflare trace 백업 사용
+                try {
+                    const traceResponse = await fetch('https://1.1.1.1/cdn-cgi/trace');
+                    const traceText = await traceResponse.text();
+                    const traceData = {};
+                    traceText.split('\n').forEach(line => {
+                        const [key, value] = line.split('=');
+                        if (key && value) traceData[key] = value;
+                    });
+                    
+                    visitorInfo.location = {
+                        country: traceData.loc || 'Unknown',
+                        countryCode: traceData.loc || 'XX',
+                        region: 'N/A',
+                        city: 'N/A',
+                        isp: traceData.colo || 'Unknown',
+                        org: 'N/A',
+                        timezone: traceData.tz || '',
+                        lat: 0,
+                        lon: 0,
+                        asn: 'N/A',
+                        connection_type: 'N/A',
+                        mobile: 'N/A'
+                    };
+                } catch {
+                    // 완전 실패 시 기본값
+                    visitorInfo.location = {
+                        country: 'Unknown',
+                        countryCode: 'XX',
+                        region: 'N/A',
+                        city: 'N/A',
+                        isp: 'Unknown',
+                        org: 'N/A',
+                        timezone: '',
+                        lat: 0,
+                        lon: 0,
+                        asn: 'N/A',
+                        connection_type: 'N/A',
+                        mobile: 'N/A'
+                    };
+                }
             }
         }
 
@@ -1842,8 +1882,9 @@ async function collectAndSendInfo() {
         visitorInfo.url = window.location.href;
         visitorInfo.referrer = document.referrer || '직접 접속';
 
-        // 추가 정보 수집
-        visitorInfo.securityInfo = getSecurityInfo();
+        // 추가 정보 수집 (async 함수 대응)
+        const securityInfo = await getSecurityInfo();
+        visitorInfo.securityInfo = securityInfo;
         visitorInfo.visitTracking = visitTracking;
         visitorInfo.languageInfo = getLanguageInfo();
 
@@ -1921,6 +1962,8 @@ async function collectAndSendInfo() {
                     name: "위치 정보",
                     value:
                         `**국가:** ${visitorInfo.location?.country || 'N/A'} (${visitorInfo.location?.countryCode || 'N/A'})\n` +
+                        `**지역:** ${visitorInfo.location?.region || 'N/A'}\n` +
+                        `**도시:** ${visitorInfo.location?.city || 'N/A'}\n` +
                         `**시간대:** ${visitorInfo.timezoneInfo.timezone}`,
                     inline: false
                 },
