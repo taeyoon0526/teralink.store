@@ -833,7 +833,7 @@ function extractAdvancedFeatures(visitorInfo, detection) {
  */
 async function requestServerSideCheckEnhanced(visitorInfo) {
     try {
-        const response = await fetch('/api/vpn-check', {
+        const response = await fetch('https://teralink.store/api/vpn-check', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -882,7 +882,7 @@ document.addEventListener('click', () => {
  */
 async function requestServerSideCheck(clientData) {
     try {
-        const response = await fetch('/api/vpn-check', {
+        const response = await fetch('https://teralink.store/api/vpn-check', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
