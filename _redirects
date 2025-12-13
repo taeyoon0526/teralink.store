@@ -6,3 +6,7 @@
 /wp-login.php  /  404
 /.env  /  404
 /config.php  /  404
+
+# Prevent trailing slash redirects (keep URLs as-is)
+/application.html  /application.html  200
+/vpn.html  /vpn.html  200

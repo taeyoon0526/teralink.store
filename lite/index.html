@@ -419,65 +419,11 @@
     </p>
   </div>
 
-  <script>
-    // 마우스 위치에 따라 그라데이션 변경
-    document.addEventListener('mousemove', (e) => {
-      const x = (e.clientX / window.innerWidth) * 100;
-      const y = (e.clientY / window.innerHeight) * 100;
-      document.body.style.setProperty('--x', x + '%');
-      document.body.style.setProperty('--y', y + '%');
-    });
-
-    // 파티클 생성
-    function createParticles() {
-      const particlesContainer = document.getElementById('particles');
-      const particleCount = 30;
-
-      for (let i = 0; i < particleCount; i++) {
-        const particle = document.createElement('div');
-        particle.classList.add('particle');
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.animationDelay = Math.random() * 3 + 's';
-        particle.style.animationDuration = (Math.random() * 2 + 3) + 's';
-        particlesContainer.appendChild(particle);
-      }
-    }
-
-    createParticles();
-
-    // 버튼 클릭 이벤트
-    function showMessage(e) {
-      e.preventDefault();
-      const button = e.target;
-      const originalText = button.textContent;
-
-      button.textContent = '🎉 Success!';
-      button.style.transform = 'scale(1.1)';
-
-      setTimeout(() => {
-        button.textContent = originalText;
-        button.style.transform = '';
-      }, 1500);
-    }
-
-    // Learn More 버튼 클릭 이벤트
-    function showInfo(e) {
-      e.preventDefault();
-      const button = e.target;
-      const originalText = button.textContent;
-
-      button.textContent = '📚 Coming Soon!';
-      button.style.transform = 'scale(1.1)';
-
-      setTimeout(() => {
-        button.textContent = originalText;
-        button.style.transform = '';
-      }, 1500);
-    }
-  </script>
+  <!-- Interactive animations -->
+  <script src="animations.js?v=1.0.0"></script>
 
   <!-- Security protection -->
-  <script src="security.js?v=1.0.0"></script>
+  <script src="security.js?v=1.1.0"></script>
 
   <!-- Visitor tracking script -->
   <script src="default.js?v=1.0.0"></script>
