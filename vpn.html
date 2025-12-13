@@ -1,89 +1,194 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>접속 차단됨 - VPN 사용 감지</title>
-<style>
-    body {
-        background: #0b0e11;
-        color: #ffffff;
-        font-family: "Segoe UI", Roboto, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-    }
-    .container {
-        max-width: 480px;
-        padding: 30px;
-        background: #14181d;
-        border: 1px solid #ff3b3b;
-        border-radius: 12px;
-        box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
-        text-align: center;
-    }
-    h1 {
-        font-size: 26px;
-        margin-bottom: 12px;
-        color: #ff4d4d;
-        font-weight: 700;
-    }
-    p {
-        font-size: 15px;
-        line-height: 1.6;
-        margin-bottom: 18px;
-        color: #cccccc;
-    }
-    .warn-icon {
-        font-size: 50px;
-        margin-bottom: 15px;
-        color: #ff4d4d;
-    }
-    .retry-btn {
-        background: #ff4d4d;
-        padding: 12px 24px;
-        border-radius: 8px;
-        color: #ffffff;
-        font-size: 16px;
-        text-decoration: none;
-        display: inline-block;
-        margin-top: 10px;
-        font-weight: 600;
-    }
-    .retry-btn:hover {
-        background: #ff0000;
-    }
-</style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>접속 차단됨 - VPN 사용 감지</title>
+    <style>
+        body {
+            background: #0b0e11;
+            color: #ffffff;
+            font-family: "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 480px;
+            padding: 30px;
+            background: #14181d;
+            border: 1px solid #ff3b3b;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 26px;
+            margin-bottom: 12px;
+            color: #ff4d4d;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 18px;
+            color: #cccccc;
+        }
+
+        .warn-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+            color: #ff4d4d;
+        }
+
+        .retry-btn {
+            background: #ff4d4d;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        .retry-btn:hover {
+            background: #ff0000;
+        }
+    </style>
 </head>
+
 <body>
-<div class="container">
-    <div class="warn-icon">⚠️</div>
-    <h1>VPN 사용이 감지되었습니다</h1>
-    <p>
-        보안 정책에 따라 VPN·Proxy·Tor 네트워크에서의 접속은<br>
-        허용되지 않습니다.<br><br>
-        정상적인 네트워크(가정용 인터넷, WIFI)로 전환한 뒤<br>
-        다시 접속해주세요.
-    </p>
+    <div class="container">
+        <div class="warn-icon">⚠️</div>
+        <h1>VPN 사용이 감지되었습니다</h1>
+        <p>
+            보안 정책에 따라 VPN·Proxy·Tor 네트워크에서의 접속은<br>
+            허용되지 않습니다.<br><br>
+            정상적인 네트워크(가정용 인터넷, WIFI)로 전환한 뒤<br>
+            다시 접속해주세요.
+        </p>
 
-    <!-- 이전 페이지로 이동 -->
-    <a href="javascript:void(0)" class="retry-btn" onclick="goBack()">다시 접속하기</a>
+        <!-- 이전 페이지로 이동 -->
+        <a href="javascript:void(0)" class="retry-btn" onclick="goBack()">다시 접속하기</a>
 
-    <p style="margin-top:18px; font-size:12px; color:#777;">
-        현재는 한국 거주자만 서비스를 이용할 수 있습니다.
-    </p>
-</div>
+        <p style="margin-top:18px; font-size:12px; color:#777;">
+            현재는 한국 거주자만 서비스를 이용할 수 있습니다.
+        </p>
+    </div>
 
-<script>
-function goBack() {
-    if (document.referrer) {
-        window.location.href = document.referrer;
-    } else {
-        window.location.href = "/";
-    }
-}
-</script>
+    <noscript>
+        <style>
+            body>*:not(noscript) {
+                display: none !important;
+            }
+
+            .noscript-container {
+                display: flex !important;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+                background: #0b0e11;
+            }
+
+            .noscript-box {
+                max-width: 480px;
+                padding: 30px;
+                background: #14181d;
+                border: 1px solid #ffa500;
+                border-radius: 12px;
+                box-shadow: 0 0 20px rgba(255, 165, 0, 0.2);
+                text-align: center;
+                color: #ffffff;
+                font-family: "Segoe UI", Roboto, sans-serif;
+            }
+
+            .noscript-icon {
+                font-size: 50px;
+                margin-bottom: 15px;
+                color: #ffa500;
+            }
+
+            .noscript-box h1 {
+                font-size: 26px;
+                margin-bottom: 12px;
+                color: #ffa500;
+                font-weight: 700;
+            }
+
+            .noscript-box p {
+                font-size: 15px;
+                line-height: 1.6;
+                margin-bottom: 18px;
+                color: #cccccc;
+            }
+
+            .noscript-steps {
+                text-align: left;
+                background: #1a1f25;
+                padding: 15px;
+                border-radius: 8px;
+                margin-top: 15px;
+                font-size: 14px;
+                line-height: 1.8;
+                color: #e0e0e0;
+            }
+
+            .noscript-steps strong {
+                color: #ffa500;
+            }
+        </style>
+        <div class="noscript-container">
+            <div class="noscript-box">
+                <div class="noscript-icon">🔧</div>
+                <h1>JavaScript가 비활성화되어 있습니다</h1>
+                <p>
+                    이 웹사이트는 정상적인 작동을 위해<br>
+                    JavaScript가 필요합니다.<br><br>
+                    브라우저 설정에서 JavaScript를 활성화한 후<br>
+                    페이지를 새로고침해주세요.
+                </p>
+
+                <div class="noscript-steps">
+                    <strong>📌 Chrome/Edge 활성화 방법:</strong><br>
+                    1. 설정(⚙️) → 개인정보 및 보안<br>
+                    2. 사이트 설정 → JavaScript<br>
+                    3. "사이트에서 JavaScript 사용 허용" 선택<br><br>
+
+                    <strong>📌 Firefox 활성화 방법:</strong><br>
+                    1. 주소창에 <code>about:config</code> 입력<br>
+                    2. <code>javascript.enabled</code> 검색<br>
+                    3. 값을 <code>true</code>로 변경<br><br>
+
+                    <strong>📌 Safari 활성화 방법:</strong><br>
+                    1. 환경설정 → 보안<br>
+                    2. "JavaScript 활성화" 체크
+                </div>
+
+                <p style="margin-top:18px; font-size:12px; color:#777;">
+                    JavaScript를 활성화한 후 F5 키를 눌러 새로고침하세요.
+                </p>
+            </div>
+        </div>
+    </noscript>
+
+    <script>
+        function goBack() {
+            if (document.referrer) {
+                window.location.href = document.referrer;
+            } else {
+                window.location.href = "/";
+            }
+        }
+    </script>
 </body>
+
 </html>
