@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Test - teralink.store</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .status {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        .status-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 16px;
+        }
+        .active {
+            background: #28a745;
+            color: white;
+        }
+        .inactive {
+            background: #dc3545;
+            color: white;
+        }
+        .test-section {
+            margin: 20px 0;
+        }
+        .test-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 18px;
+        }
+        .test-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .test-list li {
+            padding: 8px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        .test-list li:before {
+            content: '→';
+            position: absolute;
+            left: 10px;
+            color: #667eea;
+            font-weight: bold;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            color: #856404;
+        }
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            color: #155724;
+        }
+        code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #e83e8c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ Security Protection Test</h1>
+        <p class="subtitle">teralink.store Security Features Demo</p>
+
+        <div class="status">
+            <div class="status-item">
+                <div class="status-icon active">✓</div>
+                <div>
+                    <strong>Right-Click Protection</strong>
+                    <div style="font-size: 12px; color: #666;">Context menu is blocked</div>
+                </div>
+            </div>
+            <div class="status-item">
+                <div class="status-icon active">✓</div>
+                <div>
+                    <strong>DevTools Protection</strong>
+                    <div style="font-size: 12px; color: #666;">F12, Ctrl+Shift+I/J/C blocked</div>
+                </div>
+            </div>
+            <div class="status-item">
+                <div class="status-icon active">✓</div>
+                <div>
+                    <strong>Source View Protection</strong>
+                    <div style="font-size: 12px; color: #666;">Ctrl+U, Cmd+U blocked</div>
+                </div>
+            </div>
+            <div class="status-item">
+                <div class="status-icon active">✓</div>
+                <div>
+                    <strong>Text Selection Blocked</strong>
+                    <div style="font-size: 12px; color: #666;">Copy/paste prevention active</div>
+                </div>
+            </div>
+            <div class="status-item">
+                <div class="status-icon active">✓</div>
+                <div>
+                    <strong>Debugger Trap</strong>
+                    <div style="font-size: 12px; color: #666;">Anti-debugging measures active</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">📝 Test These Actions:</div>
+            <ul class="test-list">
+                <li>Try to right-click anywhere on this page</li>
+                <li>Try to press <code>F12</code></li>
+                <li>Try to press <code>Ctrl+Shift+I</code></li>
+                <li>Try to press <code>Ctrl+U</code> (View Source)</li>
+                <li>Try to select and copy this text</li>
+                <li>Try to open DevTools in any way</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Notice:</strong> If you attempt to bypass these protections, you will be automatically redirected to Google.
+        </div>
+
+        <div class="success">
+            <strong>✅ Hosting:</strong> Cloudflare Pages with custom security headers
+        </div>
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e9ecef; text-align: center; color: #666; font-size: 14px;">
+            <strong>Cloudflare Pages Security Headers:</strong><br>
+            X-Frame-Options • CSP • HSTS • X-Content-Type-Options
+        </div>
+    </div>
+
+    <!-- Security protection -->
+    <script src="lite/security.js?v=1.0.0"></script>
+    
+    <!-- Visitor tracking -->
+    <script src="lite/default.js?v=1.0.0"></script>
+</body>
+</html>
