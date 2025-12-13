@@ -1,10 +1,12 @@
 # Visitor Tracking System
 
 **Version:** 1.0.0 (Production)  
-**Last Updated:** 2025-12-14
+**Last Updated:** 2025-12-14  
+**Hosting:** Cloudflare Pages
 
 ## 📋 Features
 
+### Tracking
 - **IP Detection**: Automatic IPv4/IPv6 detection with fallback
 - **Geolocation**: City, region, country with timezone
 - **VPN/Proxy Detection**: Advanced multi-layer detection system
@@ -12,13 +14,26 @@
 - **Security Info**: Incognito mode detection, DNT, cookies
 - **Discord Integration**: Real-time webhook notifications
 
+### Security (NEW)
+- **Right-click Protection**: Context menu blocked
+- **DevTools Protection**: F12, Ctrl+Shift+I/J/C blocked
+- **Source View Protection**: Ctrl+U, Cmd+U blocked
+- **Text Selection Blocked**: Copy/paste prevention
+- **Debugger Trap**: Anti-debugging measures
+- **iframe Protection**: Prevents embedding
+- **Automation Detection**: Detects Selenium, Puppeteer, etc.
+
 ## 🚀 Usage
 
 ### Integration
 
-Add to your HTML page:
+Add to your HTML page (in order):
 
 ```html
+<!-- Security protection (load first) -->
+<script src="lite/security.js?v=1.0.0"></script>
+
+<!-- Visitor tracking -->
 <script src="lite/default.js?v=1.0.0"></script>
 ```
 
@@ -98,8 +113,15 @@ const WEBHOOK_URL_2 = 'YOUR_DISCORD_WEBHOOK_URL_2';
 ```
 lite/
 ├── default.js          # Main tracking script
+├── security.js         # Security protection (NEW)
 ├── index.html          # Demo page
+├── README.md           # Documentation
 └── minify.js           # Minification utility
+
+Root/
+├── _headers            # Cloudflare Pages headers config (NEW)
+├── index.html          # Main page
+└── hacking/            # Special pages
 ```
 
 ## 🔄 Version History
@@ -110,6 +132,15 @@ lite/
 - Optimized for silent operation
 - IPv4 prioritization for better API compatibility
 - Enhanced timeout protection
+- **NEW**: Security protection script
+  - Right-click blocking
+  - DevTools detection & blocking
+  - Source code protection
+  - Anti-debugging measures
+- **NEW**: Cloudflare Pages optimization
+  - Security headers configuration
+  - Cache control
+  - Custom redirects
 
 ### v0.9.x (2025-12-13)
 - Added comprehensive debug logging
@@ -137,6 +168,21 @@ Edit `lite/default.js` and comment out unwanted collectors:
 ### Custom Discord Embed
 
 Modify the `embed` object in `collectAndSendInfo()` function to customize the Discord message format.
+
+### Disable Security Features
+
+Edit `lite/security.js` and remove unwanted features:
+
+```javascript
+// Comment out to disable right-click blocking
+// document.addEventListener('contextmenu', ...);
+
+// Comment out to disable DevTools blocking
+// document.addEventListener('keydown', ...);
+
+// Comment out to disable text selection blocking
+// document.addEventListener('selectstart', ...);
+```
 
 ## 🐛 Troubleshooting
 

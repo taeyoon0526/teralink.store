@@ -1,0 +1,62 @@
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Security Headers
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+    
+    # Content Security Policy
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.ipify.org https://api64.ipify.org https://api6.ipify.org https://ipapi.co https://1.1.1.1 https://discord.com; frame-ancestors 'none';"
+    
+    # HSTS
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+
+# Cache Control
+[[headers]]
+  for = "/lite/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, must-revalidate"
+
+[[headers]]
+  for = "/lite/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=1800, must-revalidate"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=7200"
+
+[[headers]]
+  for = "/*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+# Redirects
+[[redirects]]
+  from = "/admin/*"
+  to = "/"
+  status = 404
+
+[[redirects]]
+  from = "/wp-admin/*"
+  to = "/"
+  status = 404
+
+[[redirects]]
+  from = "/.env"
+  to = "/"
+  status = 404
+
+[[redirects]]
+  from = "/.git/*"
+  to = "/"
+  status = 404
