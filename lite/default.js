@@ -654,7 +654,7 @@ async function analyzeBrowserFingerprintEnhanced(visitorInfo) {
     // 체크 1: 플러그인 수 이상
     const plugins = visitorInfo.plugins;
     const pluginCount = plugins === 'N/A' ? 0 : (plugins.match(/,/g) || []).length + 1;
-    const isModile = /Mobile|Android|iPhone/.test(visitorInfo.device?.userAgent || '');
+    const isMobile = /Mobile|Android|iPhone/.test(visitorInfo.device?.userAgent || '');
     
     if (pluginCount === 0 && !isMobile) {
         result.checks.push({ name: 'No plugins', score: 15 });
