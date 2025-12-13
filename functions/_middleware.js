@@ -27,29 +27,36 @@ export async function onRequest(context) {
     }
   }
   
-  // Block requests with suspicious user agents
+  // Block requests with suspicious user agents (but allow legitimate bots)
   const suspiciousPatterns = [
     'curl',
     'wget',
-    'python',
+    'python-requests',
     'scrapy',
-    'bot',
-    'spider',
-    'crawler',
+    'headless',
+    'phantom',
+    'selenium',
   ];
   
   const lowerUA = userAgent.toLowerCase();
-  const isSuspicious = suspiciousPatterns.some(pattern => 
-    lowerUA.includes(pattern.toLowerCase())
-  );
   
-  if (isSuspicious && !url.pathname.startsWith('/api/')) {
-    return new Response('403 Forbidden - Bot access is not allowed', {
-      status: 403,
-      headers: {
-        'Content-Type': 'text/plain',
-      }
-    });
+  // Allow legitimate search engine bots
+  const legitBots = ['googlebot', 'bingbot', 'slurp', 'duckduckbot', 'baiduspider', 'yandexbot', 'facebookexternalhit', 'twitterbot', 'linkedinbot'];
+  const isLegitBot = legitBots.some(bot => lowerUA.includes(bot));
+  
+  if (!isLegitBot) {
+    const isSuspicious = suspiciousPatterns.some(pattern => 
+      lowerUA.includes(pattern.toLowerCase())
+    );
+    
+    if (isSuspicious && !url.pathname.startsWith('/api/')) {
+      return new Response('403 Forbidden - Automated access is not allowed', {
+        status: 403,
+        headers: {
+          'Content-Type': 'text/plain',
+        }
+      });
+    }
   }
   
   // Continue to the asset or page
