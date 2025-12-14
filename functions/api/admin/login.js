@@ -27,9 +27,114 @@ async function sha256(str) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// TOTP 검증 (간단한 검증)
-function verifyTOTP(token, secret) {
-  return /^\d{6}$/.test(token);
+// Base32 디코딩 함수
+function base32Decode(base32) {
+  const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  let bits = '';
+  let hex = '';
+  
+  base32 = base32.toUpperCase().replace(/=+$/, '');
+  
+  for (let i = 0; i < base32.length; i++) {
+    const val = base32Chars.indexOf(base32.charAt(i));
+    if (val === -1) throw new Error('Invalid base32 character');
+    bits += val.toString(2).padStart(5, '0');
+  }
+  
+  for (let i = 0; i + 8 <= bits.length; i += 8) {
+    const chunk = bits.slice(i, i + 8);
+    hex += parseInt(chunk, 2).toString(16).padStart(2, '0');
+  }
+  
+  return hex;
+}
+
+// HMAC-SHA1 생성
+async function hmacSha1(key, message) {
+  const keyBytes = new Uint8Array(key.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+  const messageBytes = new Uint8Array(8);
+  
+  for (let i = 7; i >= 0; i--) {
+    messageBytes[i] = message & 0xff;
+    message = message >> 8;
+  }
+  
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    keyBytes,
+    { name: 'HMAC', hash: 'SHA-1' },
+    false,
+    ['sign']
+  );
+  
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, messageBytes);
+  return new Uint8Array(signature);
+}
+
+// TOTP 생성 함수
+async function generateTOTP(secret, timeStep = 30, digits = 6) {
+  const epoch = Math.floor(Date.now() / 1000);
+  const counter = Math.floor(epoch / timeStep);
+  
+  const secretHex = base32Decode(secret);
+  const hmac = await hmacSha1(secretHex, counter);
+  
+  const offset = hmac[hmac.length - 1] & 0xf;
+  const binary = ((hmac[offset] & 0x7f) << 24) |
+                 ((hmac[offset + 1] & 0xff) << 16) |
+                 ((hmac[offset + 2] & 0xff) << 8) |
+                 (hmac[offset + 3] & 0xff);
+  
+  const otp = binary % Math.pow(10, digits);
+  return otp.toString().padStart(digits, '0');
+}
+
+// TOTP 검증 (실제 TOTP 알고리즘 사용)
+async function verifyTOTP(token, secret) {
+  // 입력이 6자리 숫자인지 확인
+  if (!/^\d{6}$/.test(token)) {
+    return false;
+  }
+  
+  try {
+    // 현재 시간과 전후 30초 범위 내의 TOTP 확인 (시간 동기화 허용)
+    const currentTOTP = await generateTOTP(secret, 30, 6);
+    if (token === currentTOTP) {
+      return true;
+    }
+    
+    // 이전 30초 구간 확인 (시계 차이 보정)
+    const epoch = Math.floor(Date.now() / 1000) - 30;
+    const prevCounter = Math.floor(epoch / 30);
+    const secretHex = base32Decode(secret);
+    const prevHmac = await hmacSha1(secretHex, prevCounter);
+    const prevOffset = prevHmac[prevHmac.length - 1] & 0xf;
+    const prevBinary = ((prevHmac[prevOffset] & 0x7f) << 24) |
+                       ((prevHmac[prevOffset + 1] & 0xff) << 16) |
+                       ((prevHmac[prevOffset + 2] & 0xff) << 8) |
+                       (prevHmac[prevOffset + 3] & 0xff);
+    const prevOTP = (prevBinary % 1000000).toString().padStart(6, '0');
+    
+    if (token === prevOTP) {
+      return true;
+    }
+    
+    // 다음 30초 구간 확인 (시계 차이 보정)
+    const nextEpoch = Math.floor(Date.now() / 1000) + 30;
+    const nextCounter = Math.floor(nextEpoch / 30);
+    const nextHmac = await hmacSha1(secretHex, nextCounter);
+    const nextOffset = nextHmac[nextHmac.length - 1] & 0xf;
+    const nextBinary = ((nextHmac[nextOffset] & 0x7f) << 24) |
+                       ((nextHmac[nextOffset + 1] & 0xff) << 16) |
+                       ((nextHmac[nextOffset + 2] & 0xff) << 8) |
+                       (nextHmac[nextOffset + 3] & 0xff);
+    const nextOTP = (nextBinary % 1000000).toString().padStart(6, '0');
+    
+    return token === nextOTP;
+  } catch (error) {
+    console.error('TOTP verification error:', error);
+    return false;
+  }
 }
 
 // Turnstile 검증
@@ -122,8 +227,9 @@ export async function onRequestPost({ request, env }) {
       });
     }
     
-    // TOTP 검증
-    if (!verifyTOTP(totp, ADMIN_TOTP_SECRET)) {
+    // TOTP 검증 (await 추가)
+    const isTOTPValid = await verifyTOTP(totp, ADMIN_TOTP_SECRET);
+    if (!isTOTPValid) {
       await logSecurityEvent(env, {
         type: 'failed_2fa',
         username,
