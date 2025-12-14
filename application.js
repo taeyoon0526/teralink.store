@@ -1,6 +1,57 @@
 // Application Page Scripts v2.0
 // VPN Check, Form Validation, and Cloudflare Turnstile
 
+let turnstileWidgetId = null;
+
+// =============================
+// Turnstile 명시적 렌더링
+// =============================
+document.addEventListener('DOMContentLoaded', function() {
+    initTurnstile();
+});
+
+function initTurnstile() {
+    const checkTurnstile = setInterval(() => {
+        if (window.turnstile) {
+            clearInterval(checkTurnstile);
+            renderTurnstile();
+        }
+    }, 100);
+    
+    setTimeout(() => {
+        clearInterval(checkTurnstile);
+        if (!window.turnstile) {
+            console.error('Turnstile API failed to load');
+        }
+    }, 10000);
+}
+
+function renderTurnstile() {
+    const container = document.getElementById('turnstile-widget');
+    if (!container) return;
+    
+    try {
+        turnstileWidgetId = window.turnstile.render('#turnstile-widget', {
+            sitekey: '0x4AAAAAACGiuMFPCm-ky_ah',
+            theme: 'dark',
+            size: 'flexible',
+            callback: function(token) {
+                console.log('Turnstile verified');
+            },
+            'error-callback': function() {
+                console.error('Turnstile error');
+            },
+            'expired-callback': function() {
+                if (turnstileWidgetId !== null) {
+                    window.turnstile.reset(turnstileWidgetId);
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Turnstile render error:', error);
+    }
+}
+
 // =============================
 // VPN 실시간 검사
 // =============================

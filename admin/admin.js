@@ -8,6 +8,7 @@ let adminSession = null;
 let sessionStartTime = null;
 let sessionTimer = null;
 const SESSION_TIMEOUT = 30 * 60 * 1000; // 30분
+let turnstileWidgetId = null;
 
 // ========================================
 // 초기화
@@ -15,7 +16,57 @@ const SESSION_TIMEOUT = 30 * 60 * 1000; // 30분
 document.addEventListener('DOMContentLoaded', function() {
   checkExistingSession();
   initEventListeners();
+  initTurnstile();
 });
+
+// Turnstile 명시적 렌더링
+function initTurnstile() {
+  // Turnstile API 로드 대기
+  const checkTurnstile = setInterval(() => {
+    if (window.turnstile) {
+      clearInterval(checkTurnstile);
+      renderTurnstile();
+    }
+  }, 100);
+  
+  // 타임아웃 설정 (10초)
+  setTimeout(() => {
+    clearInterval(checkTurnstile);
+    if (!window.turnstile) {
+      console.error('Turnstile API failed to load');
+      showStatus('보안 캡챠 로드 실패. 페이지를 새로고침 해주세요.', 'error');
+    }
+  }, 10000);
+}
+
+function renderTurnstile() {
+  const container = document.getElementById('turnstile-widget');
+  if (!container) return;
+  
+  try {
+    turnstileWidgetId = window.turnstile.render('#turnstile-widget', {
+      sitekey: '0x4AAAAAACGiuMFPCm-ky_ah',
+      theme: 'dark',
+      size: 'flexible',
+      callback: function(token) {
+        console.log('Turnstile verified:', token);
+      },
+      'error-callback': function() {
+        console.error('Turnstile error');
+        showStatus('캡챠 검증 오류. 다시 시도해주세요.', 'error');
+      },
+      'expired-callback': function() {
+        console.warn('Turnstile expired');
+        if (turnstileWidgetId !== null) {
+          window.turnstile.reset(turnstileWidgetId);
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Turnstile render error:', error);
+    showStatus('캡챠 렌더링 실패. 페이지를 새로고침 해주세요.', 'error');
+  }
+}
 
 // ========================================
 // 로그인 처리
@@ -72,8 +123,8 @@ async function handleLogin() {
     if (!response.ok) {
       showStatus(data.error || '로그인 실패', 'error');
       // Turnstile 리셋
-      if (window.turnstile) {
-        turnstile.reset();
+      if (window.turnstile && turnstileWidgetId !== null) {
+        window.turnstile.reset(turnstileWidgetId);
       }
       return;
     }

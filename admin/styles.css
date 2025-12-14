@@ -121,30 +121,48 @@ body {
 .captcha-container {
   display: flex;
   justify-content: center;
-  padding: 10px 0;
+  align-items: center;
+  padding: 15px 0;
   width: 100%;
-  overflow: hidden;
+  min-height: 65px;
+  overflow: visible;
 }
 
-/* Turnstile 모바일 대응 */
-.captcha-container .cf-turnstile {
-  max-width: 100%;
+/* Turnstile 위젯 컨테이너 */
+#turnstile-widget {
   width: 100%;
+  max-width: 300px;
+  min-height: 65px;
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
-.captcha-container .cf-turnstile>div,
-.captcha-container .cf-turnstile iframe {
+/* Turnstile 모바일 대응 - 모든 하위 요소 */
+.captcha-container div,
+.captcha-container iframe,
+#turnstile-widget>div,
+#turnstile-widget iframe {
   max-width: 100% !important;
-  width: 100% !important;
-  transform-origin: 0 0;
+  width: auto !important;
+  height: auto !important;
+}
+
+/* 작은 화면 대응 */
+@media (max-width: 400px) {
+  .captcha-container {
+    padding: 10px;
+    transform: scale(0.9);
+    transform-origin: center;
+  }
+
+  #turnstile-widget {
+    max-width: 100%;
+  }
 }
 
 @media (max-width: 350px) {
-
-  .captcha-container .cf-turnstile>div,
-  .captcha-container .cf-turnstile iframe {
+  .captcha-container {
     transform: scale(0.85);
   }
 }
