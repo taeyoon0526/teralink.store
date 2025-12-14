@@ -161,8 +161,8 @@
           <h3>지원서 관리</h3>
           
           <div class="toolbar">
-            <input type="text" id="app-search" placeholder="검색 (이름, 디스코드...)" class="search-input" />
-            <select id="app-filter" class="filter-select">
+            <input type="text" id="app-search" placeholder="검색 (이름, 디스코드...)" class="search-input" aria-label="지원서 검색" />
+            <select id="app-filter" class="filter-select" aria-label="지원서 필터">
               <option value="all">전체</option>
               <option value="pending">대기중</option>
               <option value="approved">승인됨</option>
@@ -191,8 +191,8 @@
           <h3>단축 URL 관리</h3>
           
           <div class="toolbar">
-            <input type="text" id="link-search" placeholder="URL 검색..." class="search-input" />
-            <select id="link-filter" class="filter-select">
+            <input type="text" id="link-search" placeholder="URL 검색..." class="search-input" aria-label="URL 검색" />
+            <select id="link-filter" class="filter-select" aria-label="URL 필터">
               <option value="all">전체</option>
               <option value="active">활성</option>
               <option value="expired">만료됨</option>
@@ -209,9 +209,9 @@
           
           <div class="date-range-picker">
             <label>기간 선택:</label>
-            <input type="date" id="analytics-start" />
+            <input type="date" id="analytics-start" aria-label="시작일" />
             <span>~</span>
-            <input type="date" id="analytics-end" />
+            <input type="date" id="analytics-end" aria-label="종료일" />
             <button class="btn-secondary" onclick="loadAnalytics()">조회</button>
           </div>
 
@@ -233,7 +233,7 @@
           <h3>보안 로그</h3>
           
           <div class="toolbar">
-            <select id="security-filter" class="filter-select">
+            <select id="security-filter" class="filter-select" aria-label="보안 로그 필터">
               <option value="all">전체 로그</option>
               <option value="login">로그인 시도</option>
               <option value="failed">실패한 인증</option>
