@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>TERALINK 관리자 대시보드</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  
+  <!-- 보안 헤더 -->
+  <meta http-equiv="X-Frame-Options" content="DENY" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  
+  <!-- 폰트 -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  
+  <!-- Cloudflare Turnstile -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  
+  <!-- 스타일 -->
+  <link rel="stylesheet" href="/admin/styles.css?v=1.0.0" />
+</head>
+
+<body>
+  <!-- 로그인 화면 -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-container">
+      <div class="login-header">
+        <h1>🔐 관리자 인증</h1>
+        <p>TERALINK 관리자 대시보드</p>
+      </div>
+      
+      <form id="login-form" class="login-form">
+        <div class="form-group">
+          <label for="admin-username">관리자 ID</label>
+          <input type="text" id="admin-username" autocomplete="username" required />
+        </div>
+        
+        <div class="form-group">
+          <label for="admin-password">비밀번호</label>
+          <input type="password" id="admin-password" autocomplete="current-password" required />
+        </div>
+        
+        <div class="form-group">
+          <label for="admin-totp">2FA 코드 (6자리)</label>
+          <input type="text" id="admin-totp" maxlength="6" pattern="[0-9]{6}" placeholder="000000" required />
+        </div>
+        
+        <!-- Turnstile 캡챠 -->
+        <div class="captcha-container">
+          <div class="cf-turnstile" data-sitekey="0x4AAAAAACGiuMFPCm-ky_ah" data-theme="dark"></div>
+        </div>
+        
+        <button type="submit" class="btn-primary">로그인</button>
+        <div id="login-status" class="status-message"></div>
+      </form>
+      
+      <div class="login-footer">
+        <p>🔒 모든 접속은 기록되며 보안 모니터링됩니다</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 메인 대시보드 -->
+  <div id="dashboard" class="dashboard hidden">
+    <!-- 상단 네비게이션 -->
+    <nav class="topnav">
+      <div class="topnav-left">
+        <h2>TERALINK 관리자</h2>
+        <span class="admin-badge" id="admin-name">Admin</span>
+      </div>
+      <div class="topnav-right">
+        <span class="session-info" id="session-timer">세션: 00:00</span>
+        <button class="btn-logout" onclick="logout()">로그아웃</button>
+      </div>
+    </nav>
+
+    <div class="dashboard-layout">
+      <!-- 사이드바 -->
+      <aside class="sidebar">
+        <div class="sidebar-menu">
+          <div class="menu-item active" data-tab="overview">
+            <span class="icon">📊</span>
+            <span>대시보드</span>
+          </div>
+          <div class="menu-item" data-tab="applications">
+            <span class="icon">📝</span>
+            <span>지원서 관리</span>
+          </div>
+          <div class="menu-item" data-tab="users">
+            <span class="icon">👥</span>
+            <span>사용자 관리</span>
+          </div>
+          <div class="menu-item" data-tab="links">
+            <span class="icon">🔗</span>
+            <span>단축 URL 관리</span>
+          </div>
+          <div class="menu-item" data-tab="analytics">
+            <span class="icon">📈</span>
+            <span>접속 통계</span>
+          </div>
+          <div class="menu-item" data-tab="security">
+            <span class="icon">🛡️</span>
+            <span>보안 로그</span>
+          </div>
+          <div class="menu-item" data-tab="settings">
+            <span class="icon">⚙️</span>
+            <span>시스템 설정</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 메인 콘텐츠 -->
+      <main class="main-content">
+        <!-- 대시보드 오버뷰 -->
+        <section id="tab-overview" class="tab-content active">
+          <h3>대시보드 오버뷰</h3>
+          
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon">📝</div>
+              <div class="stat-info">
+                <div class="stat-label">대기 중인 지원서</div>
+                <div class="stat-value" id="stat-pending-apps">-</div>
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon">👥</div>
+              <div class="stat-info">
+                <div class="stat-label">활성 사용자</div>
+                <div class="stat-value" id="stat-active-users">-</div>
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon">🔗</div>
+              <div class="stat-info">
+                <div class="stat-label">단축 URL</div>
+                <div class="stat-value" id="stat-short-urls">-</div>
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon">📈</div>
+              <div class="stat-info">
+                <div class="stat-label">오늘 방문자</div>
+                <div class="stat-value" id="stat-today-visitors">-</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="recent-activity">
+            <h4>최근 활동</h4>
+            <div id="recent-activity-list" class="activity-list"></div>
+          </div>
+        </section>
+
+        <!-- 지원서 관리 -->
+        <section id="tab-applications" class="tab-content">
+          <h3>지원서 관리</h3>
+          
+          <div class="toolbar">
+            <input type="text" id="app-search" placeholder="검색 (이름, 디스코드...)" class="search-input" />
+            <select id="app-filter" class="filter-select">
+              <option value="all">전체</option>
+              <option value="pending">대기중</option>
+              <option value="approved">승인됨</option>
+              <option value="rejected">거절됨</option>
+            </select>
+            <button class="btn-secondary" onclick="refreshApplications()">새로고침</button>
+          </div>
+
+          <div id="applications-list" class="data-table"></div>
+        </section>
+
+        <!-- 사용자 관리 -->
+        <section id="tab-users" class="tab-content">
+          <h3>사용자 관리</h3>
+          
+          <div class="toolbar">
+            <input type="text" id="user-search" placeholder="사용자 검색..." class="search-input" />
+            <button class="btn-primary" onclick="openAddUserModal()">+ 사용자 추가</button>
+          </div>
+
+          <div id="users-list" class="data-table"></div>
+        </section>
+
+        <!-- 단축 URL 관리 -->
+        <section id="tab-links" class="tab-content">
+          <h3>단축 URL 관리</h3>
+          
+          <div class="toolbar">
+            <input type="text" id="link-search" placeholder="URL 검색..." class="search-input" />
+            <select id="link-filter" class="filter-select">
+              <option value="all">전체</option>
+              <option value="active">활성</option>
+              <option value="expired">만료됨</option>
+            </select>
+            <button class="btn-secondary" onclick="refreshLinks()">새로고침</button>
+          </div>
+
+          <div id="links-list" class="data-table"></div>
+        </section>
+
+        <!-- 접속 통계 -->
+        <section id="tab-analytics" class="tab-content">
+          <h3>접속 통계</h3>
+          
+          <div class="date-range-picker">
+            <label>기간 선택:</label>
+            <input type="date" id="analytics-start" />
+            <span>~</span>
+            <input type="date" id="analytics-end" />
+            <button class="btn-secondary" onclick="loadAnalytics()">조회</button>
+          </div>
+
+          <div class="analytics-grid">
+            <div class="analytics-card">
+              <h4>페이지뷰 추이</h4>
+              <div id="pageview-chart" class="chart-container"></div>
+            </div>
+            
+            <div class="analytics-card">
+              <h4>인기 페이지</h4>
+              <div id="top-pages" class="list-container"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 보안 로그 -->
+        <section id="tab-security" class="tab-content">
+          <h3>보안 로그</h3>
+          
+          <div class="toolbar">
+            <select id="security-filter" class="filter-select">
+              <option value="all">전체 로그</option>
+              <option value="login">로그인 시도</option>
+              <option value="failed">실패한 인증</option>
+              <option value="vpn">VPN 차단</option>
+              <option value="suspicious">의심 활동</option>
+            </select>
+            <button class="btn-secondary" onclick="refreshSecurityLogs()">새로고침</button>
+            <button class="btn-danger" onclick="clearOldLogs()">오래된 로그 삭제</button>
+          </div>
+
+          <div id="security-logs" class="data-table"></div>
+        </section>
+
+        <!-- 시스템 설정 -->
+        <section id="tab-settings" class="tab-content">
+          <h3>시스템 설정</h3>
+          
+          <div class="settings-grid">
+            <div class="setting-card">
+              <h4>🔒 보안 설정</h4>
+              <div class="setting-item">
+                <label>
+                  <input type="checkbox" id="setting-2fa" checked disabled />
+                  2FA 필수 (항상 활성화)
+                </label>
+              </div>
+              <div class="setting-item">
+                <label>
+                  <input type="checkbox" id="setting-vpn-block" checked />
+                  VPN 차단 활성화
+                </label>
+              </div>
+              <div class="setting-item">
+                <label>
+                  <input type="checkbox" id="setting-rate-limit" checked />
+                  Rate Limiting 활성화
+                </label>
+              </div>
+            </div>
+
+            <div class="setting-card">
+              <h4>⚙️ 시스템 정보</h4>
+              <div class="info-item">
+                <span class="info-label">서버 상태:</span>
+                <span class="info-value status-online">● Online</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">데이터베이스:</span>
+                <span class="info-value" id="db-status">확인 중...</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Worker 버전:</span>
+                <span class="info-value">v2.0.0</span>
+              </div>
+            </div>
+
+            <div class="setting-card">
+              <h4>🗄️ 데이터베이스 관리</h4>
+              <button class="btn-secondary" onclick="backupDatabase()">데이터베이스 백업</button>
+              <button class="btn-danger" onclick="confirmDatabaseCleanup()">오래된 데이터 정리</button>
+            </div>
+
+            <div class="setting-card">
+              <h4>🔑 API 키 관리</h4>
+              <div class="api-key-display">
+                <code id="api-key-display">••••••••••••••••</code>
+                <button class="btn-secondary" onclick="regenerateApiKey()">재생성</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="save-settings">
+            <button class="btn-primary" onclick="saveSettings()">설정 저장</button>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- 모달 오버레이 -->
+  <div id="modal-overlay" class="modal-overlay hidden"></div>
+
+  <!-- JavaScript -->
+  <script src="/admin/admin.js?v=1.0.0"></script>
+</body>
+
+</html>
