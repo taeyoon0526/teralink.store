@@ -493,19 +493,16 @@
             headers: { "Content-Type": "application/json" }
           });
         }
-        const protectPaths = [
+        // /application만 한국 IP 제한 적용
+        const applicationPaths = [
           "/application",
           "/application/",
-          "/application.html",
-          "/lite",
-          "/lite/",
-          "/lite/index.html"
+          "/application.html"
         ];
-        const isProtected = protectPaths.includes(pathname) || 
-                            pathname.startsWith("/application?") ||
-                            pathname.startsWith("/lite?");
-        if (isProtected) {
-          // 한국 IP만 허용 (VPN 차단 제거)
+        const isApplication = applicationPaths.includes(pathname) || pathname.startsWith("/application?");
+        
+        if (isApplication) {
+          // 한국 IP가 아니면 차단
           if (country !== "KR") {
             return Response.redirect(url.origin + "/vpn/", 302);
           }

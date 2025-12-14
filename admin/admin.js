@@ -42,14 +42,9 @@ async function handleLogin() {
   }
   
   // Guest 계정은 "guest" 문자열 허용, 일반 계정은 6자리 숫자만
-  if (username === 'guest') {
-    // Guest 계정은 어떤 입력도 허용 (서버에서 검증)
-  } else {
-    // 일반 계정은 6자리 숫자만
-    if (totp.length !== 6 || !/^\d{6}$/.test(totp)) {
-      showStatus('2FA 코드는 6자리 숫자여야 합니다', 'error');
-      return;
-    }
+  if (username !== 'guest' && (totp.length !== 6 || !/^\d{6}$/.test(totp))) {
+    showStatus('2FA 코드는 6자리 숫자여야 합니다', 'error');
+    return;
   }
   
   if (!turnstileToken) {
