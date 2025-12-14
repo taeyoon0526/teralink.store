@@ -70,6 +70,22 @@ body {
   display: flex;
   justify-content: center;
   margin: 25px 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Turnstile 모바일 대응 */
+.turnstile-container .cf-turnstile {
+  max-width: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.turnstile-container .cf-turnstile>div,
+.turnstile-container .cf-turnstile iframe {
+  max-width: 100% !important;
+  width: 100% !important;
 }
 
 #turnstile-status {
@@ -452,6 +468,32 @@ button.secondary {
 
   .sidebar {
     min-height: 0;
+  }
+
+  .turnstile-modal {
+    padding: 30px 20px;
+    max-width: 90%;
+  }
+
+  .turnstile-modal h2 {
+    font-size: 22px;
+  }
+
+  .turnstile-modal p {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 350px) {
+
+  .turnstile-container .cf-turnstile>div,
+  .turnstile-container .cf-turnstile iframe {
+    transform: scale(0.85);
+    transform-origin: center center;
+  }
+
+  .turnstile-modal {
+    padding: 25px 15px;
   }
 }
 

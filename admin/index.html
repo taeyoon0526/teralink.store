@@ -14,8 +14,8 @@
   <!-- 폰트 -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <!-- Cloudflare Turnstile -->
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <!-- Cloudflare Turnstile (defer만 사용하여 순서 보장) -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
 
   <!-- 스타일 -->
   <link rel="stylesheet" href="/admin/styles.css?v=1.0.0" />
@@ -48,7 +48,7 @@
 
         <!-- Turnstile 캡챠 -->
         <div class="captcha-container">
-          <div class="cf-turnstile" data-sitekey="0x4AAAAAACGiuMFPCm-ky_ah" data-theme="dark"></div>
+          <div class="cf-turnstile" data-sitekey="0x4AAAAAACGiuMFPCm-ky_ah" data-theme="dark" data-size="normal"></div>
         </div>
 
         <button type="submit" class="btn-primary">로그인</button>

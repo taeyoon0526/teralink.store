@@ -152,6 +152,8 @@ button:disabled {
 /* Captcha Container */
 .captcha-container {
   margin: 20px 0;
+  width: 100%;
+  overflow: hidden;
 }
 
 .captcha-container label {
@@ -161,6 +163,26 @@ button:disabled {
 
 .cf-turnstile {
   margin-top: 10px;
+  max-width: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Turnstile 모바일 대응 */
+.cf-turnstile>div,
+.cf-turnstile iframe {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+@media (max-width: 350px) {
+
+  .cf-turnstile>div,
+  .cf-turnstile iframe {
+    transform: scale(0.85);
+    transform-origin: 0 0;
+  }
 }
 
 /* Responsive Design */
