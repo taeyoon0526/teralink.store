@@ -56,6 +56,13 @@ label {
   color: #cbd5e1;
 }
 
+label .hint {
+  font-weight: 400;
+  font-size: 0.85em;
+  color: #888888;
+  margin-left: 5px;
+}
+
 input,
 textarea {
   width: 100%;
@@ -140,6 +147,20 @@ button:disabled {
 
 .status--error {
   color: #f87171;
+}
+
+/* Captcha Container */
+.captcha-container {
+  margin: 20px 0;
+}
+
+.captcha-container label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.cf-turnstile {
+  margin-top: 10px;
 }
 
 /* Responsive Design */

@@ -12,6 +12,9 @@
 
   <!-- External CSS -->
   <link rel="stylesheet" href="/application/styles.css?v=1.0.0">
+
+  <!-- Cloudflare Turnstile -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 
 <body>
@@ -20,32 +23,40 @@
       <h2>프리미엄 관리자 지원서</h2>
 
       <form id="application-form">
-        <label for="age">나이 *</label>
-        <input type="number" id="age" name="age" title="나이를 입력하세요" placeholder="예: 20" required>
+        <label for="age">나이 * <span class="hint">(10-100세)</span></label>
+        <input type="number" id="age" name="age" title="나이를 입력하세요" placeholder="예: 20" required min="10" max="100">
 
-        <label for="discord">디스코드 닉네임 *</label>
-        <input type="text" id="discord" name="discord" title="디스코드 닉네임을 입력하세요" placeholder="예: username#1234" required>
+        <label for="discord">디스코드 닉네임 * <span class="hint">(최소 3자)</span></label>
+        <input type="text" id="discord" name="discord" title="디스코드 닉네임을 입력하세요" placeholder="예: username#1234" required
+          minlength="3">
 
-        <label for="active_time">활동 가능 시간 *</label>
+        <label for="active_time">활동 가능 시간 * <span class="hint">(최소 5자)</span></label>
         <input type="text" id="active_time" name="active_time" title="활동 가능 시간을 입력하세요" placeholder="예: 평일 저녁, 주말 오전"
-          required>
+          required minlength="5">
 
-        <label for="reason">지원 동기 *</label>
-        <textarea id="reason" name="reason" title="지원 동기를 입력하세요" placeholder="관리자 지원 동기를 작성해주세요" required></textarea>
+        <label for="reason">지원 동기 * <span class="hint">(최소 20자)</span></label>
+        <textarea id="reason" name="reason" title="지원 동기를 입력하세요" placeholder="관리자 지원 동기를 작성해주세요 (최소 20자 이상)" required
+          minlength="20"></textarea>
 
-        <label for="resolution">각오 *</label>
-        <textarea id="resolution" name="resolution" title="각오를 입력하세요" placeholder="관리자로서의 각오를 작성해주세요"
-          required></textarea>
+        <label for="resolution">각오 * <span class="hint">(최소 20자)</span></label>
+        <textarea id="resolution" name="resolution" title="각오를 입력하세요" placeholder="관리자로서의 각오를 작성해주세요 (최소 20자 이상)"
+          required minlength="20"></textarea>
 
-        <label for="operation_experience">운영 경험 *</label>
+        <label for="operation_experience">운영 경험 * <span class="hint">(최소 10자)</span></label>
         <textarea id="operation_experience" name="operation_experience" title="운영 경험을 입력하세요"
-          placeholder="이전 운영 경험이 있다면 작성해주세요" required></textarea>
+          placeholder="이전 운영 경험이 있다면 작성해주세요 (최소 10자 이상)" required minlength="10"></textarea>
 
         <label for="dev_experience">해킹/개발 경험 *</label>
         <textarea id="dev_experience" name="dev_experience" title="해킹/개발 경험을 입력하세요"
-          placeholder="해킹 또는 개발 경험이 있다면 작성해주세요" required></textarea>
+          placeholder="해킹 또는 개발 경험이 있다면 작성해주세요" required minlength="10"></textarea>
 
-        <button type="submit" id="submit-button" onclick="finalSubmitCheck(event)">제출하기</button>
+        <!-- Cloudflare Turnstile 캡챠 -->
+        <div class="captcha-container">
+          <label>보안 확인 *</label>
+          <div class="cf-turnstile" data-sitekey="0x4AAAAAAAzXqthJ6f8t-tIW" data-theme="dark"></div>
+        </div>
+
+        <button type="submit" id="submit-button">제출하기</button>
 
         <div id="submitting-indicator">제출 중입니다…</div>
         <div id="status-message"></div>
