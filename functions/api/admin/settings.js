@@ -2,14 +2,14 @@
 // 시스템 설정 API
 // ============================================
 
-async function verifyToken(token) {
+async function verifyToken(token, secret) {
   if (!token) return null;
-  const JWT_SECRET = env.JWT_SECRET;
+  // JWT_SECRET passed as parameter
   const parts = token.split('.');
   if (parts.length !== 3) return null;
   
   const [encodedHeader, encodedPayload, signature] = parts;
-  const buffer = new TextEncoder().encode(`${encodedHeader}.${encodedPayload}.${JWT_SECRET}`);
+  const buffer = new TextEncoder().encode(`${encodedHeader}.${encodedPayload}.${secret}`);
   const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const expectedSignature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -25,16 +25,16 @@ async function verifyToken(token) {
   }
 }
 
-async function requireAuth(request) {
+async function requireAuth(request, env) {
   const authHeader = request.headers.get('Authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
   const token = authHeader.substring(7);
-  return await verifyToken(token);
+  return await verifyToken(token, env.JWT_SECRET);
 }
 
 // GET: 설정 조회
 export async function onRequestGet({ request, env }) {
-  const user = await requireAuth(request);
+  const user = await requireAuth(request, env);
   if (!user) {
     return new Response(JSON.stringify({ error: '인증이 필요합니다' }), {
       status: 401,
@@ -79,7 +79,7 @@ export async function onRequestGet({ request, env }) {
 
 // PUT: 설정 저장
 export async function onRequestPut({ request, env }) {
-  const user = await requireAuth(request);
+  const user = await requireAuth(request, env);
   if (!user) {
     return new Response(JSON.stringify({ error: '인증이 필요합니다' }), {
       status: 401,

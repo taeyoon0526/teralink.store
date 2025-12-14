@@ -3,17 +3,16 @@
 // ============================================
 
 // JWT 토큰 검증 (login.js와 동일한 로직)
-async function verifyToken(token) {
+async function verifyToken(token, secret) {
   if (!token) return null;
   
-  const JWT_SECRET = env.JWT_SECRET;
   const parts = token.split('.');
   if (parts.length !== 3) return null;
   
   const [encodedHeader, encodedPayload, signature] = parts;
   
   // 서명 검증
-  const buffer = new TextEncoder().encode(`${encodedHeader}.${encodedPayload}.${JWT_SECRET}`);
+  const buffer = new TextEncoder().encode(`${encodedHeader}.${encodedPayload}.${secret}`);
   const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const expectedSignature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -35,19 +34,19 @@ async function verifyToken(token) {
 }
 
 // 인증 미들웨어
-async function requireAuth(request) {
+async function requireAuth(request, env) {
   const authHeader = request.headers.get('Authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return null;
   }
   
   const token = authHeader.substring(7);
-  return await verifyToken(token);
+  return await verifyToken(token, env.JWT_SECRET);
 }
 
 export async function onRequestGet({ request, env }) {
   // 인증 확인
-  const user = await requireAuth(request);
+  const user = await requireAuth(request, env);
   if (!user) {
     return new Response(JSON.stringify({ error: '인증이 필요합니다' }), {
       status: 401,
