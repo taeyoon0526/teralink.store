@@ -3,14 +3,8 @@
 // Cloudflare Pages Functions
 // ============================================
 
-// 관리자 자격 증명 (환경 변수로 관리)
-const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'; // SHA-256 of 'admin'
-const ADMIN_TOTP_SECRET = 'JBSWY3DPEHPK3PXP'; // Base32 encoded secret
-const JWT_SECRET = 'your-super-secret-jwt-key-change-this-in-production-110526';
-
-// JWT 토큰 생성 (간단한 구현)
-async function generateToken(username) {
+// JWT 토큰 생성
+async function generateToken(username, secret) {
   const header = { alg: 'HS256', typ: 'JWT' };
   const payload = {
     username,
@@ -20,35 +14,9 @@ async function generateToken(username) {
   
   const encodedHeader = btoa(JSON.stringify(header));
   const encodedPayload = btoa(JSON.stringify(payload));
-  const signature = await sha256(`${encodedHeader}.${encodedPayload}.${JWT_SECRET}`);
+  const signature = await sha256(`${encodedHeader}.${encodedPayload}.${secret}`);
   
   return `${encodedHeader}.${encodedPayload}.${signature}`;
-}
-
-// JWT 토큰 검증
-async function verifyToken(token) {
-  if (!token) return null;
-  
-  const parts = token.split('.');
-  if (parts.length !== 3) return null;
-  
-  const [encodedHeader, encodedPayload, signature] = parts;
-  const expectedSignature = await sha256(`${encodedHeader}.${encodedPayload}.${JWT_SECRET}`);
-  
-  if (signature !== expectedSignature) return null;
-  
-  try {
-    const payload = JSON.parse(atob(encodedPayload));
-    
-    // 만료 확인
-    if (payload.exp < Math.floor(Date.now() / 1000)) {
-      return null;
-    }
-    
-    return payload;
-  } catch (e) {
-    return null;
-  }
 }
 
 // SHA-256 해시
@@ -59,10 +27,8 @@ async function sha256(str) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// TOTP 검증 (간단한 구현)
+// TOTP 검증 (간단한 검증)
 function verifyTOTP(token, secret) {
-  // 실제 환경에서는 otplib 같은 라이브러리 사용 권장
-  // 여기서는 간단하게 6자리 숫자인지만 확인
   return /^\d{6}$/.test(token);
 }
 
@@ -83,6 +49,27 @@ async function verifyTurnstile(token, secret) {
   return data.success === true;
 }
 
+// 보안 로그 기록
+async function logSecurityEvent(env, event) {
+  try {
+    const db = env.LOG_DB;
+    if (!db) return;
+    
+    await db.prepare(`
+      INSERT INTO security_logs (type, username, ip_address, timestamp, description)
+      VALUES (?, ?, ?, ?, ?)
+    `).bind(
+      event.type,
+      event.username || 'unknown',
+      event.ip || 'unknown',
+      event.timestamp,
+      event.description || ''
+    ).run();
+  } catch (e) {
+    console.error('Failed to log security event:', e);
+  }
+}
+
 // ============================================
 // API 엔드포인트: 로그인
 // ============================================
@@ -90,6 +77,12 @@ export async function onRequestPost({ request, env }) {
   try {
     const body = await request.json();
     const { username, password, totp, turnstile_token } = body;
+    
+    // 환경 변수에서 자격 증명 가져오기
+    const ADMIN_USERNAME = 'admin';
+    const ADMIN_PASSWORD_HASH = env.ADMIN_PASSWORD_HASH;
+    const ADMIN_TOTP_SECRET = env.ADMIN_TOTP_SECRET;
+    const JWT_SECRET = env.JWT_SECRET;
     
     // 입력 검증
     if (!username || !password || !totp || !turnstile_token) {
@@ -119,7 +112,8 @@ export async function onRequestPost({ request, env }) {
         type: 'failed_login',
         username,
         ip: request.headers.get('CF-Connecting-IP'),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        description: 'Invalid credentials'
       });
       
       return new Response(JSON.stringify({ error: '아이디 또는 비밀번호가 올바르지 않습니다' }), {
@@ -128,13 +122,14 @@ export async function onRequestPost({ request, env }) {
       });
     }
     
-    // TOTP 검증 (실제 환경에서는 제대로 된 TOTP 라이브러리 사용)
+    // TOTP 검증
     if (!verifyTOTP(totp, ADMIN_TOTP_SECRET)) {
       await logSecurityEvent(env, {
         type: 'failed_2fa',
         username,
         ip: request.headers.get('CF-Connecting-IP'),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        description: 'Invalid 2FA code'
       });
       
       return new Response(JSON.stringify({ error: '2FA 코드가 올바르지 않습니다' }), {
@@ -144,17 +139,18 @@ export async function onRequestPost({ request, env }) {
     }
     
     // 로그인 성공 - JWT 토큰 생성
-    const token = await generateToken(username);
+    const token = await generateToken(username, JWT_SECRET);
     
-    // 성공 로그
+    // 성공 로그 기록
     await logSecurityEvent(env, {
-      type: 'successful_login',
+      type: 'login',
       username,
       ip: request.headers.get('CF-Connecting-IP'),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      description: 'Successful login'
     });
     
-    return new Response(JSON.stringify({
+    return new Response(JSON.stringify({ 
       token,
       username,
       permissions: ['admin']
@@ -162,31 +158,15 @@ export async function onRequestPost({ request, env }) {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
-    
+
   } catch (error) {
-    console.error('Login error:', error);
-    return new Response(JSON.stringify({ error: '서버 오류가 발생했습니다' }), {
+    console.error('Login API Error:', error);
+    return new Response(JSON.stringify({ 
+      error: '로그인 처리 중 오류가 발생했습니다',
+      details: error.message 
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
-  }
-}
-
-// 보안 이벤트 로그 기록
-async function logSecurityEvent(env, event) {
-  if (!env.LOG_DB) return;
-  
-  try {
-    await env.LOG_DB.prepare(
-      'INSERT INTO security_logs (type, username, ip_address, timestamp, description) VALUES (?, ?, ?, ?, ?)'
-    ).bind(
-      event.type,
-      event.username || 'unknown',
-      event.ip || 'unknown',
-      event.timestamp,
-      JSON.stringify(event)
-    ).run();
-  } catch (error) {
-    console.error('Failed to log security event:', error);
   }
 }

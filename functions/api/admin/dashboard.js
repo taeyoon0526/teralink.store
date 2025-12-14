@@ -6,7 +6,7 @@
 async function verifyToken(token) {
   if (!token) return null;
   
-  const JWT_SECRET = 'your-super-secret-jwt-key-change-this-in-production-110526';
+  const JWT_SECRET = env.JWT_SECRET;
   const parts = token.split('.');
   if (parts.length !== 3) return null;
   
