@@ -1,0 +1,163 @@
+/* Application Form Styles */
+/* Version: 1.0.0 */
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Noto Sans KR", sans-serif;
+  background: linear-gradient(135deg, #030712, #09121d, #030712);
+  color: #e5e7eb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.wrapper {
+  width: 100%;
+  max-width: 540px;
+}
+
+.card {
+  background: rgba(15, 23, 42, 0.7);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 25px;
+  animation: fadeIn .8s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+h2 {
+  color: #e5e7eb;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #cbd5e1;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  margin-top: 6px;
+  margin-bottom: 14px;
+  background: rgba(15, 23, 42, 0.8);
+  color: #e5e7eb;
+  outline: none;
+  transition: .2s;
+  font-family: "Noto Sans KR", sans-serif;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+input:focus,
+textarea:focus {
+  border-color: #22d3ee;
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.45);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #64748b;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 30px;
+  border: none;
+  background: linear-gradient(120deg, #22d3ee, #a855f7, #f97316);
+  background-size: 200% 200%;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: .3s;
+  color: #0f172a;
+  font-family: "Noto Sans KR", sans-serif;
+}
+
+button:hover {
+  background-position: 100% 0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(34, 211, 238, 0.4);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+#submitting-indicator {
+  display: none;
+  text-align: center;
+  margin-top: 10px;
+  color: #22d3ee;
+  font-size: 14px;
+}
+
+#status-message {
+  margin-top: 10px;
+  font-size: 13px;
+  min-height: 16px;
+  text-align: center;
+}
+
+.status--success {
+  color: #4ade80;
+}
+
+.status--error {
+  color: #f87171;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .card {
+    padding: 20px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  input,
+  textarea {
+    font-size: 13px;
+  }
+
+  button {
+    font-size: 14px;
+  }
+}

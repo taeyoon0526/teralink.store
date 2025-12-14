@@ -35,6 +35,18 @@
   Cache-Control: public, max-age=7200, must-revalidate
   X-Content-Type-Options: nosniff
 
+/vpn/styles.css
+  Cache-Control: public, max-age=7200, must-revalidate
+  X-Content-Type-Options: nosniff
+
+/vpn/noscript.css
+  Cache-Control: public, max-age=7200, must-revalidate
+  X-Content-Type-Options: nosniff
+
+/application/styles.css
+  Cache-Control: public, max-age=7200, must-revalidate
+  X-Content-Type-Options: nosniff
+
 # Cache Control for images
 /*.jpg
   Cache-Control: public, max-age=86400

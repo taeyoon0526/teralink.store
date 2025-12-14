@@ -1,0 +1,10 @@
+/* NoScript Override Styles for VPN Page */
+/* This file is only loaded when JavaScript is disabled */
+
+body > *:not(noscript) {
+    display: none !important;
+}
+
+.noscript-container {
+    display: flex !important;
+}

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>접속 차단됨 - VPN 사용 감지</title>
+    
+    <!-- External CSS -->
+    <link rel="stylesheet" href="styles.css?v=1.0.0">
+</head>
+
+<body>
+    <div class="container">
+        <div class="warn-icon">⚠️</div>
+        <h1>VPN 사용이 감지되었습니다</h1>
+        <p>
+            보안 정책에 따라 VPN·Proxy·Tor 네트워크에서의 접속은<br>
+            허용되지 않습니다.<br><br>
+            정상적인 네트워크(가정용 인터넷, WIFI)로 전환한 뒤<br>
+            다시 접속해주세요.
+        </p>
+
+        <!-- 이전 페이지로 이동 -->
+        <a href="javascript:void(0)" class="retry-btn" onclick="goBack()">다시 접속하기</a>
+
+        <p class="footer-note">
+            현재는 한국 거주자만 서비스를 이용할 수 있습니다.
+        </p>
+    </div>
+
+    <noscript>
+        <link rel="stylesheet" href="noscript.css?v=1.0.0">
+        <div class="noscript-container">
+            <div class="noscript-box">
+                <div class="noscript-icon">🔧</div>
+                <h1>JavaScript가 비활성화되어 있습니다</h1>
+                <p>
+                    이 웹사이트는 정상적인 작동을 위해<br>
+                    JavaScript가 필요합니다.<br><br>
+                    브라우저 설정에서 JavaScript를 활성화한 후<br>
+                    페이지를 새로고침해주세요.
+                </p>
+
+                <div class="noscript-steps">
+                    <strong>📌 Chrome/Edge 활성화 방법:</strong><br>
+                    1. 설정(⚙️) → 개인정보 및 보안<br>
+                    2. 사이트 설정 → JavaScript<br>
+                    3. "사이트에서 JavaScript 사용 허용" 선택<br><br>
+
+                    <strong>📌 Firefox 활성화 방법:</strong><br>
+                    1. 주소창에 <code>about:config</code> 입력<br>
+                    2. <code>javascript.enabled</code> 검색<br>
+                    3. 값을 <code>true</code>로 변경<br><br>
+
+                    <strong>📌 Safari 활성화 방법:</strong><br>
+                    1. 환경설정 → 보안<br>
+                    2. "JavaScript 활성화" 체크
+                </div>
+
+                <p class="footer-note">
+                    JavaScript를 활성화한 후 F5 키를 눌러 새로고침하세요.
+                </p>
+            </div>
+        </div>
+    </noscript>
+
+    <script src="../vpn.js?v=1.0.0"></script>
+</body>
+
+</html>
