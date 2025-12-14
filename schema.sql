@@ -98,3 +98,15 @@ VALUES (
   'JBSWY3DPEHPK3PXP',
   'admin'
 );
+
+-- 게스트 계정 생성 (비밀번호: guest, 2FA: guest)
+-- SHA-256 해시: 84983c60f7daadc1cb8698621f802c0d9f9a3c3c295c810748fb048115c186ec
+-- 읽기 전용 권한
+INSERT OR IGNORE INTO users (id, username, password_hash, totp_secret, role) 
+VALUES (
+  'guest-001',
+  'guest',
+  '84983c60f7daadc1cb8698621f802c0d9f9a3c3c295c810748fb048115c186ec',
+  'GUEST_TOTP_BYPASS',
+  'guest'
+);

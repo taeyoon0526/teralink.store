@@ -184,9 +184,6 @@ export async function onRequestPost({ request, env }) {
     const { username, password, totp, turnstile_token } = body;
     
     // 환경 변수에서 자격 증명 가져오기
-    const ADMIN_USERNAME = 'admin';
-    const ADMIN_PASSWORD_HASH = env.ADMIN_PASSWORD_HASH;
-    const ADMIN_TOTP_SECRET = env.ADMIN_TOTP_SECRET;
     const JWT_SECRET = env.JWT_SECRET;
     
     // 입력 검증
@@ -208,10 +205,32 @@ export async function onRequestPost({ request, env }) {
       });
     }
     
-    // 사용자 검증
+    // 사용자 비밀번호 해시 생성
     const passwordHash = await sha256(password);
     
-    if (username !== ADMIN_USERNAME || passwordHash !== ADMIN_PASSWORD_HASH) {
+    // 데이터베이스에서 사용자 조회
+    let user = null;
+    try {
+      const result = await env.DB.prepare(
+        'SELECT * FROM users WHERE username = ?'
+      ).bind(username).first();
+      user = result;
+    } catch (dbError) {
+      console.error('DB Query Error:', dbError);
+    }
+    
+    // 사용자가 DB에 없으면 환경 변수로 폴백 (admin 계정용)
+    if (!user && username === 'admin') {
+      user = {
+        username: 'admin',
+        password_hash: env.ADMIN_PASSWORD_HASH,
+        totp_secret: env.ADMIN_TOTP_SECRET,
+        role: 'admin'
+      };
+    }
+    
+    // 사용자 검증
+    if (!user || passwordHash !== user.password_hash) {
       // 보안 로그 기록
       await logSecurityEvent(env, {
         type: 'failed_login',
@@ -227,8 +246,17 @@ export async function onRequestPost({ request, env }) {
       });
     }
     
-    // TOTP 검증 (await 추가)
-    const isTOTPValid = await verifyTOTP(totp, ADMIN_TOTP_SECRET);
+    // TOTP 검증 - 게스트 계정 특별 처리
+    let isTOTPValid = false;
+    
+    if (user.totp_secret === 'GUEST_TOTP_BYPASS') {
+      // 게스트 계정: 2FA 입력값이 "guest"이면 통과
+      isTOTPValid = (totp === 'guest');
+    } else {
+      // 일반 계정: RFC 6238 TOTP 검증
+      isTOTPValid = await verifyTOTP(totp, user.totp_secret);
+    }
+    
     if (!isTOTPValid) {
       await logSecurityEvent(env, {
         type: 'failed_2fa',
@@ -256,10 +284,14 @@ export async function onRequestPost({ request, env }) {
       description: 'Successful login'
     });
     
+    // 사용자 역할에 따른 권한 설정
+    const permissions = user.role === 'guest' ? ['read'] : ['admin'];
+    
     return new Response(JSON.stringify({ 
       token,
       username,
-      permissions: ['admin']
+      role: user.role,
+      permissions
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
