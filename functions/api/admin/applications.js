@@ -34,7 +34,7 @@ async function requireAuth(request, env) {
   
   // DB에서 사용자 역할 조회
   try {
-    const user = await env.DB.prepare('SELECT role FROM users WHERE username = ?')
+    const user = await (env.teralink_db || env.DB).prepare('SELECT role FROM users WHERE username = ?')
       .bind(payload.username)
       .first();
     if (user) {

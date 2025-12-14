@@ -211,10 +211,13 @@ export async function onRequestPost({ request, env }) {
     // 데이터베이스에서 사용자 조회
     let user = null;
     try {
-      const result = await env.DB.prepare(
-        'SELECT * FROM users WHERE username = ?'
-      ).bind(username).first();
-      user = result;
+      const db = env.teralink_db || env.DB;
+      if (db) {
+        const result = await db.prepare(
+          'SELECT * FROM users WHERE username = ?'
+        ).bind(username).first();
+        user = result;
+      }
     } catch (dbError) {
       console.error('DB Query Error:', dbError);
     }
