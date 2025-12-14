@@ -11,3 +11,8 @@ LOG_API_KEY = "110526taeyoon!"
 binding = "LOG_DB"
 database_name = "teralink_logs"
 database_id = "94662c07-c04c-45ab-8e9e-f12582bd73b8"
+
+[[d1_databases]]
+binding = "teralink_db"
+database_name = "teralink-db"
+database_id = "4109bd29-f148-494b-9668-f9c9f26a3975"

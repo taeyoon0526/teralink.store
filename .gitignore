@@ -2,3 +2,4 @@ node_modules/
 Markdown/
 package-lock.json
 package.json
+.dev.vars

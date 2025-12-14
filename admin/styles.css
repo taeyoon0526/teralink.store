@@ -3,20 +3,20 @@
   --bg-secondary: #111827;
   --bg-card: #1f2937;
   --bg-hover: #374151;
-  
+
   --text-primary: #f9fafb;
   --text-secondary: #d1d5db;
   --text-muted: #9ca3af;
-  
+
   --border-color: #374151;
   --border-hover: #4b5563;
-  
+
   --accent-primary: #3b82f6;
   --accent-hover: #2563eb;
   --accent-success: #10b981;
   --accent-warning: #f59e0b;
   --accent-danger: #ef4444;
-  
+
   --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
 }
@@ -652,33 +652,33 @@ body {
   .dashboard-layout {
     flex-direction: column;
   }
-  
+
   .sidebar {
     width: 100%;
     border-right: none;
     border-bottom: 1px solid var(--border-color);
   }
-  
+
   .main-content {
     padding: 20px;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .analytics-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .settings-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .toolbar {
     flex-direction: column;
   }
-  
+
   .search-input {
     width: 100%;
   }

@@ -6,17 +6,17 @@
   <title>TERALINK 관리자 대시보드</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex, nofollow" />
-  
+
   <!-- 보안 헤더 -->
   <meta http-equiv="X-Frame-Options" content="DENY" />
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-  
+
   <!-- 폰트 -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  
+
   <!-- Cloudflare Turnstile -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-  
+
   <!-- 스타일 -->
   <link rel="stylesheet" href="/admin/styles.css?v=1.0.0" />
 </head>
@@ -29,32 +29,32 @@
         <h1>🔐 관리자 인증</h1>
         <p>TERALINK 관리자 대시보드</p>
       </div>
-      
+
       <form id="login-form" class="login-form">
         <div class="form-group">
           <label for="admin-username">관리자 ID</label>
           <input type="text" id="admin-username" autocomplete="username" required />
         </div>
-        
+
         <div class="form-group">
           <label for="admin-password">비밀번호</label>
           <input type="password" id="admin-password" autocomplete="current-password" required />
         </div>
-        
+
         <div class="form-group">
           <label for="admin-totp">2FA 코드 (6자리)</label>
           <input type="text" id="admin-totp" maxlength="6" pattern="[0-9]{6}" placeholder="000000" required />
         </div>
-        
+
         <!-- Turnstile 캡챠 -->
         <div class="captcha-container">
           <div class="cf-turnstile" data-sitekey="0x4AAAAAACGiuMFPCm-ky_ah" data-theme="dark"></div>
         </div>
-        
+
         <button type="submit" class="btn-primary">로그인</button>
         <div id="login-status" class="status-message"></div>
       </form>
-      
+
       <div class="login-footer">
         <p>🔒 모든 접속은 기록되며 보안 모니터링됩니다</p>
       </div>
@@ -115,7 +115,7 @@
         <!-- 대시보드 오버뷰 -->
         <section id="tab-overview" class="tab-content active">
           <h3>대시보드 오버뷰</h3>
-          
+
           <div class="stats-grid">
             <div class="stat-card">
               <div class="stat-icon">📝</div>
@@ -124,7 +124,7 @@
                 <div class="stat-value" id="stat-pending-apps">-</div>
               </div>
             </div>
-            
+
             <div class="stat-card">
               <div class="stat-icon">👥</div>
               <div class="stat-info">
@@ -132,7 +132,7 @@
                 <div class="stat-value" id="stat-active-users">-</div>
               </div>
             </div>
-            
+
             <div class="stat-card">
               <div class="stat-icon">🔗</div>
               <div class="stat-info">
@@ -140,7 +140,7 @@
                 <div class="stat-value" id="stat-short-urls">-</div>
               </div>
             </div>
-            
+
             <div class="stat-card">
               <div class="stat-icon">📈</div>
               <div class="stat-info">
@@ -159,9 +159,10 @@
         <!-- 지원서 관리 -->
         <section id="tab-applications" class="tab-content">
           <h3>지원서 관리</h3>
-          
+
           <div class="toolbar">
-            <input type="text" id="app-search" placeholder="검색 (이름, 디스코드...)" class="search-input" aria-label="지원서 검색" />
+            <input type="text" id="app-search" placeholder="검색 (이름, 디스코드...)" class="search-input"
+              aria-label="지원서 검색" />
             <select id="app-filter" class="filter-select" aria-label="지원서 필터">
               <option value="all">전체</option>
               <option value="pending">대기중</option>
@@ -177,7 +178,7 @@
         <!-- 사용자 관리 -->
         <section id="tab-users" class="tab-content">
           <h3>사용자 관리</h3>
-          
+
           <div class="toolbar">
             <input type="text" id="user-search" placeholder="사용자 검색..." class="search-input" />
             <button class="btn-primary" onclick="openAddUserModal()">+ 사용자 추가</button>
@@ -189,7 +190,7 @@
         <!-- 단축 URL 관리 -->
         <section id="tab-links" class="tab-content">
           <h3>단축 URL 관리</h3>
-          
+
           <div class="toolbar">
             <input type="text" id="link-search" placeholder="URL 검색..." class="search-input" aria-label="URL 검색" />
             <select id="link-filter" class="filter-select" aria-label="URL 필터">
@@ -206,7 +207,7 @@
         <!-- 접속 통계 -->
         <section id="tab-analytics" class="tab-content">
           <h3>접속 통계</h3>
-          
+
           <div class="date-range-picker">
             <label>기간 선택:</label>
             <input type="date" id="analytics-start" aria-label="시작일" />
@@ -220,7 +221,7 @@
               <h4>페이지뷰 추이</h4>
               <div id="pageview-chart" class="chart-container"></div>
             </div>
-            
+
             <div class="analytics-card">
               <h4>인기 페이지</h4>
               <div id="top-pages" class="list-container"></div>
@@ -231,7 +232,7 @@
         <!-- 보안 로그 -->
         <section id="tab-security" class="tab-content">
           <h3>보안 로그</h3>
-          
+
           <div class="toolbar">
             <select id="security-filter" class="filter-select" aria-label="보안 로그 필터">
               <option value="all">전체 로그</option>
@@ -250,7 +251,7 @@
         <!-- 시스템 설정 -->
         <section id="tab-settings" class="tab-content">
           <h3>시스템 설정</h3>
-          
+
           <div class="settings-grid">
             <div class="setting-card">
               <h4>🔒 보안 설정</h4>
