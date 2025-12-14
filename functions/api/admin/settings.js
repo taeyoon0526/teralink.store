@@ -29,7 +29,34 @@ async function requireAuth(request, env) {
   const authHeader = request.headers.get('Authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
   const token = authHeader.substring(7);
-  return await verifyToken(token, env.JWT_SECRET);
+  const payload = await verifyToken(token, env.JWT_SECRET);
+  if (!payload) return null;
+  
+  try {
+    const user = await env.DB.prepare('SELECT role FROM users WHERE username = ?')
+      .bind(payload.username)
+      .first();
+    if (user) {
+      payload.role = user.role;
+    }
+  } catch (e) {
+    console.error('Failed to fetch user role:', e);
+  }
+  
+  return payload;
+}
+
+function requireWritePermission(user) {
+  if (user.role === 'guest') {
+    return new Response(JSON.stringify({ 
+      error: '읽기 전용 계정은 수정할 수 없습니다',
+      message: 'Guest accounts have read-only access' 
+    }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+  return null;
 }
 
 // GET: 설정 조회
@@ -86,6 +113,9 @@ export async function onRequestPut({ request, env }) {
       headers: { 'Content-Type': 'application/json' }
     });
   }
+  
+  const writeCheck = requireWritePermission(user);
+  if (writeCheck) return writeCheck;
   
   try {
     const body = await request.json();

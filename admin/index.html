@@ -42,13 +42,13 @@
         </div>
 
         <div class="form-group">
-          <label for="admin-totp">2FA 코드 (6자리)</label>
-          <input type="text" id="admin-totp" maxlength="6" pattern="[0-9]{6}" placeholder="000000" required />
+          <label for="admin-totp">2FA 코드 (6자리 또는 guest)</label>
+          <input type="text" id="admin-totp" placeholder="000000 또는 guest" required />
         </div>
 
         <!-- Turnstile 캡챠 -->
         <div class="captcha-container">
-          <div class="cf-turnstile" data-sitekey="0x4AAAAAACGiuMFPCm-ky_ah" data-theme="dark" data-size="normal"></div>
+          <div class="cf-turnstile" data-sitekey="0x4AAAAAACGiuMFPCm-ky_ah" data-theme="dark" data-size="flexible"></div>
         </div>
 
         <button type="submit" class="btn-primary">로그인</button>

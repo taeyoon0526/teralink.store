@@ -41,9 +41,15 @@ async function handleLogin() {
     return;
   }
   
-  if (totp.length !== 6 || !/^\d{6}$/.test(totp)) {
-    showStatus('2FA 코드는 6자리 숫자여야 합니다', 'error');
-    return;
+  // Guest 계정은 "guest" 문자열 허용, 일반 계정은 6자리 숫자만
+  if (username === 'guest') {
+    // Guest 계정은 어떤 입력도 허용 (서버에서 검증)
+  } else {
+    // 일반 계정은 6자리 숫자만
+    if (totp.length !== 6 || !/^\d{6}$/.test(totp)) {
+      showStatus('2FA 코드는 6자리 숫자여야 합니다', 'error');
+      return;
+    }
   }
   
   if (!turnstileToken) {
@@ -81,11 +87,13 @@ async function handleLogin() {
     adminSession = {
       token: data.token,
       username: data.username,
+      role: data.role || 'guest',
       permissions: data.permissions || []
     };
     
-    sessionStorage.setItem('admin_session', JSON.stringify(adminSession));
     sessionStartTime = Date.now();
+    sessionStorage.setItem('admin_session', JSON.stringify(adminSession));
+    sessionStorage.setItem('session_start_time', sessionStartTime.toString());
     
     showStatus('로그인 성공! 대시보드를 로드합니다...', 'success');
     
@@ -112,12 +120,25 @@ function showStatus(message, type) {
 // ========================================
 function checkExistingSession() {
   const savedSession = sessionStorage.getItem('admin_session');
-  if (savedSession) {
+  const savedStartTime = sessionStorage.getItem('session_start_time');
+  
+  if (savedSession && savedStartTime) {
     try {
       adminSession = JSON.parse(savedSession);
-      showDashboard();
+      sessionStartTime = parseInt(savedStartTime, 10);
+      
+      // 세션이 아직 유효한지 확인
+      const elapsed = Date.now() - sessionStartTime;
+      if (elapsed < SESSION_TIMEOUT) {
+        showDashboard();
+      } else {
+        // 세션 만료
+        sessionStorage.removeItem('admin_session');
+        sessionStorage.removeItem('session_start_time');
+      }
     } catch (e) {
       sessionStorage.removeItem('admin_session');
+      sessionStorage.removeItem('session_start_time');
     }
   }
 }
@@ -127,7 +148,12 @@ function showDashboard() {
   document.getElementById('dashboard').classList.remove('hidden');
   
   // 관리자 이름 표시
-  document.getElementById('admin-name').textContent = adminSession?.username || 'Admin';
+  const displayName = adminSession?.username || 'Admin';
+  const roleBadge = adminSession?.role === 'guest' ? ' 🔍 (읽기 전용)' : '';
+  document.getElementById('admin-name').textContent = displayName + roleBadge;
+  
+  // Guest 권한 제한 UI 적용
+  applyRoleBasedUI();
   
   // 세션 타이머 시작
   startSessionTimer();
@@ -136,8 +162,46 @@ function showDashboard() {
   loadDashboardData();
 }
 
+// Guest 권한에 따른 UI 제한
+function applyRoleBasedUI() {
+  if (adminSession?.role === 'guest') {
+    // 모든 수정/삭제 버튼 비활성화
+    const restrictedButtons = document.querySelectorAll(
+      'button[onclick*="delete"], ' +
+      'button[onclick*="update"], ' +
+      'button[onclick*="save"], ' +
+      'button[onclick*="create"], ' +
+      'button[onclick*="approve"], ' +
+      'button[onclick*="reject"], ' +
+      'button[onclick*="backup"], ' +
+      'button[onclick*="cleanup"]'
+    );
+    
+    restrictedButtons.forEach(btn => {
+      btn.disabled = true;
+      btn.title = '읽기 전용 계정은 수정할 수 없습니다';
+      btn.style.opacity = '0.5';
+      btn.style.cursor = 'not-allowed';
+    });
+    
+    // 읽기 전용 안내 배너 추가
+    const dashboardHeader = document.querySelector('.dashboard-header');
+    if (dashboardHeader && !document.getElementById('readonly-banner')) {
+      const banner = document.createElement('div');
+      banner.id = 'readonly-banner';
+      banner.style.cssText = 'background: #fff3cd; border: 1px solid #ffc107; padding: 10px; margin: 10px 0; border-radius: 5px; color: #856404;';
+      banner.innerHTML = '🔍 <strong>읽기 전용 모드</strong>: Guest 계정은 데이터 조회만 가능합니다.';
+      dashboardHeader.after(banner);
+    }
+  }
+}
+
 function startSessionTimer() {
-  sessionStartTime = Date.now();
+  // 새로고침 시에도 기존 sessionStartTime 유지 (checkExistingSession에서 설정됨)
+  if (!sessionStartTime) {
+    sessionStartTime = Date.now();
+    sessionStorage.setItem('session_start_time', sessionStartTime.toString());
+  }
   
   if (sessionTimer) {
     clearInterval(sessionTimer);
@@ -165,7 +229,9 @@ function logout(message) {
   }
   
   sessionStorage.removeItem('admin_session');
+  sessionStorage.removeItem('session_start_time');
   adminSession = null;
+  sessionStartTime = null;
   
   document.getElementById('dashboard').classList.add('hidden');
   document.getElementById('login-screen').classList.remove('hidden');

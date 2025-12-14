@@ -496,11 +496,17 @@
         const protectPaths = [
           "/application",
           "/application/",
-          "/application.html"
+          "/application.html",
+          "/lite",
+          "/lite/",
+          "/lite/index.html"
         ];
-        const isApplication = protectPaths.includes(pathname) || pathname.startsWith("/application?");
-        if (isApplication) {
-          if (isVPN) {
+        const isProtected = protectPaths.includes(pathname) || 
+                            pathname.startsWith("/application?") ||
+                            pathname.startsWith("/lite?");
+        if (isProtected) {
+          // 한국 IP만 허용 (VPN 차단 제거)
+          if (country !== "KR") {
             return Response.redirect(url.origin + "/vpn/", 302);
           }
           return fetch(request);
