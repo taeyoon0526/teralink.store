@@ -30,11 +30,24 @@ function renderTurnstile() {
     const container = document.getElementById('turnstile-widget');
     if (!container) return;
     
+    // 기존 위젯 제거
+    if (turnstileWidgetId !== null) {
+        try {
+            window.turnstile.remove(turnstileWidgetId);
+            turnstileWidgetId = null;
+        } catch (e) {
+            console.warn('Failed to remove existing widget:', e);
+        }
+    }
+    
+    // 컨테이너 초기화
+    container.innerHTML = '';
+    
     try {
         turnstileWidgetId = window.turnstile.render('#turnstile-widget', {
             sitekey: '0x4AAAAAACGiuMFPCm-ky_ah',
             theme: 'dark',
-            size: 'flexible',
+            size: 'normal', // 모바일 호환성을 위해 normal 사용
             callback: function(token) {
                 console.log('Turnstile verified');
             },
@@ -47,6 +60,7 @@ function renderTurnstile() {
                 }
             }
         });
+        console.log('Turnstile rendered with widget ID:', turnstileWidgetId);
     } catch (error) {
         console.error('Turnstile render error:', error);
     }
