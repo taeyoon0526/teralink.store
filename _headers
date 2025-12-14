@@ -25,6 +25,15 @@
 # Cache Control for CSS files
 /*.css
   Cache-Control: public, max-age=7200
+  X-Content-Type-Options: nosniff
+
+/styles.css
+  Cache-Control: public, max-age=7200, must-revalidate
+  X-Content-Type-Options: nosniff
+
+/lite/styles.css
+  Cache-Control: public, max-age=7200, must-revalidate
+  X-Content-Type-Options: nosniff
 
 # Cache Control for images
 /*.jpg
