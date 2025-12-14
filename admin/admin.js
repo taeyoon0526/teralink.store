@@ -118,7 +118,23 @@ async function handleLogin() {
       })
     });
     
-    const data = await response.json();
+    // 응답 텍스트 먼저 확인
+    const responseText = await response.text();
+    console.log('Response status:', response.status);
+    console.log('Response text:', responseText);
+    
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error('JSON parse error:', e);
+      console.error('Response was:', responseText);
+      showStatus('서버 응답 형식 오류. 관리자에게 문의하세요.', 'error');
+      if (window.turnstile && turnstileWidgetId !== null) {
+        window.turnstile.reset(turnstileWidgetId);
+      }
+      return;
+    }
     
     if (!response.ok) {
       showStatus(data.error || '로그인 실패', 'error');

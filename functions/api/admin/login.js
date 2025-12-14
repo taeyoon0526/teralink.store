@@ -186,6 +186,18 @@ export async function onRequestPost({ request, env }) {
     // 환경 변수에서 자격 증명 가져오기
     const JWT_SECRET = env.JWT_SECRET;
     
+    // 환경 변수 검증
+    if (!JWT_SECRET) {
+      console.error('JWT_SECRET is not defined in environment variables');
+      return new Response(JSON.stringify({ 
+        error: '서버 설정 오류',
+        details: 'JWT_SECRET not configured'
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    
     // 입력 검증
     if (!username || !password || !totp || !turnstile_token) {
       return new Response(JSON.stringify({ error: '모든 필드를 입력해주세요' }), {
