@@ -21,12 +21,12 @@
   <!-- Turnstile 검증 모달 -->
   <div id="turnstile-gate" class="turnstile-overlay">
     <div class="turnstile-modal">
-      <h2>🔐 보안 검증 필요</h2>
-      <p>TERALINK Hacking Lab에 접속하기 위해<br>보안 검증을 완료해주세요.</p>
+      <h2>🔐 보안 검증 중</h2>
+      <p>TERALINK Hacking Lab 접속을 위한<br>자동 보안 검증이 진행됩니다.</p>
       <div class="turnstile-container">
-        <div class="cf-turnstile" data-sitekey="0x4AAAAAACGivhmtZxBw14Lz" data-theme="dark" data-callback="onTurnstileSuccess"></div>
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAACGivhmtZxBw14Lz" data-theme="dark" data-callback="onTurnstileSuccess" data-appearance="always"></div>
       </div>
-      <div id="turnstile-status"></div>
+      <div id="turnstile-status">잠시만 기다려주세요...</div>
     </div>
   </div>
 
