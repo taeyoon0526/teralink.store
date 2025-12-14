@@ -379,9 +379,130 @@ function getStatusText(status) {
   }
 }
 
-function viewApplication(id) {
-  // TODO: 지원서 상세 모달 표시
-  console.log('View application:', id);
+async function viewApplication(id) {
+  try {
+    const response = await fetch(`/api/admin/applications?id=${id}`, {
+      headers: {
+        'Authorization': `Bearer ${adminSession.token}`
+      }
+    });
+    
+    if (!response.ok) throw new Error('Failed to load application');
+    
+    const data = await response.json();
+    const app = data.applications?.[0];
+    
+    if (!app) throw new Error('Application not found');
+    
+    // 모달 표시
+    const modalHTML = `
+      <div class="modal-overlay" id="app-detail-modal" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 600px;">
+          <div class="modal-header">
+            <h2 style="margin: 0;">지원서 상세</h2>
+            <button onclick="closeModal()" style="background: none; border: none; color: var(--text-primary); font-size: 24px; cursor: pointer;">&times;</button>
+          </div>
+          <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+            <div style="display: grid; gap: 16px;">
+              <div>
+                <label style="color: var(--text-muted); font-size: 14px;">디스코드</label>
+                <div style="font-weight: 600; margin-top: 4px;">${escapeHtml(app.discord)}</div>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div>
+                  <label style="color: var(--text-muted); font-size: 14px;">나이</label>
+                  <div style="margin-top: 4px;">${app.age}세</div>
+                </div>
+                <div>
+                  <label style="color: var(--text-muted); font-size: 14px;">활동 시간</label>
+                  <div style="margin-top: 4px;">${escapeHtml(app.active_time)}</div>
+                </div>
+              </div>
+              <div>
+                <label style="color: var(--text-muted); font-size: 14px;">지원 동기</label>
+                <div style="background: var(--bg-secondary); padding: 12px; border-radius: 4px; margin-top: 4px; white-space: pre-wrap;">${escapeHtml(app.reason)}</div>
+              </div>
+              <div>
+                <label style="color: var(--text-muted); font-size: 14px;">해상도</label>
+                <div style="margin-top: 4px;">${escapeHtml(app.resolution)}</div>
+              </div>
+              <div>
+                <label style="color: var(--text-muted); font-size: 14px;">운영 경험</label>
+                <div style="background: var(--bg-secondary); padding: 12px; border-radius: 4px; margin-top: 4px; white-space: pre-wrap;">${escapeHtml(app.operation_experience)}</div>
+              </div>
+              <div>
+                <label style="color: var(--text-muted); font-size: 14px;">개발 경험</label>
+                <div style="background: var(--bg-secondary); padding: 12px; border-radius: 4px; margin-top: 4px; white-space: pre-wrap;">${escapeHtml(app.dev_experience)}</div>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div>
+                  <label style="color: var(--text-muted); font-size: 14px;">상태</label>
+                  <div style="margin-top: 4px;">
+                    <span style="color: ${getStatusColor(app.status)}; font-weight: 600;">${getStatusText(app.status)}</span>
+                  </div>
+                </div>
+                <div>
+                  <label style="color: var(--text-muted); font-size: 14px;">제출일</label>
+                  <div style="margin-top: 4px;">${formatDateTime(app.created_at)}</div>
+                </div>
+              </div>
+              <div>
+                <label style="color: var(--text-muted); font-size: 14px;">IP 주소</label>
+                <div style="margin-top: 4px;"><code>${app.ip_address || 'N/A'}</code></div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer" style="display: flex; gap: 8px; justify-content: flex-end; padding-top: 16px; border-top: 1px solid var(--border-color);">
+            ${app.status === 'pending' ? `
+              <button class="btn-success" onclick="updateApplicationStatus('${app.id}', 'approved')">승인</button>
+              <button class="btn-danger" onclick="updateApplicationStatus('${app.id}', 'rejected')">거절</button>
+            ` : ''}
+            <button class="btn-secondary" onclick="closeModal()">닫기</button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+  } catch (error) {
+    console.error('View application error:', error);
+    alert('지원서를 불러오는데 실패했습니다');
+  }
+}
+
+function closeModal() {
+  const modal = document.getElementById('app-detail-modal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+async function updateApplicationStatus(id, status) {
+  if (!confirm(`이 지원서를 ${status === 'approved' ? '승인' : '거절'}하시겠습니까?`)) {
+    return;
+  }
+  
+  try {
+    const response = await fetch(`/api/admin/applications/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${adminSession.token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ status })
+    });
+    
+    if (!response.ok) throw new Error('Failed to update status');
+    
+    alert('상태가 업데이트되었습니다');
+    closeModal();
+    refreshApplications();
+    
+  } catch (error) {
+    console.error('Update status error:', error);
+    alert('상태 업데이트 실패');
+  }
 }
 
 // ========================================
@@ -519,26 +640,8 @@ function deleteLink(code) {
 // 접속 통계
 // ========================================
 async function loadAnalytics() {
-  const start = document.getElementById('analytics-start')?.value;
-  const end = document.getElementById('analytics-end')?.value;
-  
-  if (!start || !end) {
-    // 기본값: 최근 7일
-    const today = new Date();
-    const weekAgo = new Date(today);
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    
-    if (document.getElementById('analytics-start')) {
-      document.getElementById('analytics-start').value = weekAgo.toISOString().split('T')[0];
-    }
-    if (document.getElementById('analytics-end')) {
-      document.getElementById('analytics-end').value = today.toISOString().split('T')[0];
-    }
-    return;
-  }
-  
   try {
-    const response = await fetch(`/api/admin/analytics?start=${start}&end=${end}`, {
+    const response = await fetch('/api/admin/analytics', {
       headers: {
         'Authorization': `Bearer ${adminSession.token}`
       }
@@ -555,12 +658,77 @@ async function loadAnalytics() {
 }
 
 function displayAnalytics(data) {
-  // TODO: 차트 라이브러리 사용 (Chart.js 등)
-  document.getElementById('pageview-chart').innerHTML = 
-    '<p style="color: var(--text-muted);">차트 데이터 (개발 예정)</p>';
+  const analyticsContainer = document.querySelector('#tab-analytics .tab-content-inner');
+  if (!analyticsContainer) return;
   
-  document.getElementById('top-pages').innerHTML = 
-    '<p style="color: var(--text-muted);">인기 페이지 데이터 (개발 예정)</p>';
+  analyticsContainer.innerHTML = `
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+      <div class="stat-card" style="background: var(--bg-secondary); padding: 16px; border-radius: 8px;">
+        <div style="color: var(--text-muted); font-size: 14px;">오늘 방문</div>
+        <div style="font-size: 32px; font-weight: 600; color: var(--accent-primary);">${data.today?.total_visits || 0}</div>
+        <div style="color: var(--text-muted); font-size: 12px; margin-top: 4px;">순 방문자: ${data.today?.unique_visitors || 0}</div>
+      </div>
+      <div class="stat-card" style="background: var(--bg-secondary); padding: 16px; border-radius: 8px;">
+        <div style="color: var(--text-muted); font-size: 14px;">이번 주</div>
+        <div style="font-size: 32px; font-weight: 600; color: var(--accent-success);">${data.week?.total_visits || 0}</div>
+        <div style="color: var(--text-muted); font-size: 12px; margin-top: 4px;">순 방문자: ${data.week?.unique_visitors || 0}</div>
+      </div>
+      <div class="stat-card" style="background: var(--bg-secondary); padding: 16px; border-radius: 8px;">
+        <div style="color: var(--text-muted); font-size: 14px;">이번 달</div>
+        <div style="font-size: 32px; font-weight: 600; color: var(--accent-info);">${data.month?.total_visits || 0}</div>
+        <div style="color: var(--text-muted); font-size: 12px; margin-top: 4px;">순 방문자: ${data.month?.unique_visitors || 0}</div>
+      </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+      <div class="card" style="background: var(--bg-secondary); padding: 20px; border-radius: 8px;">
+        <h3 style="margin: 0 0 16px 0; font-size: 16px;">📊 일별 방문자 추이 (최근 7일)</h3>
+        <div style="max-height: 300px; overflow-y: auto;">
+          ${(data.daily_visits || []).map(day => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+              <span>${day.date}</span>
+              <span style="font-weight: 600; color: var(--accent-primary);">${day.visits} (${day.unique_visitors}명)</span>
+            </div>
+          `).join('') || '<p style="color: var(--text-muted); text-align: center; padding: 20px;">데이터 없음</p>'}
+        </div>
+      </div>
+      
+      <div class="card" style="background: var(--bg-secondary); padding: 20px; border-radius: 8px;">
+        <h3 style="margin: 0 0 16px 0; font-size: 16px;">🔥 인기 페이지 (최근 7일)</h3>
+        <div style="max-height: 300px; overflow-y: auto;">
+          ${(data.top_pages || []).map((page, index) => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+              <span style="display: flex; align-items: center; gap: 8px;">
+                <span style="color: var(--text-muted);">#${index + 1}</span>
+                <code style="font-size: 12px;">${escapeHtml(page.path)}</code>
+              </span>
+              <span style="font-weight: 600; color: var(--accent-success);">${page.visits}</span>
+            </div>
+          `).join('') || '<p style="color: var(--text-muted); text-align: center; padding: 20px;">데이터 없음</p>'}
+        </div>
+      </div>
+      
+      <div class="card" style="background: var(--bg-secondary); padding: 20px; border-radius: 8px;">
+        <h3 style="margin: 0 0 16px 0; font-size: 16px;">📡 HTTP 상태 코드 분포</h3>
+        <div style="max-height: 300px; overflow-y: auto;">
+          ${(data.status_codes || []).map(status => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+              <span style="font-weight: 600; color: ${getStatusCodeColor(status.status_code)};">${status.status_code}</span>
+              <span>${status.count}회</span>
+            </div>
+          `).join('') || '<p style="color: var(--text-muted); text-align: center; padding: 20px;">데이터 없음</p>'}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function getStatusCodeColor(code) {
+  if (code >= 200 && code < 300) return 'var(--accent-success)';
+  if (code >= 300 && code < 400) return 'var(--accent-info)';
+  if (code >= 400 && code < 500) return 'var(--accent-warning)';
+  if (code >= 500) return 'var(--accent-danger)';
+  return 'var(--text-primary)';
 }
 
 // ========================================
