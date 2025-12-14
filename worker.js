@@ -270,7 +270,7 @@
           const result = {
             ok: true,
             code,
-            short_url: `${url.origin}/s/${code}`,
+            short_url: `https://s.teralink.store/${code}`,
             url: rawUrl,
             expires_at: expiresAt,
             password_protected: !!password
