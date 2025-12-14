@@ -233,6 +233,32 @@ export async function onRequestPost({ request, env }) {
     } catch (dbError) {
       console.error('DB Query Error:', dbError);
     }
+
+    // 디버그 로그: 사용자 조회 결과와 입력 해시 확인
+    try {
+      const passwordHashDebug = await sha256(password);
+      console.log('Login attempt:', { username, passwordHash: passwordHashDebug });
+      if (user) {
+        // 마스킹 처리된 사용자 해시 (보안상 전체 노출 금지)
+        const stored = String(user.password_hash || user.password || '');
+        console.log('Found user in DB:', { username: user.username, storedHashPreview: stored.slice(0, 8) + '...' });
+      } else {
+        console.log('User not found in DB for username:', username);
+      }
+    } catch (logErr) {
+      console.error('Debug logging failed:', logErr);
+    }
+
+    // 게스트 계정이 DB에 없을 경우 안전한 폴백 제공 (환경변수 우선, 없으면 내장값)
+    if (!user && username === 'guest') {
+      user = {
+        username: 'guest',
+        password_hash: env.GUEST_PASSWORD_HASH || '84983c60f7daadc1cb8698621f802c0d9f9a3c3c295c810748fb048115c186ec',
+        totp_secret: 'GUEST_TOTP_BYPASS',
+        role: 'guest'
+      };
+      console.log('Guest fallback applied.');
+    }
     
     // 사용자가 DB에 없으면 환경 변수로 폴백 (admin 계정용)
     if (!user && username === 'admin') {
