@@ -501,7 +501,7 @@ var worker_default = {
     const isApplication = protectPaths.includes(pathname) || pathname.startsWith("/application?");
     if (isApplication) {
       if (isVPN) {
-        return Response.redirect(url.origin + "/vpn.html", 302);
+        return Response.redirect(url.origin + "/vpn/", 302);
       }
       return fetch(request);
     }

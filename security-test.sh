@@ -335,8 +335,8 @@ check_html_pages() {
         "/"
         "/lite/"
         "/hacking/"
-        "/application.html"
-        "/vpn.html"
+        "/application/"
+        "/vpn/"
     )
     
     for page in "${pages[@]}"; do

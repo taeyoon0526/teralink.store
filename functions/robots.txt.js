@@ -37,8 +37,8 @@ Disallow: /
 Allow: /
 Allow: /lite/
 Allow: /hacking/
-Allow: /application.html
-Allow: /vpn.html
+Allow: /application/
+Allow: /vpn/
 
 # Sitemap (optional)
 Sitemap: https://teralink.store/sitemap.xml

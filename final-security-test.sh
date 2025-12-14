@@ -349,7 +349,7 @@ fi
 
 # Test 5.3: Application page loads correctly (with browser UA)
 echo -e "${YELLOW}[5.3]${NC} Testing application page loading..."
-RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" "$DOMAIN/application.html")
+RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" "$DOMAIN/application/")
 if [ "$RESPONSE" = "200" ]; then
     test_result 0 "Application page loads correctly (200)"
 else
@@ -358,7 +358,7 @@ fi
 
 # Test 5.4: VPN page loads correctly (with browser UA)
 echo -e "${YELLOW}[5.4]${NC} Testing VPN page loading..."
-RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" "$DOMAIN/vpn.html")
+RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" "$DOMAIN/vpn/")
 if [ "$RESPONSE" = "200" ]; then
     test_result 0 "VPN page loads correctly (200)"
 else
@@ -367,7 +367,7 @@ fi
 
 # Test 5.5: Security headers on all pages
 echo -e "${YELLOW}[5.5]${NC} Testing security headers consistency..."
-PAGES=("/" "/lite/" "/application.html" "/vpn.html")
+PAGES=("/" "/lite/" "/application/" "/vpn/")
 ALL_HAVE_HEADERS=true
 for page in "${PAGES[@]}"; do
     HEADER=$(curl -s -I -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" "$DOMAIN$page" | grep -i "content-security-policy")

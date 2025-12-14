@@ -8,5 +8,9 @@
 /config.php  /  404
 
 # Prevent trailing slash redirects (keep URLs as-is)
-/application.html  /application.html  200
-/vpn.html  /vpn.html  200
+/application.html  /application/  301
+/vpn.html  /vpn/  301
+
+# Keep old paths working
+/application  /application/  200
+/vpn  /vpn/  200
