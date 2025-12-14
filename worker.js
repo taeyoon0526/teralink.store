@@ -493,7 +493,7 @@
             headers: { "Content-Type": "application/json" }
           });
         }
-        // /application과 /admin 한국 IP 제한 적용
+        // /application과 /admin 한국 IP 제한 적용 (API 경로는 제외)
         const restrictedPaths = [
           "/application",
           "/application/",
@@ -504,8 +504,7 @@
         ];
         const isRestricted = restrictedPaths.includes(pathname) || 
                              pathname.startsWith("/application?") ||
-                             pathname.startsWith("/admin?") ||
-                             pathname.startsWith("/api/admin/");
+                             pathname.startsWith("/admin?");
         
         if (isRestricted) {
           // 한국 IP가 아니면 차단
