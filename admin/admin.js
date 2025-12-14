@@ -869,20 +869,82 @@ async function saveSettings() {
   }
 }
 
-function backupDatabase() {
-  alert('데이터베이스 백업 기능 (개발 예정)');
+async function backupDatabase() {
+  if (!confirm('데이터베이스 전체를 백업하시겠습니까?')) {
+    return;
+  }
+  
+  try {
+    const response = await fetch('/api/admin/backup', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${adminSession.token}`
+      }
+    });
+    
+    if (!response.ok) throw new Error('Backup failed');
+    
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `teralink-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    
+    alert('백업이 완료되었습니다');
+  } catch (error) {
+    console.error('Backup error:', error);
+    alert('백업 실패: ' + error.message);
+  }
 }
 
-function confirmDatabaseCleanup() {
-  if (confirm('정말 오래된 데이터를 정리하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
-    alert('데이터 정리 기능 (개발 예정)');
+async function confirmDatabaseCleanup() {
+  if (!confirm('정말 오래된 데이터를 정리하시겠습니까?\n\n삭제 대상:\n- 90일 이상 된 접속 로그\n- 180일 이상 된 보안 로그\n- 만료된 단축 URL (30일 경과)\n\n이 작업은 되돌릴 수 없습니다.')) {
+    return;
+  }
+  
+  try {
+    const response = await fetch('/api/admin/cleanup', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${adminSession.token}`
+      }
+    });
+    
+    if (!response.ok) throw new Error('Cleanup failed');
+    
+    const data = await response.json();
+    alert(`데이터 정리 완료:\n- 접속 로그: ${data.deleted_access_logs}개 삭제\n- 보안 로그: ${data.deleted_security_logs}개 삭제\n- 단축 URL: ${data.deleted_urls}개 삭제`);
+    
+    // 통계 새로고침
+    loadSettings();
+  } catch (error) {
+    console.error('Cleanup error:', error);
+    alert('데이터 정리 실패: ' + error.message);
   }
 }
 
 function regenerateApiKey() {
   if (confirm('API 키를 재생성하시겠습니까?\n기존 키는 즉시 무효화됩니다.')) {
-    alert('API 키 재생성 기능 (개발 예정)');
+    const newKey = generateRandomKey(32);
+    const apiKeyDisplay = document.querySelector('.api-key-display');
+    if (apiKeyDisplay) {
+      apiKeyDisplay.textContent = newKey;
+      alert('새 API 키가 생성되었습니다.\n안전한 곳에 보관하세요.');
+    }
   }
+}
+
+function generateRandomKey(length) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 }
 
 // ========================================
