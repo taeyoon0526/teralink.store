@@ -5,10 +5,11 @@
   <meta charset="UTF-8" />
   <title>프리미엄 관리자 지원서</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  
+
   <!-- 구글 폰트 -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
-  
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+    rel="stylesheet" />
+
   <!-- External CSS -->
   <link rel="stylesheet" href="styles.css?v=1.0.0">
 </head>
@@ -26,19 +27,23 @@
         <input type="text" id="discord" name="discord" title="디스코드 닉네임을 입력하세요" placeholder="예: username#1234" required>
 
         <label for="active_time">활동 가능 시간 *</label>
-        <input type="text" id="active_time" name="active_time" title="활동 가능 시간을 입력하세요" placeholder="예: 평일 저녁, 주말 오전" required>
+        <input type="text" id="active_time" name="active_time" title="활동 가능 시간을 입력하세요" placeholder="예: 평일 저녁, 주말 오전"
+          required>
 
         <label for="reason">지원 동기 *</label>
         <textarea id="reason" name="reason" title="지원 동기를 입력하세요" placeholder="관리자 지원 동기를 작성해주세요" required></textarea>
 
         <label for="resolution">각오 *</label>
-        <textarea id="resolution" name="resolution" title="각오를 입력하세요" placeholder="관리자로서의 각오를 작성해주세요" required></textarea>
+        <textarea id="resolution" name="resolution" title="각오를 입력하세요" placeholder="관리자로서의 각오를 작성해주세요"
+          required></textarea>
 
         <label for="operation_experience">운영 경험 *</label>
-        <textarea id="operation_experience" name="operation_experience" title="운영 경험을 입력하세요" placeholder="이전 운영 경험이 있다면 작성해주세요" required></textarea>
+        <textarea id="operation_experience" name="operation_experience" title="운영 경험을 입력하세요"
+          placeholder="이전 운영 경험이 있다면 작성해주세요" required></textarea>
 
         <label for="dev_experience">해킹/개발 경험 *</label>
-        <textarea id="dev_experience" name="dev_experience" title="해킹/개발 경험을 입력하세요" placeholder="해킹 또는 개발 경험이 있다면 작성해주세요" required></textarea>
+        <textarea id="dev_experience" name="dev_experience" title="해킹/개발 경험을 입력하세요"
+          placeholder="해킹 또는 개발 경험이 있다면 작성해주세요" required></textarea>
 
         <button type="submit" id="submit-button" onclick="finalSubmitCheck(event)">제출하기</button>
 
