@@ -10,7 +10,6 @@ let sessionTimer = null;
 const SESSION_TIMEOUT = 30 * 60 * 1000; // 30분
 let turnstileWidgetId = null;
 let turnstileToken = null;
-let turnstileToken = null;
 
 // ========================================
 // 초기화
@@ -66,7 +65,7 @@ function renderTurnstile() {
       callback: function(token) {
         console.log('Turnstile verified:', token);
         turnstileToken = token;
-      }
+      },
       'error-callback': function() {
         console.error('Turnstile error');
         showStatus('캡챠 검증 오류. 다시 시도해주세요.', 'error');
@@ -97,7 +96,9 @@ async function handleLogin() {
   const username = document.getElementById('admin-username').value.trim();
   const password = document.getElementById('admin-password').value;
   const totp = document.getElementById('admin-totp').value.trim();
-  const turnstileToken = document.querySelector('[name="cf-turnstile-response"]')?.value;
+  const cfTurnstileResponse = document.querySelector('[name="cf-turnstile-response"]')?.value;
+  // 서버로 보낼 토큰은 turnstileToken(명시 렌더링 콜백에서 설정) 또는 폼의 cf-turnstile-response
+  const turnstileTokenToSend = turnstileToken || cfTurnstileResponse || null;
   
   const statusEl = document.getElementById('login-status');
   statusEl.textContent = '';
@@ -115,7 +116,7 @@ async function handleLogin() {
     return;
   }
 
-  /* if (!turnstileToken) {
+  /* if (!turnstileTokenToSend) {
     showStatus('보안 검증(캡챠)을 완료해주세요', 'error');
     return;
   } */
@@ -131,7 +132,7 @@ async function handleLogin() {
         username,
         password,
         totp,
-        turnstile_token: turnstileToken || null
+        turnstile_token: turnstileTokenToSend
       })
     });
     
@@ -324,7 +325,12 @@ function logout(message) {
   
   // Turnstile 리셋
   if (window.turnstile) {
-    turnstile.reset();
+    try {
+      window.turnstile.reset();
+    } catch (e) {
+      // 일부 버전에서는 인자 없이 reset()만 지원할 수 있음 — 예외 무시
+      try { window.turnstile.reset(turnstileWidgetId); } catch (e2) {}
+    }
   }
 }
 
