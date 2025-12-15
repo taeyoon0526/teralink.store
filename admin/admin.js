@@ -10,6 +10,7 @@ let sessionTimer = null;
 const SESSION_TIMEOUT = 30 * 60 * 1000; // 30분
 let turnstileWidgetId = null;
 let turnstileToken = null;
+let turnstileToken = null;
 
 // ========================================
 // 초기화
@@ -64,7 +65,8 @@ function renderTurnstile() {
       size: 'normal', // 모바일 호환성을 위해 normal 사용
       callback: function(token) {
         console.log('Turnstile verified:', token);
-      },
+        turnstileToken = token;
+      }
       'error-callback': function() {
         console.error('Turnstile error');
         showStatus('캡챠 검증 오류. 다시 시도해주세요.', 'error');
