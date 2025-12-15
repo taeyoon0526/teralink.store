@@ -128,7 +128,7 @@ async function handleLogin() {
         username,
         password,
         totp,
-        turnstile_token: turnstileToken || NULL
+        turnstile_token: turnstileToken || null
       })
     });
     
