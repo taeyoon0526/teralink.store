@@ -199,7 +199,7 @@ export async function onRequestPost({ request, env }) {
     }
     
     // 입력 검증
-    if (!username || !password || !totp || !turnstile_token) {
+    if (!username || !password || !totp) {
       return new Response(JSON.stringify({ error: '모든 필드를 입력해주세요' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
