@@ -111,11 +111,11 @@ async function handleLogin() {
     showStatus('2FA 코드는 6자리 숫자여야 합니다', 'error');
     return;
   }
-  
-  if (!turnstileToken) {
+
+  /* if (!turnstileToken) {
     showStatus('보안 검증(캡챠)을 완료해주세요', 'error');
     return;
-  }
+  } */
   
   // 로그인 시도
   try {
@@ -128,7 +128,7 @@ async function handleLogin() {
         username,
         password,
         totp,
-        turnstile_token: turnstileToken
+        turnstile_token: turnstileToken || NULL
       })
     });
     
