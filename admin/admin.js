@@ -9,6 +9,7 @@ let sessionStartTime = null;
 let sessionTimer = null;
 const SESSION_TIMEOUT = 30 * 60 * 1000; // 30분
 let turnstileWidgetId = null;
+let turnstileToken = null;
 
 // ========================================
 // 초기화
