@@ -656,13 +656,20 @@ async function refreshLinks() {
       }
     });
     
-    if (!response.ok) throw new Error('Failed to load links');
-    
     const data = await response.json();
+    
+    if (data.error) {
+      console.warn('Links API warning:', data.error);
+      // 에러가 있어도 빈 배열로 표시
+      displayLinks([]);
+      return;
+    }
+    
     displayLinks(data.links || []);
     
   } catch (error) {
     console.error('Links load error:', error);
+    displayLinks([]);
   }
 }
 

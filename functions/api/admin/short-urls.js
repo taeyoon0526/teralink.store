@@ -47,7 +47,41 @@ export async function onRequestGet({ request, env }) {
     
     const db = env.LOG_DB;
     if (!db) {
-      throw new Error('Database not available');
+      console.error('LOG_DB not available');
+      return new Response(JSON.stringify({ 
+        error: 'Database not configured',
+        links: []
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    
+    // 테이블 존재 여부 확인
+    try {
+      const tableCheck = await db.prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='short_urls'"
+      ).first();
+      
+      if (!tableCheck) {
+        console.warn('short_urls table does not exist');
+        return new Response(JSON.stringify({ 
+          error: 'Short URLs table not initialized',
+          links: []
+        }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    } catch (tableError) {
+      console.error('Table check error:', tableError);
+      return new Response(JSON.stringify({ 
+        error: 'Database error',
+        links: []
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
     
     let query = 'SELECT code, url, password, expires_at, created_at, 0 as clicks FROM short_urls';
@@ -72,10 +106,11 @@ export async function onRequestGet({ request, env }) {
   } catch (error) {
     console.error('Short URLs error:', error);
     return new Response(JSON.stringify({ 
-      error: '단축 URL 조회 실패',
+      error: 'Failed to load short URLs',
+      details: error.message,
       links: []
     }), {
-      status: 500,
+      status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
   }
