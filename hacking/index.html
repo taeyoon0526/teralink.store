@@ -9,8 +9,6 @@
   <link rel="stylesheet" href="hacking.css" />
   <!-- 폰트 -->
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet" />
-  <!-- Cloudflare Turnstile (defer만 사용하여 순서 보장) -->
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
   <!-- MD5 라이브러리 -->
   <script src="https://cdn.jsdelivr.net/npm/blueimp-md5@2.19.0/js/md5.min.js"></script>
   <!-- QR 라이브러리 -->
@@ -18,20 +16,7 @@
 </head>
 
 <body>
-  <!-- Turnstile 검증 모달 -->
-  <div id="turnstile-gate" class="turnstile-overlay">
-    <div class="turnstile-modal">
-      <h2>🔐 보안 검증 중</h2>
-      <p>TERALINK Hacking Lab 접속을 위한<br>자동 보안 검증이 진행됩니다.</p>
-      <div class="turnstile-container">
-        <div class="cf-turnstile" data-sitekey="0x4AAAAAACGivhmtZxBw14Lz" data-theme="dark"
-          data-callback="onTurnstileSuccess" data-appearance="always" data-size="normal"></div>
-      </div>
-      <div id="turnstile-status">잠시만 기다려주세요...</div>
-    </div>
-  </div>
-
-  <div class="shell hidden" id="main-content">
+  <div class="shell" id="main-content">
     <div class="topbar">
       <div class="topbar-flex">
         <div class="dots">
