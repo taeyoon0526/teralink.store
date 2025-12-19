@@ -16,9 +16,6 @@
 
   <!-- 스타일 -->
   <link rel="stylesheet" href="/admin/styles.css?v=1.0.1" />
-
-  <!-- Cloudflare Turnstile - 명시적 렌더링 모드 -->
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 </head>
 
 <body>
@@ -44,11 +41,6 @@
         <div class="form-group">
           <label for="admin-totp">2FA 코드 (6자리 또는 guest)</label>
           <input type="text" id="admin-totp" placeholder="000000 또는 guest" required />
-        </div>
-
-        <!-- Turnstile 캡챠 -->
-        <div class="captcha-container">
-          <div id="turnstile-widget"></div>
         </div>
 
         <button type="submit" class="btn-primary">로그인</button>

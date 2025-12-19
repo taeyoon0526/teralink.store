@@ -12,9 +12,6 @@
 
   <!-- External CSS -->
   <link rel="stylesheet" href="/application/styles.css?v=1.0.1">
-
-  <!-- Cloudflare Turnstile - 명시적 렌더링 모드 -->
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 </head>
 
 <body>
@@ -49,12 +46,6 @@
         <label for="dev_experience">해킹/개발 경험 *</label>
         <textarea id="dev_experience" name="dev_experience" title="해킹/개발 경험을 입력하세요"
           placeholder="해킹 또는 개발 경험이 있다면 작성해주세요" required minlength="10"></textarea>
-
-        <!-- Cloudflare Turnstile 캡챠 -->
-        <div class="captcha-container">
-          <label>보안 확인 *</label>
-          <div id="turnstile-widget"></div>
-        </div>
 
         <button type="submit" id="submit-button">제출하기</button>
 

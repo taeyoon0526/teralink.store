@@ -8,8 +8,6 @@ let adminSession = null;
 let sessionStartTime = null;
 let sessionTimer = null;
 const SESSION_TIMEOUT = 30 * 60 * 1000; // 30분
-let turnstileWidgetId = null;
-let turnstileToken = null;
 
 // ========================================
 // 초기화
@@ -17,72 +15,7 @@ let turnstileToken = null;
 document.addEventListener('DOMContentLoaded', function() {
   checkExistingSession();
   initEventListeners();
-  initTurnstile();
 });
-
-// Turnstile 명시적 렌더링
-function initTurnstile() {
-  // Turnstile API 로드 대기
-  const checkTurnstile = setInterval(() => {
-    if (window.turnstile) {
-      clearInterval(checkTurnstile);
-      renderTurnstile();
-    }
-  }, 100);
-  
-  // 타임아웃 설정 (10초)
-  setTimeout(() => {
-    clearInterval(checkTurnstile);
-    if (!window.turnstile) {
-      console.error('Turnstile API failed to load');
-      showStatus('보안 캡챠 로드 실패. 페이지를 새로고침 해주세요.', 'error');
-    }
-  }, 10000);
-}
-
-function renderTurnstile() {
-  const container = document.getElementById('turnstile-widget');
-  if (!container) return;
-  
-  // 기존 위젯 제거
-  if (turnstileWidgetId !== null) {
-    try {
-      window.turnstile.remove(turnstileWidgetId);
-      turnstileWidgetId = null;
-    } catch (e) {
-      console.warn('Failed to remove existing widget:', e);
-    }
-  }
-  
-  // 컨테이너 초기화
-  container.innerHTML = '';
-  
-  try {
-    turnstileWidgetId = window.turnstile.render('#turnstile-widget', {
-      sitekey: '0x4AAAAAACGiuMFPCm-ky_ah',
-      theme: 'dark',
-      size: 'normal', // 모바일 호환성을 위해 normal 사용
-      callback: function(token) {
-        console.log('Turnstile verified:', token);
-        turnstileToken = token;
-      },
-      'error-callback': function() {
-        console.error('Turnstile error');
-        showStatus('캡챠 검증 오류. 다시 시도해주세요.', 'error');
-      },
-      'expired-callback': function() {
-        console.warn('Turnstile expired');
-        if (turnstileWidgetId !== null) {
-          window.turnstile.reset(turnstileWidgetId);
-        }
-      }
-    });
-    console.log('Turnstile rendered with widget ID:', turnstileWidgetId);
-  } catch (error) {
-    console.error('Turnstile render error:', error);
-    showStatus('캡챠 렌더링 실패. 페이지를 새로고침 해주세요.', 'error');
-  }
-}
 
 // ========================================
 // 로그인 처리
@@ -96,9 +29,6 @@ async function handleLogin() {
   const username = document.getElementById('admin-username').value.trim();
   const password = document.getElementById('admin-password').value;
   const totp = document.getElementById('admin-totp').value.trim();
-  const cfTurnstileResponse = document.querySelector('[name="cf-turnstile-response"]')?.value;
-  // 서버로 보낼 토큰은 turnstileToken(명시 렌더링 콜백에서 설정) 또는 폼의 cf-turnstile-response
-  const turnstileTokenToSend = turnstileToken || cfTurnstileResponse || null;
   
   const statusEl = document.getElementById('login-status');
   statusEl.textContent = '';
@@ -115,11 +45,6 @@ async function handleLogin() {
     showStatus('2FA 코드는 6자리 숫자여야 합니다', 'error');
     return;
   }
-
-  /* if (!turnstileTokenToSend) {
-    showStatus('보안 검증(캡챠)을 완료해주세요', 'error');
-    return;
-  } */
   
   // 로그인 시도
   try {
@@ -131,8 +56,7 @@ async function handleLogin() {
       body: JSON.stringify({
         username,
         password,
-        totp,
-        turnstile_token: turnstileTokenToSend
+        totp
       })
     });
     
@@ -148,18 +72,11 @@ async function handleLogin() {
       console.error('JSON parse error:', e);
       console.error('Response was:', responseText);
       showStatus('서버 응답 형식 오류. 관리자에게 문의하세요.', 'error');
-      if (window.turnstile && turnstileWidgetId !== null) {
-        window.turnstile.reset(turnstileWidgetId);
-      }
       return;
     }
     
     if (!response.ok) {
       showStatus(data.error || '로그인 실패', 'error');
-      // Turnstile 리셋
-      if (window.turnstile && turnstileWidgetId !== null) {
-        window.turnstile.reset(turnstileWidgetId);
-      }
       return;
     }
     

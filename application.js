@@ -1,70 +1,5 @@
 // Application Page Scripts v2.0
-// VPN Check, Form Validation, and Cloudflare Turnstile
-
-let turnstileWidgetId = null;
-
-// =============================
-// Turnstile 명시적 렌더링
-// =============================
-document.addEventListener('DOMContentLoaded', function() {
-    initTurnstile();
-});
-
-function initTurnstile() {
-    const checkTurnstile = setInterval(() => {
-        if (window.turnstile) {
-            clearInterval(checkTurnstile);
-            renderTurnstile();
-        }
-    }, 100);
-    
-    setTimeout(() => {
-        clearInterval(checkTurnstile);
-        if (!window.turnstile) {
-            console.error('Turnstile API failed to load');
-        }
-    }, 10000);
-}
-
-function renderTurnstile() {
-    const container = document.getElementById('turnstile-widget');
-    if (!container) return;
-    
-    // 기존 위젯 제거
-    if (turnstileWidgetId !== null) {
-        try {
-            window.turnstile.remove(turnstileWidgetId);
-            turnstileWidgetId = null;
-        } catch (e) {
-            console.warn('Failed to remove existing widget:', e);
-        }
-    }
-    
-    // 컨테이너 초기화
-    container.innerHTML = '';
-    
-    try {
-        turnstileWidgetId = window.turnstile.render('#turnstile-widget', {
-            sitekey: '0x4AAAAAACGiuMFPCm-ky_ah',
-            theme: 'dark',
-            size: 'normal', // 모바일 호환성을 위해 normal 사용
-            callback: function(token) {
-                console.log('Turnstile verified');
-            },
-            'error-callback': function() {
-                console.error('Turnstile error');
-            },
-            'expired-callback': function() {
-                if (turnstileWidgetId !== null) {
-                    window.turnstile.reset(turnstileWidgetId);
-                }
-            }
-        });
-        console.log('Turnstile rendered with widget ID:', turnstileWidgetId);
-    } catch (error) {
-        console.error('Turnstile render error:', error);
-    }
-}
+// VPN Check and Form Validation
 
 // =============================
 // VPN 실시간 검사
@@ -225,14 +160,7 @@ async function handleFormSubmit(event) {
         return;
     }
 
-    // 3. Turnstile 토큰 확인
-    const turnstileResponse = document.querySelector('[name="cf-turnstile-response"]');
-    if (!turnstileResponse || !turnstileResponse.value) {
-        setStatus("보안 확인(캡챠)을 완료해주세요", "error");
-        return;
-    }
-
-    // 4. 제출 시작
+    // 3. 제출 시작
     const btn = document.getElementById("submit-button");
     const loader = document.getElementById("submitting-indicator");
     const form = document.getElementById("application-form");

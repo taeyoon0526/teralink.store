@@ -206,17 +206,6 @@ export async function onRequestPost({ request, env }) {
       });
     }
     
-    // Turnstile 검증
-    const turnstileSecret = env.TURNSTILE_SECRET_KEY || '0x4AAAAAACGiuEYfvz-4LdWPdJBMESTP5cc';
-    const isTurnstileValid = await verifyTurnstile(turnstile_token, turnstileSecret);
-    
-    if (!isTurnstileValid) {
-      return new Response(JSON.stringify({ error: '캡챠 검증 실패' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-    
     // 사용자 비밀번호 해시 생성
     const passwordHash = await sha256(password);
     
