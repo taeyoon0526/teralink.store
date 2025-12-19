@@ -177,7 +177,7 @@ button:disabled {
 }
 
 /* Turnstile iframe 강제 중앙 정렬 */
-#turnstile-widget > div {
+#turnstile-widget>div {
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
