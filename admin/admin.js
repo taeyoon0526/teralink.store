@@ -382,15 +382,19 @@ async function refreshApplications() {
       }
     });
     
-    if (!response.ok) throw new Error('Failed to load applications');
-    
     const data = await response.json();
+    
+    if (data.error) {
+      console.warn('Applications API warning:', data.error);
+      displayApplications([]);
+      return;
+    }
+    
     displayApplications(data.applications || []);
     
   } catch (error) {
     console.error('Applications load error:', error);
-    document.getElementById('applications-list').innerHTML = 
-      '<p style="color: var(--accent-danger); text-align: center; padding: 20px;">지원서 로드 실패</p>';
+    displayApplications([]);
   }
 }
 
@@ -584,13 +588,19 @@ async function loadUsers() {
       }
     });
     
-    if (!response.ok) throw new Error('Failed to load users');
-    
     const data = await response.json();
+    
+    if (data.error) {
+      console.warn('Users API warning:', data.error);
+      displayUsers([]);
+      return;
+    }
+    
     displayUsers(data.users || []);
     
   } catch (error) {
     console.error('Users load error:', error);
+    displayUsers([]);
   }
 }
 
@@ -722,13 +732,19 @@ async function loadAnalytics() {
       }
     });
     
-    if (!response.ok) throw new Error('Failed to load analytics');
-    
     const data = await response.json();
+    
+    if (data.error) {
+      console.warn('Analytics API warning:', data.error);
+      displayAnalytics(data.stats || {});
+      return;
+    }
+    
     displayAnalytics(data);
     
   } catch (error) {
     console.error('Analytics load error:', error);
+    displayAnalytics({});
   }
 }
 
@@ -819,13 +835,19 @@ async function refreshSecurityLogs() {
       }
     });
     
-    if (!response.ok) throw new Error('Failed to load security logs');
-    
     const data = await response.json();
+    
+    if (data.error) {
+      console.warn('Security logs API warning:', data.error);
+      displaySecurityLogs([]);
+      return;
+    }
+    
     displaySecurityLogs(data.logs || []);
     
   } catch (error) {
     console.error('Security logs load error:', error);
+    displaySecurityLogs([]);
   }
 }
 

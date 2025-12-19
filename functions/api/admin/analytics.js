@@ -54,7 +54,42 @@ export async function onRequestGet({ request, env }) {
   try {
     const db = env.LOG_DB;
     if (!db) {
-      throw new Error('Database not available');
+      console.error('LOG_DB not available');
+      return new Response(JSON.stringify({ 
+        error: 'Database not configured',
+        stats: {
+          today: { total_visits: 0, unique_visitors: 0 },
+          week: { total_visits: 0, unique_visitors: 0 },
+          month: { total_visits: 0, unique_visitors: 0 },
+          daily_visits: [],
+          top_pages: []
+        }
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 테이블 존재 확인
+    const tableCheck = await db.prepare(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='access_logs'"
+    ).first();
+    
+    if (!tableCheck) {
+      console.warn('access_logs table does not exist');
+      return new Response(JSON.stringify({ 
+        error: 'Analytics table not initialized',
+        stats: {
+          today: { total_visits: 0, unique_visitors: 0 },
+          week: { total_visits: 0, unique_visitors: 0 },
+          month: { total_visits: 0, unique_visitors: 0 },
+          daily_visits: [],
+          top_pages: []
+        }
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     // 오늘 통계

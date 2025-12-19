@@ -76,7 +76,30 @@ export async function onRequestGet({ request, env }) {
     
     const db = env.LOG_DB;
     if (!db) {
-      throw new Error('Database not available');
+      console.error('LOG_DB not available');
+      return new Response(JSON.stringify({ 
+        error: 'Database not configured',
+        applications: []
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    
+    // 테이블 존재 확인
+    const tableCheck = await db.prepare(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='applications'"
+    ).first();
+    
+    if (!tableCheck) {
+      console.warn('applications table does not exist');
+      return new Response(JSON.stringify({ 
+        error: 'Applications table not initialized',
+        applications: []
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
     
     let query = 'SELECT * FROM applications';
@@ -116,10 +139,11 @@ export async function onRequestGet({ request, env }) {
   } catch (error) {
     console.error('Applications error:', error);
     return new Response(JSON.stringify({ 
-      error: '지원서 조회 실패',
+      error: 'Failed to load applications',
+      details: error.message,
       applications: []
     }), {
-      status: 500,
+      status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
   }

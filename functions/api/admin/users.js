@@ -87,9 +87,32 @@ export async function onRequestGet({ request, env }) {
   }
   
   try {
-    const db = env.LOG_DB;
+    const db = env.teralink_db || env.DB;
     if (!db) {
-      throw new Error('Database not available');
+      console.error('teralink_db not available');
+      return new Response(JSON.stringify({ 
+        error: 'Database not configured',
+        users: []
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 테이블 존재 확인
+    const tableCheck = await db.prepare(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
+    ).first();
+    
+    if (!tableCheck) {
+      console.warn('users table does not exist');
+      return new Response(JSON.stringify({ 
+        error: 'Users table not initialized',
+        users: []
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     // 사용자 목록 조회
@@ -113,10 +136,11 @@ export async function onRequestGet({ request, env }) {
   } catch (error) {
     console.error('Users API Error:', error);
     return new Response(JSON.stringify({ 
-      error: '사용자 목록을 불러오는 중 오류가 발생했습니다',
-      details: error.message 
+      error: 'Failed to load users',
+      details: error.message,
+      users: []
     }), {
-      status: 500,
+      status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
   }

@@ -71,20 +71,32 @@ export async function onRequestGet({ request, env }) {
     
     // 대기 중인 지원서 수
     try {
-      const pendingApps = await db.prepare(
-        'SELECT COUNT(*) as count FROM applications WHERE status = ?'
-      ).bind('pending').first();
-      stats.pending_applications = pendingApps?.count || 0;
+      const tableCheck = await db.prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='applications'"
+      ).first();
+      
+      if (tableCheck) {
+        const pendingApps = await db.prepare(
+          'SELECT COUNT(*) as count FROM applications WHERE status = ?'
+        ).bind('pending').first();
+        stats.pending_applications = pendingApps?.count || 0;
+      }
     } catch (e) {
       console.error('Failed to get pending applications:', e);
     }
     
     // 단축 URL 수
     try {
-      const shortUrls = await db.prepare(
-        'SELECT COUNT(*) as count FROM short_urls WHERE expires_at > datetime("now")'
+      const tableCheck = await db.prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='short_urls'"
       ).first();
-      stats.short_urls_count = shortUrls?.count || 0;
+      
+      if (tableCheck) {
+        const shortUrls = await db.prepare(
+          'SELECT COUNT(*) as count FROM short_urls WHERE expires_at > datetime("now")'
+        ).first();
+        stats.short_urls_count = shortUrls?.count || 0;
+      }
     } catch (e) {
       console.error('Failed to get short URLs count:', e);
     }

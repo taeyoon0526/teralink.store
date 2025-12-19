@@ -47,14 +47,37 @@ export async function onRequestGet({ request, env }) {
     
     const db = env.LOG_DB;
     if (!db) {
-      throw new Error('Database not available');
+      console.error('LOG_DB not available');
+      return new Response(JSON.stringify({ 
+        error: 'Database not configured',
+        logs: []
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    
+    // 테이블 존재 확인
+    const tableCheck = await db.prepare(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='security_logs'"
+    ).first();
+    
+    if (!tableCheck) {
+      console.warn('security_logs table does not exist');
+      return new Response(JSON.stringify({ 
+        error: 'Security logs table not initialized',
+        logs: []
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
     
     let query = 'SELECT * FROM security_logs';
     
     if (filter !== 'all') {
       if (filter === 'login') {
-        query += ' WHERE type = "successful_login"';
+        query += ' WHERE type = "login"';
       } else if (filter === 'failed') {
         query += ' WHERE type IN ("failed_login", "failed_2fa")';
       } else if (filter === 'vpn') {
