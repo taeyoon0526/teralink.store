@@ -1,7 +1,6 @@
 name = "teralink"
 main = "worker.js"
 compatibility_date = "2025-12-10"
-pages_build_output_dir = "."
 
 # Worker 환경변수
 [vars]
